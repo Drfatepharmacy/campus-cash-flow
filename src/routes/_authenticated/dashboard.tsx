@@ -1,0 +1,160 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getEligibleRequests, getMyTransactions, getMyProfile } from "@/lib/payments.functions";
+import { Logo } from "@/components/brand/logo";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { formatNaira } from "@/lib/charges";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { ArrowRight, LogOut, ShieldAlert, QrCode, Receipt as ReceiptIcon, Loader2 } from "lucide-react";
+import { grantAdminToMe } from "@/lib/admin.functions";
+import { getMyRoles } from "@/lib/payments.functions";
+
+export const Route = createFileRoute("/_authenticated/dashboard")({
+  head: () => ({ meta: [{ title: "Dashboard — UniPay NG" }] }),
+  component: Dashboard,
+});
+
+function Dashboard() {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const fetchProfile = useServerFn(getMyProfile);
+  const fetchEligible = useServerFn(getEligibleRequests);
+  const fetchTxns = useServerFn(getMyTransactions);
+  const fetchRoles = useServerFn(getMyRoles);
+  const grant = useServerFn(grantAdminToMe);
+
+  const profile = useQuery({ queryKey: ["me"], queryFn: () => fetchProfile() });
+  const roles = useQuery({ queryKey: ["my-roles"], queryFn: () => fetchRoles() });
+  const eligible = useQuery({ queryKey: ["eligible"], queryFn: () => fetchEligible() });
+  const txns = useQuery({ queryKey: ["my-txns"], queryFn: () => fetchTxns() });
+
+  const claim = useMutation({
+    mutationFn: () => grant(),
+    onSuccess: () => { toast.success("Admin role granted"); qc.invalidateQueries({ queryKey: ["my-roles"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const incomplete = profile.data && (!profile.data.matric_no || !profile.data.faculty_id || !profile.data.level);
+  const isAdmin = (roles.data ?? []).includes("admin");
+
+  async function signOut() {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
+  return (
+    <div className="min-h-screen bg-secondary/30">
+      <header className="bg-background border-b sticky top-0 z-30">
+        <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
+          <Link to="/"><Logo /></Link>
+          <div className="flex items-center gap-2">
+            {isAdmin && <Link to="/admin"><Button variant="outline" size="sm">Admin</Button></Link>}
+            <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1.5"/>Sign out</Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-6 py-10 space-y-6">
+        <div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Welcome back</div>
+          <h1 className="font-display text-3xl font-bold mt-1">{profile.data?.full_name ?? "Student"}</h1>
+        </div>
+
+        {incomplete && (
+          <Card className="border-gold">
+            <CardContent className="p-5 flex items-center gap-4">
+              <ShieldAlert className="h-5 w-5 text-gold" />
+              <div className="flex-1">
+                <div className="font-medium">Complete your student profile</div>
+                <div className="text-sm text-muted-foreground">Add matric number, faculty, department and level to see payment requests.</div>
+              </div>
+              <Link to="/onboarding"><Button size="sm">Complete</Button></Link>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isAdmin && (
+          <Card>
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="flex-1 text-sm text-muted-foreground">First time setting up the platform? Claim the founder admin role (only available if no admin exists yet).</div>
+              <Button size="sm" variant="outline" onClick={() => claim.mutate()} disabled={claim.isPending}>
+                {claim.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin"/>}
+                Claim admin
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <section className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            <h2 className="font-display text-lg font-semibold">Available payments</h2>
+            {eligible.isLoading && <Card><CardContent className="p-6 text-sm text-muted-foreground">Loading…</CardContent></Card>}
+            {!eligible.isLoading && (eligible.data ?? []).length === 0 && (
+              <Card><CardContent className="p-6 text-sm text-muted-foreground">No payment requests match your profile yet.</CardContent></Card>
+            )}
+            {(eligible.data ?? []).map((r: any) => (
+              <Card key={r.id} className="hover:shadow-elegant transition-shadow">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="flex-1">
+                    <div className="font-display font-semibold">{r.title}</div>
+                    {r.description && <div className="text-sm text-muted-foreground mt-1">{r.description}</div>}
+                    <div className="mt-2 flex gap-2 flex-wrap text-xs text-muted-foreground">
+                      {r.faculty?.name && <Badge variant="secondary">{r.faculty.name}</Badge>}
+                      {r.department?.name && <Badge variant="secondary">{r.department.name}</Badge>}
+                      {r.target_level && <Badge variant="secondary">{r.target_level}L</Badge>}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-display text-xl font-bold">{formatNaira(Number(r.base_amount))}</div>
+                    <Link to="/pay/$requestId" params={{ requestId: r.id }}>
+                      <Button size="sm" className="mt-2 bg-royal text-royal-foreground hover:opacity-90">
+                        Pay <ArrowRight className="h-4 w-4 ml-1"/>
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="font-display text-lg font-semibold">Recent payments</h2>
+            <Card>
+              <CardContent className="p-0 divide-y">
+                {(txns.data ?? []).length === 0 && <div className="p-5 text-sm text-muted-foreground">No transactions yet.</div>}
+                {(txns.data ?? []).map((t: any) => (
+                  <div key={t.id} className="p-4 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-secondary grid place-items-center">
+                      <ReceiptIcon className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{t.payment_request?.title ?? "Payment"}</div>
+                      <div className="text-xs text-muted-foreground">{t.reference}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold">{formatNaira(Number(t.total_amount))}</div>
+                      <div className="text-[10px] uppercase tracking-wider">
+                        {t.status === "paid" ? <span className="text-emerald">Paid</span> : t.status === "pending" ? <span className="text-muted-foreground">Pending</span> : <span className="text-destructive">Failed</span>}
+                      </div>
+                    </div>
+                    {t.status === "paid" && t.receipt?.[0]?.qr_token && (
+                      <Link to="/receipt/$token" params={{ token: t.receipt[0].qr_token }}>
+                        <Button size="icon" variant="ghost"><QrCode className="h-4 w-4"/></Button>
+                      </Link>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
