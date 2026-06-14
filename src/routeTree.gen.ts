@@ -16,12 +16,12 @@ import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
-import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin.transactions'
-import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/_authenticated/admin.payment-requests'
-import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin.faculties'
+import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin/transactions'
+import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/_authenticated/admin/payment-requests'
+import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin/faculties'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
 
 const AuthRoute = AuthRouteImport.update({
@@ -355,13 +355,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
