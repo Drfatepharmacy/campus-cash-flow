@@ -1,8 +1,7 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/logo";
-import { LayoutDashboard, Building2, GraduationCap, FileText, Receipt, ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { LayoutDashboard, Building2, FileText, Receipt, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
