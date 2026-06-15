@@ -88,7 +88,7 @@ export const completeSettlement = createServerFn({ method: "POST" })
     await assertAdmin(context as never);
     const { error } = await context.supabase
       .from("settlements")
-      .update({ status: "settled", settled_at: new Date().toISOString(), bank_reference: data.bank_reference })
+      .update({ status: "deposited", settled_at: new Date().toISOString(), bank_reference: data.bank_reference })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };

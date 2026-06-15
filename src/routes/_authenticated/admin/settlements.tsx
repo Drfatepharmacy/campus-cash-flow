@@ -91,12 +91,12 @@ function Row({ s, onComplete }: { s: any; onComplete: (ref: string) => void | Pr
       <td className="p-3 font-mono text-xs">{s.reference}</td>
       <td className="p-3 text-right font-semibold">{formatNaira(Number(s.amount))}</td>
       <td className="p-3">
-        {s.status === "settled" ? <Badge className="bg-emerald text-white">Settled</Badge> : <Badge variant="secondary">Pending</Badge>}
+        {s.status === "deposited" ? <Badge className="bg-emerald text-white">Settled</Badge> : <Badge variant="secondary">Pending</Badge>}
       </td>
       <td className="p-3 text-xs">{s.bank_reference ?? "—"}</td>
       <td className="p-3 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString()}</td>
       <td className="p-3 text-right">
-        {s.status !== "settled" && (
+        {s.status !== "deposited" && (
           <div className="flex items-center gap-2 justify-end">
             <Input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="Bank ref" className="h-8 w-36"/>
             <Button size="sm" variant="outline" disabled={!ref || busy} onClick={async () => { setBusy(true); await onComplete(ref); setBusy(false); setRef(""); }}>
