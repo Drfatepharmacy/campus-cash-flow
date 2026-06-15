@@ -402,31 +402,37 @@ export type Database = {
       settlements: {
         Row: {
           amount: number
+          bank_reference: string | null
           created_at: string
           department_id: string | null
           id: string
           notes: string | null
           reference: string
+          settled_at: string | null
           status: Database["public"]["Enums"]["settlement_status"]
           updated_at: string
         }
         Insert: {
           amount: number
+          bank_reference?: string | null
           created_at?: string
           department_id?: string | null
           id?: string
           notes?: string | null
           reference: string
+          settled_at?: string | null
           status?: Database["public"]["Enums"]["settlement_status"]
           updated_at?: string
         }
         Update: {
           amount?: number
+          bank_reference?: string | null
           created_at?: string
           department_id?: string | null
           id?: string
           notes?: string | null
           reference?: string
+          settled_at?: string | null
           status?: Database["public"]["Enums"]["settlement_status"]
           updated_at?: string
         }
@@ -451,6 +457,7 @@ export type Database = {
           paystack_response: Json | null
           reference: string
           service_charge: number
+          settlement_id: string | null
           status: Database["public"]["Enums"]["txn_status"]
           student_id: string
           total_amount: number
@@ -466,6 +473,7 @@ export type Database = {
           paystack_response?: Json | null
           reference: string
           service_charge?: number
+          settlement_id?: string | null
           status?: Database["public"]["Enums"]["txn_status"]
           student_id: string
           total_amount: number
@@ -481,6 +489,7 @@ export type Database = {
           paystack_response?: Json | null
           reference?: string
           service_charge?: number
+          settlement_id?: string | null
           status?: Database["public"]["Enums"]["txn_status"]
           student_id?: string
           total_amount?: number
@@ -492,6 +501,13 @@ export type Database = {
             columns: ["payment_request_id"]
             isOneToOne: false
             referencedRelation: "payment_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_settlement_id_fkey"
+            columns: ["settlement_id"]
+            isOneToOne: false
+            referencedRelation: "settlements"
             referencedColumns: ["id"]
           },
         ]
