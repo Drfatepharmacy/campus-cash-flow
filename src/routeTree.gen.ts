@@ -19,7 +19,10 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin/transactions'
+import { Route as AuthenticatedAdminSettlementsRouteImport } from './routes/_authenticated/admin/settlements'
+import { Route as AuthenticatedAdminReconcileRouteImport } from './routes/_authenticated/admin/reconcile'
 import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/_authenticated/admin/payment-requests'
 import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin/faculties'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
@@ -75,10 +78,27 @@ const AuthenticatedPayRequestIdRoute =
     path: '/pay/$requestId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminTransactionsRoute =
   AuthenticatedAdminTransactionsRouteImport.update({
     id: '/transactions',
     path: '/transactions',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminSettlementsRoute =
+  AuthenticatedAdminSettlementsRouteImport.update({
+    id: '/settlements',
+    path: '/settlements',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminReconcileRoute =
+  AuthenticatedAdminReconcileRouteImport.update({
+    id: '/reconcile',
+    path: '/reconcile',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminPaymentRequestsRoute =
@@ -109,7 +129,10 @@ export interface FileRoutesByFullPath {
   '/verify/$token': typeof VerifyTokenRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
+  '/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
+  '/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -123,7 +146,10 @@ export interface FileRoutesByTo {
   '/verify/$token': typeof VerifyTokenRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
+  '/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
+  '/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -140,7 +166,10 @@ export interface FileRoutesById {
   '/verify/$token': typeof VerifyTokenRoute
   '/_authenticated/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/_authenticated/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
+  '/_authenticated/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
+  '/_authenticated/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
   '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/_authenticated/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -157,7 +186,10 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/admin/faculties'
     | '/admin/payment-requests'
+    | '/admin/reconcile'
+    | '/admin/settlements'
     | '/admin/transactions'
+    | '/admin/users'
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/admin/'
@@ -171,7 +203,10 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/admin/faculties'
     | '/admin/payment-requests'
+    | '/admin/reconcile'
+    | '/admin/settlements'
     | '/admin/transactions'
+    | '/admin/users'
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/admin'
@@ -187,7 +222,10 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/_authenticated/admin/faculties'
     | '/_authenticated/admin/payment-requests'
+    | '/_authenticated/admin/reconcile'
+    | '/_authenticated/admin/settlements'
     | '/_authenticated/admin/transactions'
+    | '/_authenticated/admin/users'
     | '/_authenticated/pay/$requestId'
     | '/_authenticated/receipt/$token'
     | '/_authenticated/admin/'
@@ -274,11 +312,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPayRequestIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/transactions': {
       id: '/_authenticated/admin/transactions'
       path: '/transactions'
       fullPath: '/admin/transactions'
       preLoaderRoute: typeof AuthenticatedAdminTransactionsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/settlements': {
+      id: '/_authenticated/admin/settlements'
+      path: '/settlements'
+      fullPath: '/admin/settlements'
+      preLoaderRoute: typeof AuthenticatedAdminSettlementsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/reconcile': {
+      id: '/_authenticated/admin/reconcile'
+      path: '/reconcile'
+      fullPath: '/admin/reconcile'
+      preLoaderRoute: typeof AuthenticatedAdminReconcileRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/payment-requests': {
@@ -308,7 +367,10 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminFacultiesRoute: typeof AuthenticatedAdminFacultiesRoute
   AuthenticatedAdminPaymentRequestsRoute: typeof AuthenticatedAdminPaymentRequestsRoute
+  AuthenticatedAdminReconcileRoute: typeof AuthenticatedAdminReconcileRoute
+  AuthenticatedAdminSettlementsRoute: typeof AuthenticatedAdminSettlementsRoute
   AuthenticatedAdminTransactionsRoute: typeof AuthenticatedAdminTransactionsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -317,7 +379,10 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminFacultiesRoute: AuthenticatedAdminFacultiesRoute,
     AuthenticatedAdminPaymentRequestsRoute:
       AuthenticatedAdminPaymentRequestsRoute,
+    AuthenticatedAdminReconcileRoute: AuthenticatedAdminReconcileRoute,
+    AuthenticatedAdminSettlementsRoute: AuthenticatedAdminSettlementsRoute,
     AuthenticatedAdminTransactionsRoute: AuthenticatedAdminTransactionsRoute,
+    AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
 
