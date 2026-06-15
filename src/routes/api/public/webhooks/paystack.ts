@@ -53,34 +53,42 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
           metadata: { reference, total_amount: txn.total_amount } as any,
         });
 
-        // Send receipt email if Resend is configured (optional).
+        // Send receipt email via Resend connector gateway.
+        const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
         const RESEND_API_KEY = process.env.RESEND_API_KEY;
         const student = (txn as any).student;
         const pr = (txn as any).payment_request;
-        if (RESEND_API_KEY && student?.email) {
+        if (LOVABLE_API_KEY && RESEND_API_KEY && student?.email) {
           const origin = new URL(request.url).origin;
           const verifyUrl = `${origin}/verify/${receiptToken}`;
           const receiptUrl = `${origin}/receipt/${receiptToken}`;
           try {
-            await fetch("https://api.resend.com/emails", {
+            const res = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
               method: "POST",
-              headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                "X-Connection-Api-Key": RESEND_API_KEY,
+              },
               body: JSON.stringify({
-                from: "UniPay NG <receipts@resend.dev>",
+                from: "UniPay NG <onboarding@resend.dev>",
                 to: [student.email],
                 subject: `Receipt: ${pr?.title ?? "Payment"} — ${reference}`,
                 html: `<div style="font-family:Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1230">
-                  <h1 style="font-size:22px">UniPay NG receipt</h1>
+                  <h1 style="font-size:22px;color:#3d2169">UniPay NG receipt</h1>
                   <p>Hi ${student.full_name ?? "there"}, your payment for <strong>${pr?.title ?? "Payment"}</strong> was successful.</p>
                   <p><strong>Amount:</strong> ₦${Number(txn.total_amount).toLocaleString()}<br/>
-                     <strong>Reference:</strong> ${reference}</p>
+                     <strong>Reference:</strong> ${reference}<br/>
+                     <strong>Paid at:</strong> ${new Date(paidAt).toLocaleString()}</p>
                   <p><a href="${receiptUrl}" style="background:#3d2169;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;display:inline-block">View receipt</a></p>
-                  <p style="color:#666;font-size:12px">Verify at <a href="${verifyUrl}">${verifyUrl}</a></p>
-                  <hr/><p style="color:#999;font-size:11px">Powered by EMMTEC Securities</p>
+                  <p style="color:#666;font-size:12px">Verify authenticity at <a href="${verifyUrl}">${verifyUrl}</a></p>
+                  <hr style="border:none;border-top:1px solid #eee;margin:20px 0"/>
+                  <p style="color:#999;font-size:11px">UniPay NG — Pay with Ease and Stress Free<br/>Powered by EMMTEC Securities</p>
                 </div>`,
               }),
             });
-          } catch (e) { console.error("Resend send failed", e); }
+            if (!res.ok) console.error("Resend send failed", res.status, await res.text());
+          } catch (e) { console.error("Resend send error", e); }
         }
 
         return new Response("ok", { status: 200 });
