@@ -118,7 +118,7 @@ export const completeDepositJob = createServerFn({ method: "POST" })
       .eq("id", job.settlement_id);
     if (sErr) throw new Error(sErr.message);
     const { error: dErr } = await supabaseAdmin.from("deposit_jobs")
-      .update({ status: "deposited", notes: data.notes ?? null }).eq("id", data.job_id);
+      .update({ status: "deposited", notes: data.notes ?? null }).eq("id", data.job_id as string);
     if (dErr) throw new Error(dErr.message);
 
     await supabaseAdmin.from("audit_logs").insert({
