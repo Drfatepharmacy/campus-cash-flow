@@ -40,6 +40,8 @@ function Dashboard() {
 
   const incomplete = profile.data && (!profile.data.matric_no || !profile.data.faculty_id || !profile.data.level);
   const isAdmin = (roles.data ?? []).includes("admin");
+  const isRunner = (roles.data ?? []).includes("bank_runner");
+  const isRep = (roles.data ?? []).includes("faculty_rep") || (roles.data ?? []).includes("department_rep");
 
   async function signOut() {
     await qc.cancelQueries();
@@ -54,6 +56,8 @@ function Dashboard() {
         <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
           <Link to="/"><Logo /></Link>
           <div className="flex items-center gap-2">
+            {isRep && <Link to="/rep"><Button variant="outline" size="sm">Rep portal</Button></Link>}
+            {isRunner && <Link to="/runner"><Button variant="outline" size="sm">Runner</Button></Link>}
             {isAdmin && <Link to="/admin"><Button variant="outline" size="sm">Admin</Button></Link>}
             <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1.5"/>Sign out</Button>
           </div>
