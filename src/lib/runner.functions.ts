@@ -109,13 +109,14 @@ export const completeDepositJob = createServerFn({ method: "POST" })
     if (jErr || !job) throw new Error("Job not found");
     if (job.runner_id !== context.userId) throw new Error("Not your job");
     if (job.status === "deposited") throw new Error("Already deposited");
+    if (!job.settlement_id) throw new Error("Job has no settlement attached");
 
     // Use admin client to flip settlement (RLS limits non-admin writes)
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const nowIso = new Date().toISOString();
     const { error: sErr } = await supabaseAdmin.from("settlements")
       .update({ status: "deposited", settled_at: nowIso, bank_reference: data.bank_reference })
-      .eq("id", job.settlement_id);
+      .eq("id", job.settlement_id as string);
     if (sErr) throw new Error(sErr.message);
     const { error: dErr } = await supabaseAdmin.from("deposit_jobs")
       .update({ status: "deposited", notes: data.notes ?? null }).eq("id", data.job_id as string);
