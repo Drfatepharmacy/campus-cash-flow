@@ -25,12 +25,14 @@ import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authent
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin/transactions'
+import { Route as AuthenticatedAdminStudentsRouteImport } from './routes/_authenticated/admin/students'
 import { Route as AuthenticatedAdminSettlementsRouteImport } from './routes/_authenticated/admin/settlements'
 import { Route as AuthenticatedAdminRunnersRouteImport } from './routes/_authenticated/admin/runners'
 import { Route as AuthenticatedAdminReconcileRouteImport } from './routes/_authenticated/admin/reconcile'
 import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/_authenticated/admin/payment-requests'
 import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin/faculties'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
+import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
 
 const AuthRoute = AuthRouteImport.update({
@@ -117,6 +119,12 @@ const AuthenticatedAdminTransactionsRoute =
     path: '/transactions',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminStudentsRoute =
+  AuthenticatedAdminStudentsRouteImport.update({
+    id: '/students',
+    path: '/students',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminSettlementsRoute =
   AuthenticatedAdminSettlementsRouteImport.update({
     id: '/settlements',
@@ -152,6 +160,12 @@ const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminAnalyticsRoute =
+  AuthenticatedAdminAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const ApiPublicWebhooksPaystackRoute =
   ApiPublicWebhooksPaystackRouteImport.update({
     id: '/api/public/webhooks/paystack',
@@ -168,12 +182,14 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
   '/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
   '/admin/runners': typeof AuthenticatedAdminRunnersRoute
   '/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
+  '/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
@@ -189,12 +205,14 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
   '/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
   '/admin/runners': typeof AuthenticatedAdminRunnersRoute
   '/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
+  '/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
@@ -215,12 +233,14 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/_authenticated/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
   '/_authenticated/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
   '/_authenticated/admin/runners': typeof AuthenticatedAdminRunnersRoute
   '/_authenticated/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
+  '/_authenticated/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
@@ -241,12 +261,14 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/onboarding'
     | '/verify/$token'
+    | '/admin/analytics'
     | '/admin/audit'
     | '/admin/faculties'
     | '/admin/payment-requests'
     | '/admin/reconcile'
     | '/admin/runners'
     | '/admin/settlements'
+    | '/admin/students'
     | '/admin/transactions'
     | '/admin/users'
     | '/pay/$requestId'
@@ -262,12 +284,14 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/onboarding'
     | '/verify/$token'
+    | '/admin/analytics'
     | '/admin/audit'
     | '/admin/faculties'
     | '/admin/payment-requests'
     | '/admin/reconcile'
     | '/admin/runners'
     | '/admin/settlements'
+    | '/admin/students'
     | '/admin/transactions'
     | '/admin/users'
     | '/pay/$requestId'
@@ -287,12 +311,14 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
     | '/verify/$token'
+    | '/_authenticated/admin/analytics'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/faculties'
     | '/_authenticated/admin/payment-requests'
     | '/_authenticated/admin/reconcile'
     | '/_authenticated/admin/runners'
     | '/_authenticated/admin/settlements'
+    | '/_authenticated/admin/students'
     | '/_authenticated/admin/transactions'
     | '/_authenticated/admin/users'
     | '/_authenticated/pay/$requestId'
@@ -425,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminTransactionsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/students': {
+      id: '/_authenticated/admin/students'
+      path: '/students'
+      fullPath: '/admin/students'
+      preLoaderRoute: typeof AuthenticatedAdminStudentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/settlements': {
       id: '/_authenticated/admin/settlements'
       path: '/settlements'
@@ -467,6 +500,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/analytics': {
+      id: '/_authenticated/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/api/public/webhooks/paystack': {
       id: '/api/public/webhooks/paystack'
       path: '/api/public/webhooks/paystack'
@@ -478,12 +518,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAnalyticsRoute: typeof AuthenticatedAdminAnalyticsRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminFacultiesRoute: typeof AuthenticatedAdminFacultiesRoute
   AuthenticatedAdminPaymentRequestsRoute: typeof AuthenticatedAdminPaymentRequestsRoute
   AuthenticatedAdminReconcileRoute: typeof AuthenticatedAdminReconcileRoute
   AuthenticatedAdminRunnersRoute: typeof AuthenticatedAdminRunnersRoute
   AuthenticatedAdminSettlementsRoute: typeof AuthenticatedAdminSettlementsRoute
+  AuthenticatedAdminStudentsRoute: typeof AuthenticatedAdminStudentsRoute
   AuthenticatedAdminTransactionsRoute: typeof AuthenticatedAdminTransactionsRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -491,6 +533,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminAnalyticsRoute: AuthenticatedAdminAnalyticsRoute,
     AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
     AuthenticatedAdminFacultiesRoute: AuthenticatedAdminFacultiesRoute,
     AuthenticatedAdminPaymentRequestsRoute:
@@ -498,6 +541,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminReconcileRoute: AuthenticatedAdminReconcileRoute,
     AuthenticatedAdminRunnersRoute: AuthenticatedAdminRunnersRoute,
     AuthenticatedAdminSettlementsRoute: AuthenticatedAdminSettlementsRoute,
+    AuthenticatedAdminStudentsRoute: AuthenticatedAdminStudentsRoute,
     AuthenticatedAdminTransactionsRoute: AuthenticatedAdminTransactionsRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
