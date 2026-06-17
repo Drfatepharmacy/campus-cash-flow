@@ -40,8 +40,8 @@ function AnalyticsPage() {
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(v) => v.slice(5)} />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} />
                 <Tooltip formatter={(v: number) => formatNaira(v)} />
-                <Line type="monotone" dataKey="revenue" stroke="hsl(var(--royal))" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="charges" stroke="hsl(var(--gold))" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="revenue" stroke="var(--royal)" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="charges" stroke="var(--gold)" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -58,7 +58,7 @@ function AnalyticsPage() {
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
                   <Tooltip formatter={(v: number) => formatNaira(v)} />
-                  <Bar dataKey="value" fill="hsl(var(--royal))" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="value" fill="var(--royal)" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -73,7 +73,7 @@ function AnalyticsPage() {
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
                   <Tooltip formatter={(v: number) => formatNaira(v)} />
-                  <Bar dataKey="value" fill="hsl(var(--emerald))" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="value" fill="var(--emerald)" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
