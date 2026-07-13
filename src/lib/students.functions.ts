@@ -11,7 +11,7 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
 const RowSchema = z.object({
   email: z.string().email(),
   full_name: z.string().trim().min(2),
-  matric_no: z.string().trim().min(2).optional().nullable(),
+  matric_no: z.string().trim().regex(/^[A-Z]{3}\d{7}$/, "Matric must be 3 letters + 7 digits (e.g. PHA2006960)").optional().nullable(),
   phone: z.string().trim().optional().nullable(),
   faculty_id: z.string().uuid().optional().nullable(),
   department_id: z.string().uuid().optional().nullable(),

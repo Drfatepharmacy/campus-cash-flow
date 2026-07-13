@@ -125,7 +125,7 @@ function HeroCard() {
         <div className="mt-4 font-display text-3xl font-bold">₦12,500.00</div>
         <div className="mt-1 text-sm text-muted-foreground">Faculty of Engineering · Departmental dues</div>
         <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-          <Row label="Matric" value="ENG/2021/045"/>
+          <Row label="Matric" value="ENG2006960"/>
           <Row label="Level" value="400L"/>
           <Row label="Reference" value="UPN-9X4F2B"/>
           <Row label="Date" value="Today, 11:42"/>

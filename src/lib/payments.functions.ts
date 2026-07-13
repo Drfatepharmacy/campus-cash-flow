@@ -22,7 +22,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     full_name: z.string().trim().min(2).max(120),
     phone: z.string().trim().max(20).optional().nullable(),
-    matric_no: z.string().trim().max(40).optional().nullable(),
+    matric_no: z.string().trim().regex(/^[A-Z]{3}\d{7}$/, "Matric must be 3 letters + 7 digits (e.g. PHA2006960)").optional().nullable(),
     campus_id: z.string().uuid().optional().nullable(),
     faculty_id: z.string().uuid().optional().nullable(),
     department_id: z.string().uuid().optional().nullable(),
