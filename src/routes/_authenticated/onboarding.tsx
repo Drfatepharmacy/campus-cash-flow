@@ -83,7 +83,7 @@ function Onboarding() {
             <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Full name"><Input required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })}/></Field>
-                <Field label="Matric number"><Input value={form.matric_no} onChange={(e) => setForm({ ...form, matric_no: e.target.value })}/></Field>
+                <Field label="Matric number"><Input value={form.matric_no} onChange={(e) => setForm({ ...form, matric_no: e.target.value.toUpperCase() })} placeholder="e.g. PHA2006960" pattern="[A-Z]{3}[0-9]{7}" title="3 faculty letters + 3-digit year (e.g. 200 for 2020) + 4-digit position, no slashes"/></Field>
                 <Field label="Phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}/></Field>
                 <Field label="Level">
                   <Select value={String(form.level)} onValueChange={(v) => setForm({ ...form, level: Number(v) })}>
