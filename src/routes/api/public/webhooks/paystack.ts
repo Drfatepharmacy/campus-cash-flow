@@ -65,6 +65,8 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
           const verifyUrl = `${origin}/verify/${receiptToken}`;
           const receiptUrl = `${origin}/receipt/${receiptToken}`;
           try {
+            const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 320, margin: 1, color: { dark: "#1a1230", light: "#ffffff" } });
+            const qrBase64 = qrDataUrl.split(",")[1] ?? "";
             const res = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
               method: "POST",
               headers: {
@@ -82,15 +84,28 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
                   <p><strong>Amount:</strong> ₦${Number(txn.total_amount).toLocaleString()}<br/>
                      <strong>Reference:</strong> ${reference}<br/>
                      <strong>Paid at:</strong> ${new Date(paidAt).toLocaleString()}</p>
-                  <p><a href="${receiptUrl}" style="background:#3d2169;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;display:inline-block">View receipt</a></p>
-                  <p style="color:#666;font-size:12px">Verify authenticity at <a href="${verifyUrl}">${verifyUrl}</a></p>
+                  <div style="text-align:center;margin:24px 0">
+                    <img src="cid:receipt-qr" alt="Verification QR" width="180" height="180" style="border:1px solid #eee;border-radius:12px;padding:8px;background:#fff"/>
+                    <div style="font-size:11px;color:#666;margin-top:8px">Scan to verify this receipt</div>
+                  </div>
+                  <p style="text-align:center"><a href="${receiptUrl}" style="background:#3d2169;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;display:inline-block">View receipt</a></p>
+                  <p style="color:#666;font-size:12px">Or verify at <a href="${verifyUrl}">${verifyUrl}</a></p>
                   <hr style="border:none;border-top:1px solid #eee;margin:20px 0"/>
                   <p style="color:#999;font-size:11px">UniPay NG — Pay with Ease and Stress Free<br/>Powered by EMMTEC Securities</p>
                 </div>`,
+                attachments: [
+                  {
+                    filename: `receipt-${reference}-qr.png`,
+                    content: qrBase64,
+                    content_id: "receipt-qr",
+                    content_type: "image/png",
+                  },
+                ],
               }),
             });
             if (!res.ok) console.error("Resend send failed", res.status, await res.text());
           } catch (e) { console.error("Resend send error", e); }
+
         }
 
         return new Response("ok", { status: 200 });
