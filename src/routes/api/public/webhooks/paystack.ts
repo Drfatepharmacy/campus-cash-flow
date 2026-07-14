@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
+import QRCode from "qrcode";
+
 
 export const Route = createFileRoute("/api/public/webhooks/paystack")({
   server: {
