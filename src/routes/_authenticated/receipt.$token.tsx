@@ -31,6 +31,55 @@ function ReceiptPage() {
 
   const t = q.data?.transaction as any;
 
+  const downloadPdf = () => {
+    if (!t) return;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const w = doc.internal.pageSize.getWidth();
+    let y = 56;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(26, 18, 48);
+    doc.text("UniPay NG — Official Receipt", 40, y); y += 8;
+    doc.setDrawColor(230); doc.line(40, y, w - 40, y); y += 24;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90);
+    doc.text("Powered by EMMTEC Securities", 40, y); y += 24;
+
+    doc.setTextColor(20); doc.setFontSize(11);
+    const rows: [string, string][] = [
+      ["For payment of", t?.payment_request?.title ?? "—"],
+      ["Student", t?.student?.full_name ?? "—"],
+      ["Matric", t?.student?.matric_no ?? "—"],
+      ["Email", t?.student?.email ?? "—"],
+      ["Reference", t?.reference ?? "—"],
+      ["Issued", q.data ? new Date(q.data.issued_at).toLocaleString() : "—"],
+      ["Paid at", t?.paid_at ? new Date(t.paid_at).toLocaleString() : "—"],
+    ];
+    for (const [k, v] of rows) {
+      doc.setFont("helvetica", "bold"); doc.text(`${k}:`, 40, y);
+      doc.setFont("helvetica", "normal"); doc.text(String(v), 160, y);
+      y += 18;
+    }
+
+    y += 12; doc.setDrawColor(230); doc.line(40, y, w - 40, y); y += 22;
+    const amounts: [string, string][] = [
+      ["Base amount", formatNaira(Number(t?.base_amount ?? 0))],
+      ["Service charge", formatNaira(Number(t?.service_charge ?? 0))],
+    ];
+    for (const [k, v] of amounts) {
+      doc.setFont("helvetica", "normal"); doc.text(k, 40, y);
+      doc.text(v, w - 40, y, { align: "right" }); y += 18;
+    }
+    doc.setDrawColor(200); doc.line(40, y, w - 40, y); y += 22;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+    doc.text("Total paid", 40, y);
+    doc.text(formatNaira(Number(t?.total_amount ?? 0)), w - 40, y, { align: "right" });
+
+    if (qr) doc.addImage(qr, "PNG", w - 160, 40, 120, 120);
+
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(120);
+    doc.text(`Verify at: ${typeof window !== "undefined" ? window.location.origin : ""}/verify/${token}`, 40, doc.internal.pageSize.getHeight() - 40);
+
+    doc.save(`unipay-receipt-${t?.reference ?? token}.pdf`);
+  };
+
   return (
     <div className="min-h-screen bg-secondary/30 py-10 print:bg-white print:py-0">
       <div className="mx-auto max-w-2xl px-6">
@@ -38,9 +87,11 @@ function ReceiptPage() {
           <Link to="/dashboard"><Logo /></Link>
           <div className="flex gap-2">
             <Link to="/dashboard"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1"/>Back</Button></Link>
+            <Button size="sm" variant="outline" onClick={downloadPdf} disabled={!t}><Download className="h-4 w-4 mr-1"/>PDF</Button>
             <Button size="sm" onClick={() => window.print()}><Printer className="h-4 w-4 mr-1"/>Print</Button>
           </div>
         </div>
+
 
         <Card className="mt-6 shadow-elegant print:shadow-none print:border-2">
           <CardContent className="p-8">
