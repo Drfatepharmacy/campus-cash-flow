@@ -3,12 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import { jsPDF } from "jspdf";
 import { getMyReceipt } from "@/lib/receipts.functions";
 import { Logo } from "@/components/brand/logo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/charges";
-import { Printer, ArrowLeft } from "lucide-react";
+import { Printer, ArrowLeft, Download } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/receipt/$token")({
   head: () => ({ meta: [{ title: "Receipt — UniPay NG" }] }),
