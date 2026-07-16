@@ -48,7 +48,7 @@ function Nav() {
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
           <a href="#modules" className="hover:text-foreground">Platform</a>
           <a href="#how" className="hover:text-foreground">How it works</a>
-          <Link to="/verify/$token" params={{ token: "demo" }} className="hover:text-foreground">Verify receipt</Link>
+          <Link to="/verify" className="hover:text-foreground">Verify receipt</Link>
         </nav>
         <div className="flex items-center gap-2">
           <Link to="/auth"><Button variant="ghost" size="sm">Sign in</Button></Link>
