@@ -1,45 +1,97 @@
+# UniPay NG
 
-# UniPay NG — Phase 1 Build Plan
+**Secure. Transparent. Verifiable.**
 
-Powered by EMMTEC Securities. Single-campus launch (UNIBEN), architected for multi-campus later.
+**Built by EMMTEC Securities**
 
-## Phase 1 Scope (what we ship now)
+## Overview
 
-1. **Brand + design system** — Deep Gold / Royal Dark Purple / Emerald / White. Premium fintech feel (Linear × Stripe × Notion). Tailwind v4 tokens in `src/styles.css`, shadcn variants.
-2. **Public marketing surface**
-   - Landing page (vision, modules, "powered by EMMTEC")
-   - QR verification page `/verify/:receiptId` (public, no auth)
-3. **Auth** — Email/password + Google (via Lovable broker). Roles: `admin`, `student` (department_rep, faculty_rep, bank_runner stubbed in enum, built in Phase 2).
-4. **Admin Control Center** (`/_authenticated/admin/...`)
-   - Campuses, Faculties, Departments CRUD
-   - Payment Requests (title, target audience by faculty/dept/level, base amount, active window)
-   - Service Charge rules (tiered: ≤5k → ₦250, ≤20k → ₦500, >20k → 3%, editable)
-   - Transactions list + filters + CSV export
-   - Dashboard: revenue, txn count, service charge collected, top departments
-5. **Student Payment Engine**
-   - Self-registration (matric, faculty, dept, level, phone, email)
-   - Student dashboard: eligible payment requests, payment history
-   - Pay flow: select request → preview (base + charge + total) → Paystack checkout (test) → success
-   - Webhook `/api/public/webhooks/paystack` (HMAC verified) → mark txn paid, generate receipt + QR
-6. **Receipt + QR**
-   - Receipt page `/receipt/:id` (HTML, branded, printable) with QR linking to `/verify/:id`
-   - QR generated with `qrcode` package
-   - Email receipt link via Resend (Lovable Emails not used — user-selected Resend)
-7. **Audit log** — append-only `audit_logs` table; admin actions + payments + webhook events logged.
+UniPay NG is a digital payment and financial management platform designed to simplify how organizations, institutions, and communities collect, manage, verify, and monitor payments.
 
-## Phase 1 explicitly DEFERRED
+The platform provides a centralized system for creating payment requests, processing secure online payments, generating digital receipts, verifying transactions, and producing financial insights through an intuitive administrative dashboard.
 
-Bank runner module, settlement engine, deposit jobs, faculty/dept rep portals, marketplace, multi-campus UI switcher, SMS/Termii, PDF/Puppeteer, advanced fraud detection, dispute resolution, CSV student import (admin can still single-create). Schema will accommodate them.
+Built by **EMMTEC Securities**, UniPay NG combines modern technology with secure financial infrastructure to deliver a reliable, scalable, and user-friendly payment experience.
+
+## Core Capabilities
+
+- Secure online payment processing
+- Digital receipt generation
+- QR-based payment verification
+- Payment request management
+- Transaction tracking
+- Role-based access control
+- Financial reporting and analytics
+- Audit logging
+- Automated notifications
+- Exportable financial records
+
+## User Experience
+
+UniPay NG provides dedicated experiences for different categories of users while ensuring a consistent and intuitive interface.
+
+Users can:
+
+- Register and manage their profiles
+- View available payment requests
+- Complete payments securely
+- Access payment history
+- Download receipts
+- Verify transactions
+- Receive payment confirmations
+
+Administrators can:
+
+- Manage organizational structure
+- Create and monitor payment requests
+- View financial summaries
+- Track transactions
+- Generate reports
+- Configure platform settings
+- Monitor system activity
+
+## Payment Workflow
+
+The platform streamlines the complete payment lifecycle, from payment creation to successful verification.
+
+Each completed transaction generates a unique receipt that can be verified using a secure QR code or receipt reference, ensuring transparency and reducing the risk of fraud.
+
+## Security
+
+UniPay NG prioritizes security and accountability through modern authentication, role-based permissions, secure payment verification, comprehensive audit logs, and encrypted communication across the platform.
+
+## Design Philosophy
+
+The platform is built around three principles:
+
+- Simplicity
+- Reliability
+- Transparency
+
+Every interaction is designed to minimize friction while providing users with confidence throughout the payment process.
+
+## Technology
+
+UniPay NG leverages a modern web architecture built with contemporary frontend and backend technologies, enabling high performance, scalability, maintainability, and secure integrations with third-party services.
+
+## Scalability
+
+The platform is designed with modularity in mind, allowing new features, organizations, payment methods, and services to be introduced without disrupting existing functionality.
+
+Its architecture supports future growth while maintaining a consistent user experience.
+
+## Vision
+
+To provide a trusted digital payment infrastructure that enables organizations to manage collections efficiently, improve financial transparency, and deliver a seamless payment experience for every user.
 
 ---
 
 ## Technical section
 
 ### Stack
-TanStack Start (existing) + Lovable Cloud (Supabase) + Tailwind v4 + shadcn + TanStack Query. Paystack via server functions. Resend via Lovable connector (`standard_connectors--connect resend`).
+TanStack Start + Lovable Cloud (Supabase) + Tailwind v4 + shadcn + TanStack Query. Paystack via server functions. Resend via Lovable connector.
 
 ### Data model (Supabase, all in `public` with GRANTs + RLS)
-- `campuses` (id, name, slug, active) — seed UNIBEN
+- `campuses` (id, name, slug, active)
 - `faculties` (id, campus_id, name)
 - `departments` (id, faculty_id, name)
 - `profiles` (id=auth.users.id, email, full_name, phone, matric_no, campus_id, faculty_id, department_id, level)
@@ -80,23 +132,9 @@ TanStack Start (existing) + Lovable Cloud (Supabase) + Tailwind v4 + shadcn + Ta
 /_authenticated/admin/*        admin shell + pages (gated by admin role)
 ```
 
-### Secrets needed (will prompt at the right step)
+### Secrets
 - `PAYSTACK_SECRET_KEY` (test mode `sk_test_...`)
 - Resend via connector → `RESEND_API_KEY` + `LOVABLE_API_KEY` auto
-
-### Build order
-1. Enable Lovable Cloud
-2. Migrations: enums, tables, RLS, GRANTs, `has_role`, seed UNIBEN + first admin role assignment helper
-3. Design tokens + shared layout (nav, brand)
-4. Auth pages (`/auth`) + Google provider config
-5. Landing page
-6. Student registration + dashboard
-7. Admin shell + CRUD pages + dashboard stats
-8. Payment flow + Paystack init server fn (prompt for `PAYSTACK_SECRET_KEY`)
-9. Webhook route + receipt + QR generation
-10. Verify page
-11. Connect Resend + send receipt email
-12. Audit log writes across mutations
 
 ### Success check
 Student registers → sees a payment request → pays in Paystack test mode → webhook flips status → receipt page renders with QR → scanning QR opens verify page showing Valid + details → admin sees the transaction in dashboard and CSV export.
