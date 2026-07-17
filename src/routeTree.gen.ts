@@ -30,6 +30,7 @@ import { Route as AuthenticatedAdminStudentsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminSettlementsRouteImport } from './routes/_authenticated/admin/settlements'
 import { Route as AuthenticatedAdminRunnersRouteImport } from './routes/_authenticated/admin/runners'
 import { Route as AuthenticatedAdminReconcileRouteImport } from './routes/_authenticated/admin/reconcile'
+import { Route as AuthenticatedAdminQrCodesRouteImport } from './routes/_authenticated/admin/qr-codes'
 import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/_authenticated/admin/payment-requests'
 import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin/faculties'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
@@ -149,6 +150,12 @@ const AuthenticatedAdminReconcileRoute =
     path: '/reconcile',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminQrCodesRoute =
+  AuthenticatedAdminQrCodesRouteImport.update({
+    id: '/qr-codes',
+    path: '/qr-codes',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminPaymentRequestsRoute =
   AuthenticatedAdminPaymentRequestsRouteImport.update({
     id: '/payment-requests',
@@ -193,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
+  '/admin/qr-codes': typeof AuthenticatedAdminQrCodesRoute
   '/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
   '/admin/runners': typeof AuthenticatedAdminRunnersRoute
   '/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
@@ -217,6 +225,7 @@ export interface FileRoutesByTo {
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
+  '/admin/qr-codes': typeof AuthenticatedAdminQrCodesRoute
   '/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
   '/admin/runners': typeof AuthenticatedAdminRunnersRoute
   '/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
@@ -246,6 +255,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
   '/_authenticated/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
+  '/_authenticated/admin/qr-codes': typeof AuthenticatedAdminQrCodesRoute
   '/_authenticated/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
   '/_authenticated/admin/runners': typeof AuthenticatedAdminRunnersRoute
   '/_authenticated/admin/settlements': typeof AuthenticatedAdminSettlementsRoute
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/faculties'
     | '/admin/payment-requests'
+    | '/admin/qr-codes'
     | '/admin/reconcile'
     | '/admin/runners'
     | '/admin/settlements'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/faculties'
     | '/admin/payment-requests'
+    | '/admin/qr-codes'
     | '/admin/reconcile'
     | '/admin/runners'
     | '/admin/settlements'
@@ -327,6 +339,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/faculties'
     | '/_authenticated/admin/payment-requests'
+    | '/_authenticated/admin/qr-codes'
     | '/_authenticated/admin/reconcile'
     | '/_authenticated/admin/runners'
     | '/_authenticated/admin/settlements'
@@ -499,6 +512,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminReconcileRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/qr-codes': {
+      id: '/_authenticated/admin/qr-codes'
+      path: '/qr-codes'
+      fullPath: '/admin/qr-codes'
+      preLoaderRoute: typeof AuthenticatedAdminQrCodesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/payment-requests': {
       id: '/_authenticated/admin/payment-requests'
       path: '/payment-requests'
@@ -542,6 +562,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminFacultiesRoute: typeof AuthenticatedAdminFacultiesRoute
   AuthenticatedAdminPaymentRequestsRoute: typeof AuthenticatedAdminPaymentRequestsRoute
+  AuthenticatedAdminQrCodesRoute: typeof AuthenticatedAdminQrCodesRoute
   AuthenticatedAdminReconcileRoute: typeof AuthenticatedAdminReconcileRoute
   AuthenticatedAdminRunnersRoute: typeof AuthenticatedAdminRunnersRoute
   AuthenticatedAdminSettlementsRoute: typeof AuthenticatedAdminSettlementsRoute
@@ -558,6 +579,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminFacultiesRoute: AuthenticatedAdminFacultiesRoute,
     AuthenticatedAdminPaymentRequestsRoute:
       AuthenticatedAdminPaymentRequestsRoute,
+    AuthenticatedAdminQrCodesRoute: AuthenticatedAdminQrCodesRoute,
     AuthenticatedAdminReconcileRoute: AuthenticatedAdminReconcileRoute,
     AuthenticatedAdminRunnersRoute: AuthenticatedAdminRunnersRoute,
     AuthenticatedAdminSettlementsRoute: AuthenticatedAdminSettlementsRoute,
