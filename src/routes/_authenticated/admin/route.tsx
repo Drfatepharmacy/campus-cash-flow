@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/logo";
-import { LayoutDashboard, Building2, FileText, Receipt, ArrowLeft, Banknote, FileCheck2, ShieldCheck, Truck, ScrollText, BarChart3, Users } from "lucide-react";
+import { LayoutDashboard, Building2, FileText, Receipt, ArrowLeft, Banknote, FileCheck2, ShieldCheck, Truck, ScrollText, BarChart3, Users, QrCode } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
@@ -14,11 +14,12 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 
-const nav: { to: "/admin" | "/admin/analytics" | "/admin/faculties" | "/admin/payment-requests" | "/admin/transactions" | "/admin/settlements" | "/admin/reconcile" | "/admin/runners" | "/admin/students" | "/admin/users" | "/admin/audit"; label: string; icon: any; exact?: boolean }[] = [
+const nav: { to: "/admin" | "/admin/analytics" | "/admin/faculties" | "/admin/payment-requests" | "/admin/transactions" | "/admin/settlements" | "/admin/reconcile" | "/admin/runners" | "/admin/students" | "/admin/users" | "/admin/audit" | "/admin/qr-codes"; label: string; icon: any; exact?: boolean }[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/faculties", label: "Faculties & departments", icon: Building2 },
   { to: "/admin/payment-requests", label: "Payment requests", icon: FileText },
+  { to: "/admin/qr-codes", label: "QR codes", icon: QrCode },
   { to: "/admin/transactions", label: "Transactions", icon: Receipt },
   { to: "/admin/settlements", label: "Settlements", icon: Banknote },
   { to: "/admin/runners", label: "Bank runners", icon: Truck },

@@ -322,6 +322,110 @@ export type Database = {
           },
         ]
       }
+      qr_codes: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          encoded_value: string
+          expires_at: string | null
+          id: string
+          label: string
+          max_scans: number | null
+          owner_id: string
+          payload: Json
+          scan_count: number
+          single_use: boolean
+          status: Database["public"]["Enums"]["qr_status"]
+          style: Json
+          token: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          encoded_value: string
+          expires_at?: string | null
+          id?: string
+          label: string
+          max_scans?: number | null
+          owner_id: string
+          payload: Json
+          scan_count?: number
+          single_use?: boolean
+          status?: Database["public"]["Enums"]["qr_status"]
+          style?: Json
+          token: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          encoded_value?: string
+          expires_at?: string | null
+          id?: string
+          label?: string
+          max_scans?: number | null
+          owner_id?: string
+          payload?: Json
+          scan_count?: number
+          single_use?: boolean
+          status?: Database["public"]["Enums"]["qr_status"]
+          style?: Json
+          token?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      qr_scans: {
+        Row: {
+          created_at: string
+          id: string
+          ip: string | null
+          metadata: Json | null
+          qr_id: string | null
+          result: Database["public"]["Enums"]["qr_scan_result"]
+          scanner_id: string | null
+          token: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip?: string | null
+          metadata?: Json | null
+          qr_id?: string | null
+          result: Database["public"]["Enums"]["qr_scan_result"]
+          scanner_id?: string | null
+          token: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip?: string | null
+          metadata?: Json | null
+          qr_id?: string | null
+          result?: Database["public"]["Enums"]["qr_scan_result"]
+          scanner_id?: string | null
+          token?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_scans_qr_id_fkey"
+            columns: ["qr_id"]
+            isOneToOne: false
+            referencedRelation: "qr_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receipts: {
         Row: {
           id: string
@@ -545,6 +649,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      qr_log_scan: {
+        Args: { _ip: string; _token: string; _ua: string }
+        Returns: Database["public"]["Enums"]["qr_scan_result"]
+      }
+      qr_lookup: {
+        Args: { _token: string }
+        Returns: {
+          created_at: string
+          description: string
+          encoded_value: string
+          expires_at: string
+          id: string
+          label: string
+          max_scans: number
+          scan_count: number
+          single_use: boolean
+          status: Database["public"]["Enums"]["qr_status"]
+          type: string
+        }[]
+      }
     }
     Enums: {
       app_role:
@@ -553,6 +677,14 @@ export type Database = {
         | "department_rep"
         | "faculty_rep"
         | "bank_runner"
+      qr_scan_result:
+        | "valid"
+        | "expired"
+        | "revoked"
+        | "exhausted"
+        | "not_found"
+        | "archived"
+      qr_status: "active" | "revoked" | "archived"
       settlement_status:
         | "pending"
         | "assigned"
@@ -695,6 +827,15 @@ export const Constants = {
         "faculty_rep",
         "bank_runner",
       ],
+      qr_scan_result: [
+        "valid",
+        "expired",
+        "revoked",
+        "exhausted",
+        "not_found",
+        "archived",
+      ],
+      qr_status: ["active", "revoked", "archived"],
       settlement_status: [
         "pending",
         "assigned",
