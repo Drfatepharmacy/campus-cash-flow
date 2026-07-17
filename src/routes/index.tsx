@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
       { title: "UniPay NG — Premium Campus Payment Infrastructure" },
       { name: "description", content: "Pay with ease and stress free. UniPay NG powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
       { property: "og:title", content: "UniPay NG — Premium Campus Payment Infrastructure" },
-      { property: "og:description", content: "Pay with ease and stress free. UniPay NG powers payments for universities, faculties, departments, and student organizations across Nigeria." },
+      { property: "og:description", content: "Pay with ease and stress free. UniPay NG powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
     ],
   }),
   component: Landing,
