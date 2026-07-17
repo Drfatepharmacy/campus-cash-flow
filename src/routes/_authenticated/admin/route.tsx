@@ -19,6 +19,7 @@ const nav: { to: "/admin" | "/admin/analytics" | "/admin/faculties" | "/admin/pa
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/faculties", label: "Faculties & departments", icon: Building2 },
   { to: "/admin/payment-requests", label: "Payment requests", icon: FileText },
+  { to: "/admin/qr-codes", label: "QR codes", icon: QrCode },
   { to: "/admin/transactions", label: "Transactions", icon: Receipt },
   { to: "/admin/settlements", label: "Settlements", icon: Banknote },
   { to: "/admin/runners", label: "Bank runners", icon: Truck },
