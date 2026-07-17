@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 
-const nav: { to: "/admin" | "/admin/analytics" | "/admin/faculties" | "/admin/payment-requests" | "/admin/transactions" | "/admin/settlements" | "/admin/reconcile" | "/admin/runners" | "/admin/students" | "/admin/users" | "/admin/audit"; label: string; icon: any; exact?: boolean }[] = [
+const nav: { to: "/admin" | "/admin/analytics" | "/admin/faculties" | "/admin/payment-requests" | "/admin/transactions" | "/admin/settlements" | "/admin/reconcile" | "/admin/runners" | "/admin/students" | "/admin/users" | "/admin/audit" | "/admin/qr-codes"; label: string; icon: any; exact?: boolean }[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/faculties", label: "Faculties & departments", icon: Building2 },
