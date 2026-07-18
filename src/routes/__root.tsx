@@ -82,8 +82,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "UniEgo — Premium Campus Payment Infrastructure" },
       { name: "twitter:description", content: "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/71dc8e32-76f7-458c-ad00-5ec1658cb680" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/71dc8e32-76f7-458c-ad00-5ec1658cb680" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/b6f28ab2-4bc0-4f7d-8cac-0a43be8daddd" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/b6f28ab2-4bc0-4f7d-8cac-0a43be8daddd" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
