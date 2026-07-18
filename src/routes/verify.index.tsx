@@ -217,14 +217,14 @@ function VerifyLanding() {
                   <div className="text-center px-4">
                     <QrCode className="h-12 w-12 mx-auto text-muted-foreground" />
                     <div className="mt-3 text-xs text-muted-foreground">
-                      {supported ? "Camera off" : "Camera scanning not supported on this browser"}
+                      {permissionError ?? "Camera off"}
                     </div>
                   </div>
                 )}
               </div>
               <div className="mt-4 flex gap-2">
                 {!scanning ? (
-                  <Button onClick={startCamera} disabled={!supported} className="flex-1 bg-royal text-royal-foreground hover:opacity-90">
+                  <Button onClick={startCamera} className="flex-1 bg-royal text-royal-foreground hover:opacity-90">
                     <Camera className="h-4 w-4 mr-2" /> Start scanning
                   </Button>
                 ) : (
