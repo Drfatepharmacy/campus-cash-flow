@@ -12,7 +12,7 @@ export function SiteFooter() {
           Providing Solutions Through Tech
         </div>
         <div className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} UniPay NG. All rights reserved.
+          &copy; {new Date().getFullYear()} UniEgo. All rights reserved.
         </div>
       </div>
     </footer>

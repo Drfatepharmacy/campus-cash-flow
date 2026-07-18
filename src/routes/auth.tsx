@@ -14,7 +14,7 @@ const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() })
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "Sign in — UniPay NG" }, { name: "description", content: "Sign in or create your UniPay NG account." }] }),
+  head: () => ({ meta: [{ title: "Sign in — UniEgo" }, { name: "description", content: "Sign in or create your UniEgo account." }] }),
   component: AuthPage,
 });
 
@@ -64,7 +64,7 @@ function AuthPage() {
         <Link to="/"><Logo /></Link>
         <div>
           <h2 className="font-display text-4xl font-bold tracking-tight">Pay with ease.<br/>Stress free.</h2>
-          <p className="mt-4 text-royal-foreground/80 max-w-md">UniPay NG — premium campus payment infrastructure trusted by departments, faculties, and student organizations.</p>
+          <p className="mt-4 text-royal-foreground/80 max-w-md">UniEgo — premium campus payment infrastructure trusted by departments, faculties, and student organizations.</p>
         </div>
         <div className="text-xs text-royal-foreground/60">Powered by EMMTEC SECURITIES</div>
       </aside>

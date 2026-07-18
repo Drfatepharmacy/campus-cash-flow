@@ -1,4 +1,4 @@
-# UniPay NG
+# UniEgo
 
 **Secure. Transparent. Verifiable.**
 
@@ -6,11 +6,11 @@
 
 ## Overview
 
-UniPay NG is a digital payment and financial management platform designed to simplify how organizations, institutions, and communities collect, manage, verify, and monitor payments.
+UniEgo is a digital payment and financial management platform designed to simplify how organizations, institutions, and communities collect, manage, verify, and monitor payments.
 
 The platform provides a centralized system for creating payment requests, processing secure online payments, generating digital receipts, verifying transactions, and producing financial insights through an intuitive administrative dashboard.
 
-Built by **EMMTEC Securities**, UniPay NG combines modern technology with secure financial infrastructure to deliver a reliable, scalable, and user-friendly payment experience.
+Built by **EMMTEC Securities**, UniEgo combines modern technology with secure financial infrastructure to deliver a reliable, scalable, and user-friendly payment experience.
 
 ## Core Capabilities
 
@@ -27,7 +27,7 @@ Built by **EMMTEC Securities**, UniPay NG combines modern technology with secure
 
 ## User Experience
 
-UniPay NG provides dedicated experiences for different categories of users while ensuring a consistent and intuitive interface.
+UniEgo provides dedicated experiences for different categories of users while ensuring a consistent and intuitive interface.
 
 Users can:
 
@@ -57,7 +57,7 @@ Each completed transaction generates a unique receipt that can be verified using
 
 ## Security
 
-UniPay NG prioritizes security and accountability through modern authentication, role-based permissions, secure payment verification, comprehensive audit logs, and encrypted communication across the platform.
+UniEgo prioritizes security and accountability through modern authentication, role-based permissions, secure payment verification, comprehensive audit logs, and encrypted communication across the platform.
 
 ## Design Philosophy
 
@@ -71,7 +71,7 @@ Every interaction is designed to minimize friction while providing users with co
 
 ## Technology
 
-UniPay NG leverages a modern web architecture built with contemporary frontend and backend technologies, enabling high performance, scalability, maintainability, and secure integrations with third-party services.
+UniEgo leverages a modern web architecture built with contemporary frontend and backend technologies, enabling high performance, scalability, maintainability, and secure integrations with third-party services.
 
 ## Scalability
 

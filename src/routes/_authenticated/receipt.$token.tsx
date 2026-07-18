@@ -12,7 +12,7 @@ import { formatNaira } from "@/lib/charges";
 import { Printer, ArrowLeft, Download } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/receipt/$token")({
-  head: () => ({ meta: [{ title: "Receipt — UniPay NG" }] }),
+  head: () => ({ meta: [{ title: "Receipt — UniEgo" }] }),
   component: ReceiptPage,
 });
 
@@ -37,7 +37,7 @@ function ReceiptPage() {
     const w = doc.internal.pageSize.getWidth();
     let y = 56;
     doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(26, 18, 48);
-    doc.text("UniPay NG — Official Receipt", 40, y); y += 8;
+    doc.text("UniEgo — Official Receipt", 40, y); y += 8;
     doc.setDrawColor(230); doc.line(40, y, w - 40, y); y += 24;
     doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90);
     doc.text("Powered by EMMTEC Securities", 40, y); y += 24;
@@ -77,7 +77,7 @@ function ReceiptPage() {
     doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(120);
     doc.text(`Verify at: ${typeof window !== "undefined" ? window.location.origin : ""}/verify/${token}`, 40, doc.internal.pageSize.getHeight() - 40);
 
-    doc.save(`unipay-receipt-${t?.reference ?? token}.pdf`);
+    doc.save(`uniego-receipt-${t?.reference ?? token}.pdf`);
   };
 
   return (
@@ -98,7 +98,7 @@ function ReceiptPage() {
             <div className="flex items-start justify-between">
               <div>
                 <div className="text-xs uppercase tracking-[0.2em] text-royal font-semibold">Official receipt</div>
-                <h1 className="mt-2 font-display text-3xl font-bold">UniPay NG</h1>
+                <h1 className="mt-2 font-display text-3xl font-bold">UniEgo</h1>
                 <div className="text-xs text-muted-foreground">Powered by EMMTEC Securities</div>
               </div>
               {qr && <img src={qr} alt="Verification QR" className="h-28 w-28 rounded-lg border"/>}

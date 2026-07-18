@@ -11,10 +11,10 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/verify/")({
   head: () => ({
     meta: [
-      { title: "Verify a receipt — UniPay NG" },
-      { name: "description", content: "Scan or enter a UniPay NG receipt code to verify a payment. Public and free for everyone." },
-      { property: "og:title", content: "Verify a UniPay NG receipt" },
-      { property: "og:description", content: "Scan or enter a UniPay NG receipt code to instantly verify a payment." },
+      { title: "Verify a receipt — UniEgo" },
+      { name: "description", content: "Scan or enter a UniEgo receipt code to verify a payment. Public and free for everyone." },
+      { property: "og:title", content: "Verify a UniEgo receipt" },
+      { property: "og:description", content: "Scan or enter a UniEgo receipt code to instantly verify a payment." },
     ],
   }),
   component: VerifyLanding,
@@ -127,7 +127,7 @@ function VerifyLanding() {
             <ShieldCheck className="h-3.5 w-3.5 text-emerald" /> Public verification · Free for everyone
           </div>
           <h1 className="mt-5 font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Verify a <span className="text-royal">UniPay NG</span> receipt
+            Verify a <span className="text-royal">UniEgo</span> receipt
           </h1>
           <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
             Scan the QR code on any receipt, upload a photo, or paste the receipt code below to confirm the payment is real.
@@ -207,7 +207,7 @@ function VerifyLanding() {
 
         <div className="mt-10 rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
           <div className="font-display text-foreground font-semibold mb-2">How verification works</div>
-          Every UniPay NG receipt carries a signed QR token. Scanning it takes you to a public page that reads the transaction reference, amount, status, and paid date directly from our database — no sign-in required.
+          Every UniEgo receipt carries a signed QR token. Scanning it takes you to a public page that reads the transaction reference, amount, status, and paid date directly from our database — no sign-in required.
         </div>
       </main>
 

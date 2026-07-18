@@ -75,11 +75,11 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
                 "X-Connection-Api-Key": RESEND_API_KEY,
               },
               body: JSON.stringify({
-                from: "UniPay NG <onboarding@resend.dev>",
+                from: "UniEgo <onboarding@resend.dev>",
                 to: [student.email],
                 subject: `Receipt: ${pr?.title ?? "Payment"} — ${reference}`,
                 html: `<div style="font-family:Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1230">
-                  <h1 style="font-size:22px;color:#3d2169">UniPay NG receipt</h1>
+                  <h1 style="font-size:22px;color:#3d2169">UniEgo receipt</h1>
                   <p>Hi ${student.full_name ?? "there"}, your payment for <strong>${pr?.title ?? "Payment"}</strong> was successful.</p>
                   <p><strong>Amount:</strong> ₦${Number(txn.total_amount).toLocaleString()}<br/>
                      <strong>Reference:</strong> ${reference}<br/>
@@ -91,7 +91,7 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
                   <p style="text-align:center"><a href="${receiptUrl}" style="background:#3d2169;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;display:inline-block">View receipt</a></p>
                   <p style="color:#666;font-size:12px">Or verify at <a href="${verifyUrl}">${verifyUrl}</a></p>
                   <hr style="border:none;border-top:1px solid #eee;margin:20px 0"/>
-                  <p style="color:#999;font-size:11px">UniPay NG — Pay with Ease and Stress Free<br/>Powered by EMMTEC Securities</p>
+                  <p style="color:#999;font-size:11px">UniEgo — Pay with Ease and Stress Free<br/>Powered by EMMTEC Securities</p>
                 </div>`,
                 attachments: [
                   {

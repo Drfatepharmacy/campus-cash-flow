@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatNaira } from "@/lib/charges";
 
 export const Route = createFileRoute("/_authenticated/rep/")({
-  head: () => ({ meta: [{ title: "Rep portal — UniPay NG" }] }),
+  head: () => ({ meta: [{ title: "Rep portal — UniEgo" }] }),
   component: RepOverview,
 });
 

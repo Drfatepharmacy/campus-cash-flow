@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/pay/$requestId")({
-  head: () => ({ meta: [{ title: "Pay — UniPay NG" }] }),
+  head: () => ({ meta: [{ title: "Pay — UniEgo" }] }),
   component: Pay,
 });
 
