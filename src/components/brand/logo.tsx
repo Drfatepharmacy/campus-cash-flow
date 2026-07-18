@@ -9,8 +9,8 @@ export function Logo({ className, withText = true }: { className?: string; withT
       </div>
       {withText && (
         <div className="leading-tight">
-          <div className="font-display font-bold text-foreground tracking-tight">UniEgo <span className="text-royal">NG</span></div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Pay with ease</div>
+          <div className="font-display font-bold text-foreground tracking-tight">Uni<span className="text-royal">Ego</span></div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Secure payments</div>
         </div>
       )}
     </div>
