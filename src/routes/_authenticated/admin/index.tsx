@@ -7,7 +7,7 @@ import { formatNaira } from "@/lib/charges";
 import { Wallet, TrendingUp, ReceiptText, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
-  head: () => ({ meta: [{ title: "Admin overview — UniPay NG" }] }),
+  head: () => ({ meta: [{ title: "Admin overview — UniEgo" }] }),
   component: AdminOverview,
 });
 

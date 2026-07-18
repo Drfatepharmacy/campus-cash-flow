@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Loader2, Banknote } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/runner/")({
-  head: () => ({ meta: [{ title: "My deposit jobs — UniPay NG" }] }),
+  head: () => ({ meta: [{ title: "My deposit jobs — UniEgo" }] }),
   component: RunnerJobs,
 });
 

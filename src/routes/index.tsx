@@ -17,10 +17,10 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "UniPay NG — Premium Campus Payment Infrastructure" },
-      { name: "description", content: "Pay with ease and stress free. UniPay NG powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
-      { property: "og:title", content: "UniPay NG — Premium Campus Payment Infrastructure" },
-      { property: "og:description", content: "Pay with ease and stress free. UniPay NG powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
+      { title: "UniEgo — Premium Campus Payment Infrastructure" },
+      { name: "description", content: "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
+      { property: "og:title", content: "UniEgo — Premium Campus Payment Infrastructure" },
+      { property: "og:description", content: "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
     ],
   }),
   component: Landing,
@@ -74,7 +74,7 @@ function Hero() {
             <span className="text-royal">re-engineered</span> for trust.
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-xl">
-            UniPay NG is the institutional-grade payment, treasury, and settlement platform built for universities, faculties, departments, and student organizations.
+            UniEgo is the institutional-grade payment, treasury, and settlement platform built for universities, faculties, departments, and student organizations.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/auth" search={{ mode: "signup" } as never}>
@@ -135,7 +135,7 @@ function HeroCard() {
             <QrCode className="h-8 w-8 text-background"/>
           </div>
           <div className="text-xs text-muted-foreground">
-            Scan to verify on <span className="text-foreground font-semibold">verify.unipay.ng</span>
+            Scan to verify on <span className="text-foreground font-semibold">verify.uniego.lovable.app</span>
           </div>
         </div>
       </div>

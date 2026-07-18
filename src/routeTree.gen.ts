@@ -10,10 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as LegalRouteRouteImport } from './routes/legal.route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VerifyIndexRouteImport } from './routes/verify.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalSecurityRouteImport } from './routes/legal.security'
+import { Route as LegalRefundRouteImport } from './routes/legal.refund'
+import { Route as LegalQrVerificationRouteImport } from './routes/legal.qr-verification'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalPaymentRouteImport } from './routes/legal.payment'
+import { Route as LegalComplianceRouteImport } from './routes/legal.compliance'
+import { Route as LegalAssociationVerificationRouteImport } from './routes/legal.association-verification'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedRunnerRouteRouteImport } from './routes/_authenticated/runner/route'
@@ -42,6 +51,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalRouteRoute = LegalRouteRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -61,6 +75,47 @@ const VerifyTokenRoute = VerifyTokenRouteImport.update({
   path: '/verify/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalSecurityRoute = LegalSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalRefundRoute = LegalRefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalQrVerificationRoute = LegalQrVerificationRouteImport.update({
+  id: '/qr-verification',
+  path: '/qr-verification',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalPaymentRoute = LegalPaymentRouteImport.update({
+  id: '/payment',
+  path: '/payment',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalComplianceRoute = LegalComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalAssociationVerificationRoute =
+  LegalAssociationVerificationRouteImport.update({
+    id: '/association-verification',
+    path: '/association-verification',
+    getParentRoute: () => LegalRouteRoute,
+  } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -188,12 +243,21 @@ const ApiPublicWebhooksPaystackRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/legal': typeof LegalRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/rep': typeof AuthenticatedRepRouteRouteWithChildren
   '/runner': typeof AuthenticatedRunnerRouteRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/legal/association-verification': typeof LegalAssociationVerificationRoute
+  '/legal/compliance': typeof LegalComplianceRoute
+  '/legal/payment': typeof LegalPaymentRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/qr-verification': typeof LegalQrVerificationRoute
+  '/legal/refund': typeof LegalRefundRoute
+  '/legal/security': typeof LegalSecurityRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/verify/': typeof VerifyIndexRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -216,9 +280,18 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/legal': typeof LegalRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/legal/association-verification': typeof LegalAssociationVerificationRoute
+  '/legal/compliance': typeof LegalComplianceRoute
+  '/legal/payment': typeof LegalPaymentRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/qr-verification': typeof LegalQrVerificationRoute
+  '/legal/refund': typeof LegalRefundRoute
+  '/legal/security': typeof LegalSecurityRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/verify': typeof VerifyIndexRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -243,12 +316,21 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/legal': typeof LegalRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/rep': typeof AuthenticatedRepRouteRouteWithChildren
   '/_authenticated/runner': typeof AuthenticatedRunnerRouteRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/legal/association-verification': typeof LegalAssociationVerificationRoute
+  '/legal/compliance': typeof LegalComplianceRoute
+  '/legal/payment': typeof LegalPaymentRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/qr-verification': typeof LegalQrVerificationRoute
+  '/legal/refund': typeof LegalRefundRoute
+  '/legal/security': typeof LegalSecurityRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/verify/': typeof VerifyIndexRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -273,12 +355,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/legal'
     | '/auth'
     | '/admin'
     | '/rep'
     | '/runner'
     | '/dashboard'
     | '/onboarding'
+    | '/legal/association-verification'
+    | '/legal/compliance'
+    | '/legal/payment'
+    | '/legal/privacy'
+    | '/legal/qr-verification'
+    | '/legal/refund'
+    | '/legal/security'
+    | '/legal/terms'
     | '/verify/$token'
     | '/verify/'
     | '/admin/analytics'
@@ -301,9 +392,18 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/legal'
     | '/auth'
     | '/dashboard'
     | '/onboarding'
+    | '/legal/association-verification'
+    | '/legal/compliance'
+    | '/legal/payment'
+    | '/legal/privacy'
+    | '/legal/qr-verification'
+    | '/legal/refund'
+    | '/legal/security'
+    | '/legal/terms'
     | '/verify/$token'
     | '/verify'
     | '/admin/analytics'
@@ -327,12 +427,21 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/legal'
     | '/auth'
     | '/_authenticated/admin'
     | '/_authenticated/rep'
     | '/_authenticated/runner'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
+    | '/legal/association-verification'
+    | '/legal/compliance'
+    | '/legal/payment'
+    | '/legal/privacy'
+    | '/legal/qr-verification'
+    | '/legal/refund'
+    | '/legal/security'
+    | '/legal/terms'
     | '/verify/$token'
     | '/verify/'
     | '/_authenticated/admin/analytics'
@@ -357,6 +466,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  LegalRouteRoute: typeof LegalRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
@@ -370,6 +480,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -399,6 +516,62 @@ declare module '@tanstack/react-router' {
       fullPath: '/verify/$token'
       preLoaderRoute: typeof VerifyTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof LegalRouteRoute
+    }
+    '/legal/security': {
+      id: '/legal/security'
+      path: '/security'
+      fullPath: '/legal/security'
+      preLoaderRoute: typeof LegalSecurityRouteImport
+      parentRoute: typeof LegalRouteRoute
+    }
+    '/legal/refund': {
+      id: '/legal/refund'
+      path: '/refund'
+      fullPath: '/legal/refund'
+      preLoaderRoute: typeof LegalRefundRouteImport
+      parentRoute: typeof LegalRouteRoute
+    }
+    '/legal/qr-verification': {
+      id: '/legal/qr-verification'
+      path: '/qr-verification'
+      fullPath: '/legal/qr-verification'
+      preLoaderRoute: typeof LegalQrVerificationRouteImport
+      parentRoute: typeof LegalRouteRoute
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof LegalRouteRoute
+    }
+    '/legal/payment': {
+      id: '/legal/payment'
+      path: '/payment'
+      fullPath: '/legal/payment'
+      preLoaderRoute: typeof LegalPaymentRouteImport
+      parentRoute: typeof LegalRouteRoute
+    }
+    '/legal/compliance': {
+      id: '/legal/compliance'
+      path: '/compliance'
+      fullPath: '/legal/compliance'
+      preLoaderRoute: typeof LegalComplianceRouteImport
+      parentRoute: typeof LegalRouteRoute
+    }
+    '/legal/association-verification': {
+      id: '/legal/association-verification'
+      path: '/association-verification'
+      fullPath: '/legal/association-verification'
+      preLoaderRoute: typeof LegalAssociationVerificationRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
@@ -644,9 +817,36 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface LegalRouteRouteChildren {
+  LegalAssociationVerificationRoute: typeof LegalAssociationVerificationRoute
+  LegalComplianceRoute: typeof LegalComplianceRoute
+  LegalPaymentRoute: typeof LegalPaymentRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalQrVerificationRoute: typeof LegalQrVerificationRoute
+  LegalRefundRoute: typeof LegalRefundRoute
+  LegalSecurityRoute: typeof LegalSecurityRoute
+  LegalTermsRoute: typeof LegalTermsRoute
+}
+
+const LegalRouteRouteChildren: LegalRouteRouteChildren = {
+  LegalAssociationVerificationRoute: LegalAssociationVerificationRoute,
+  LegalComplianceRoute: LegalComplianceRoute,
+  LegalPaymentRoute: LegalPaymentRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalQrVerificationRoute: LegalQrVerificationRoute,
+  LegalRefundRoute: LegalRefundRoute,
+  LegalSecurityRoute: LegalSecurityRoute,
+  LegalTermsRoute: LegalTermsRoute,
+}
+
+const LegalRouteRouteWithChildren = LegalRouteRoute._addFileChildren(
+  LegalRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  LegalRouteRoute: LegalRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   VerifyTokenRoute: VerifyTokenRoute,
   VerifyIndexRoute: VerifyIndexRoute,

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import jsQR from "jsqr";
 import { Logo } from "@/components/brand/logo";
 import { SiteFooter } from "@/components/brand/footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,10 +12,10 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/verify/")({
   head: () => ({
     meta: [
-      { title: "Verify a receipt — UniPay NG" },
-      { name: "description", content: "Scan or enter a UniPay NG receipt code to verify a payment. Public and free for everyone." },
-      { property: "og:title", content: "Verify a UniPay NG receipt" },
-      { property: "og:description", content: "Scan or enter a UniPay NG receipt code to instantly verify a payment." },
+      { title: "Verify a receipt — UniEgo" },
+      { name: "description", content: "Scan or enter a UniEgo receipt code to verify a payment. Public and free for everyone." },
+      { property: "og:title", content: "Verify a UniEgo receipt" },
+      { property: "og:description", content: "Scan or enter a UniEgo receipt code to instantly verify a payment." },
     ],
   }),
   component: VerifyLanding,
@@ -24,7 +25,8 @@ type BarcodeDetectorLike = new (opts: { formats: string[] }) => {
   detect: (source: CanvasImageSource) => Promise<Array<{ rawValue: string }>>;
 };
 
-function getDetector(): InstanceType<BarcodeDetectorLike> | null {
+function getNativeDetector(): InstanceType<BarcodeDetectorLike> | null {
+  if (typeof window === "undefined") return null;
   const w = window as unknown as { BarcodeDetector?: BarcodeDetectorLike };
   if (!w.BarcodeDetector) return null;
   try { return new w.BarcodeDetector({ formats: ["qr_code"] }); } catch { return null; }
@@ -46,15 +48,15 @@ function VerifyLanding() {
   const navigate = useNavigate();
   const [token, setToken] = useState("");
   const [scanning, setScanning] = useState(false);
-  const [supported, setSupported] = useState(true);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
-  const detectorRef = useRef<InstanceType<BarcodeDetectorLike> | null>(null);
+  const nativeDetectorRef = useRef<InstanceType<BarcodeDetectorLike> | null>(null);
 
   useEffect(() => {
-    detectorRef.current = getDetector();
-    setSupported(!!detectorRef.current);
+    nativeDetectorRef.current = getNativeDetector();
     return () => stopCamera();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -71,46 +73,111 @@ function VerifyLanding() {
     rafRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
     setScanning(false);
   }
 
   async function startCamera() {
-    if (!detectorRef.current) { toast.error("Camera scanning not supported on this browser. Use manual entry or upload."); return; }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      streamRef.current = stream;
-      setScanning(true);
-      const video = videoRef.current!;
-      video.srcObject = stream;
-      await video.play();
+    setPermissionError(null);
 
-      const tick = async () => {
-        if (!streamRef.current || !detectorRef.current || !videoRef.current) return;
-        try {
-          const results = await detectorRef.current.detect(videoRef.current);
-          if (results[0]?.rawValue) { goTo(results[0].rawValue); return; }
-        } catch { /* keep looping */ }
-        rafRef.current = requestAnimationFrame(tick);
-      };
-      rafRef.current = requestAnimationFrame(tick);
-    } catch {
-      toast.error("Could not access camera. Check permissions.");
+    // Secure context check — getUserMedia requires HTTPS (localhost is exempt).
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      const msg = "Camera requires a secure (HTTPS) connection. Open this page over HTTPS to scan.";
+      setPermissionError(msg); toast.error(msg); return;
     }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      const msg = "Your browser doesn't support camera access. Try Chrome or Safari, or use the upload option below.";
+      setPermissionError(msg); toast.error(msg); return;
+    }
+
+    setScanning(true);
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+    } catch (err) {
+      // Fallback: try any camera if environment-facing failed.
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      } catch (err2) {
+        setScanning(false);
+        const e = err2 as DOMException;
+        let msg = "Could not access the camera.";
+        if (e?.name === "NotAllowedError" || e?.name === "SecurityError") {
+          msg = "Camera permission was denied. Tap the lock icon in the address bar → Site settings → Camera → Allow, then retry.";
+        } else if (e?.name === "NotFoundError" || e?.name === "OverconstrainedError") {
+          msg = "No camera found on this device.";
+        } else if (e?.name === "NotReadableError") {
+          msg = "The camera is in use by another app. Close it and try again.";
+        }
+        setPermissionError(msg); toast.error(msg); return;
+      }
+    }
+
+    streamRef.current = stream;
+    const video = videoRef.current;
+    if (!video) { stopCamera(); return; }
+    video.setAttribute("playsinline", "true");
+    video.setAttribute("muted", "true");
+    video.muted = true;
+    video.srcObject = stream;
+    try { await video.play(); } catch { /* iOS may need a user gesture; we're already inside one */ }
+
+    const native = nativeDetectorRef.current;
+    const canvas = canvasRef.current ?? document.createElement("canvas");
+    canvasRef.current = canvas;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+    const tick = async () => {
+      if (!streamRef.current || !videoRef.current) return;
+      const v = videoRef.current;
+      if (v.readyState >= 2 && v.videoWidth > 0) {
+        try {
+          if (native) {
+            const results = await native.detect(v);
+            if (results[0]?.rawValue) { goTo(results[0].rawValue); return; }
+          } else if (ctx) {
+            const w = v.videoWidth, h = v.videoHeight;
+            if (canvas.width !== w) canvas.width = w;
+            if (canvas.height !== h) canvas.height = h;
+            ctx.drawImage(v, 0, 0, w, h);
+            const img = ctx.getImageData(0, 0, w, h);
+            const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
+            if (code?.data) { goTo(code.data); return; }
+          }
+        } catch { /* keep looping */ }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const det = detectorRef.current ?? getDetector();
-    if (!det) { toast.error("QR decoding not supported here. Enter the code manually."); return; }
     try {
       const bitmap = await createImageBitmap(file);
-      const results = await det.detect(bitmap);
-      if (results[0]?.rawValue) goTo(results[0].rawValue);
+      const native = nativeDetectorRef.current ?? getNativeDetector();
+      if (native) {
+        const results = await native.detect(bitmap);
+        if (results[0]?.rawValue) { goTo(results[0].rawValue); return; }
+      }
+      // jsQR fallback for image files.
+      const canvas = document.createElement("canvas");
+      canvas.width = bitmap.width; canvas.height = bitmap.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("no 2d context");
+      ctx.drawImage(bitmap, 0, 0);
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
+      if (code?.data) goTo(code.data);
       else toast.error("No QR code found in that image.");
     } catch { toast.error("Could not read that image."); }
     finally { e.target.value = ""; }
   }
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -127,7 +194,7 @@ function VerifyLanding() {
             <ShieldCheck className="h-3.5 w-3.5 text-emerald" /> Public verification · Free for everyone
           </div>
           <h1 className="mt-5 font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Verify a <span className="text-royal">UniPay NG</span> receipt
+            Verify a <span className="text-royal">UniEgo</span> receipt
           </h1>
           <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
             Scan the QR code on any receipt, upload a photo, or paste the receipt code below to confirm the payment is real.
@@ -150,14 +217,14 @@ function VerifyLanding() {
                   <div className="text-center px-4">
                     <QrCode className="h-12 w-12 mx-auto text-muted-foreground" />
                     <div className="mt-3 text-xs text-muted-foreground">
-                      {supported ? "Camera off" : "Camera scanning not supported on this browser"}
+                      {permissionError ?? "Camera off"}
                     </div>
                   </div>
                 )}
               </div>
               <div className="mt-4 flex gap-2">
                 {!scanning ? (
-                  <Button onClick={startCamera} disabled={!supported} className="flex-1 bg-royal text-royal-foreground hover:opacity-90">
+                  <Button onClick={startCamera} className="flex-1 bg-royal text-royal-foreground hover:opacity-90">
                     <Camera className="h-4 w-4 mr-2" /> Start scanning
                   </Button>
                 ) : (
@@ -207,7 +274,7 @@ function VerifyLanding() {
 
         <div className="mt-10 rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
           <div className="font-display text-foreground font-semibold mb-2">How verification works</div>
-          Every UniPay NG receipt carries a signed QR token. Scanning it takes you to a public page that reads the transaction reference, amount, status, and paid date directly from our database — no sign-in required.
+          Every UniEgo receipt carries a signed QR token. Scanning it takes you to a public page that reads the transaction reference, amount, status, and paid date directly from our database — no sign-in required.
         </div>
       </main>
 

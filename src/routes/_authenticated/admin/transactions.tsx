@@ -29,7 +29,7 @@ function TransactionsPage() {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `unipay-transactions-${Date.now()}.csv`; a.click();
+    a.href = url; a.download = `uniego-transactions-${Date.now()}.csv`; a.click();
     URL.revokeObjectURL(url);
   }
 

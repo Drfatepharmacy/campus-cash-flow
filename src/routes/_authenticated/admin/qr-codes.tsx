@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/qr-codes")({
-  head: () => ({ meta: [{ title: "QR Codes — UniPay NG" }] }),
+  head: () => ({ meta: [{ title: "QR Codes — UniEgo" }] }),
   component: QrAdmin,
 });
 

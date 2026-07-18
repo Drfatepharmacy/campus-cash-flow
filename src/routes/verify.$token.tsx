@@ -12,7 +12,7 @@ import { CheckCircle2, XCircle, Clock, AlertTriangle, ShieldCheck, ExternalLink 
 import { formatNaira } from "@/lib/charges";
 
 export const Route = createFileRoute("/verify/$token")({
-  head: () => ({ meta: [{ title: "Verify — UniPay NG" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Verify — UniEgo" }, { name: "robots", content: "noindex" }] }),
   component: Verify,
 });
 

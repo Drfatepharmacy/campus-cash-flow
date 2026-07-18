@@ -14,7 +14,7 @@ import { grantAdminToMe } from "@/lib/admin.functions";
 import { getMyRoles } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — UniPay NG" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — UniEgo" }] }),
   component: Dashboard,
 });
 
