@@ -139,6 +139,35 @@ function PaymentRequestsPage() {
                   </div>
                 </div>
                 <div className="font-display font-semibold">{formatNaira(Number(p.base_amount))}</div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={toggleActive.isPending}
+                    onClick={() => toggleActive.mutate({ id: p.id, active: !p.active })}
+                  >
+                    {p.active ? <><Pause className="h-4 w-4 mr-1"/>Pause</> : <><Play className="h-4 w-4 mr-1"/>Resume</>}
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4"/>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete "{p.title}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This cannot be undone. If this request already has transactions, it will be deactivated instead to preserve history.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => removeMut.mutate(p.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </li>
             ))}
             {(prs.data ?? []).length === 0 && <li className="p-5 text-sm text-muted-foreground">No payment requests yet.</li>}
