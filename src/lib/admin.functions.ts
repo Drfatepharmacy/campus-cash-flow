@@ -90,6 +90,36 @@ export const createPaymentRequest = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const setPaymentRequestActive = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context as never);
+    const { error } = await context.supabase.from("payment_requests").update({ active: data.active }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deletePaymentRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context as never);
+    const { count } = await context.supabase
+      .from("transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("payment_request_id", data.id);
+    if ((count ?? 0) > 0) {
+      // Preserve history — deactivate instead of hard delete when transactions exist.
+      const { error } = await context.supabase.from("payment_requests").update({ active: false }).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { ok: true, softDeleted: true };
+    }
+    const { error } = await context.supabase.from("payment_requests").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true, softDeleted: false };
+  });
+
 export const grantAdminToMe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

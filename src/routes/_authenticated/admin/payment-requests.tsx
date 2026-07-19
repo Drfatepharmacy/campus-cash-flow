@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { listCampuses, listFaculties, listDepartments, listPaymentRequests, createPaymentRequest } from "@/lib/admin.functions";
+import { listCampuses, listFaculties, listDepartments, listPaymentRequests, createPaymentRequest, setPaymentRequestActive, deletePaymentRequest } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { formatNaira } from "@/lib/charges";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pause, Play, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/admin/payment-requests")({
   head: () => ({ meta: [{ title: "Payment requests — Admin" }] }),
@@ -26,6 +27,19 @@ function PaymentRequestsPage() {
   const fetchDepartments = useServerFn(listDepartments);
   const fetchPRs = useServerFn(listPaymentRequests);
   const create = useServerFn(createPaymentRequest);
+  const setActive = useServerFn(setPaymentRequestActive);
+  const del = useServerFn(deletePaymentRequest);
+
+  const toggleActive = useMutation({
+    mutationFn: (v: { id: string; active: boolean }) => setActive({ data: v }),
+    onSuccess: (_, v) => { toast.success(v.active ? "Resumed" : "Paused"); qc.invalidateQueries({ queryKey: ["payment-requests"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const removeMut = useMutation({
+    mutationFn: (id: string) => del({ data: { id } }),
+    onSuccess: (r: any) => { toast.success(r?.softDeleted ? "Has transactions — deactivated instead" : "Deleted"); qc.invalidateQueries({ queryKey: ["payment-requests"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const campuses = useQuery({ queryKey: ["campuses"], queryFn: () => fetchCampuses() });
   const faculties = useQuery({ queryKey: ["faculties"], queryFn: () => fetchFaculties() });
@@ -125,6 +139,35 @@ function PaymentRequestsPage() {
                   </div>
                 </div>
                 <div className="font-display font-semibold">{formatNaira(Number(p.base_amount))}</div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={toggleActive.isPending}
+                    onClick={() => toggleActive.mutate({ id: p.id, active: !p.active })}
+                  >
+                    {p.active ? <><Pause className="h-4 w-4 mr-1"/>Pause</> : <><Play className="h-4 w-4 mr-1"/>Resume</>}
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4"/>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete "{p.title}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This cannot be undone. If this request already has transactions, it will be deactivated instead to preserve history.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => removeMut.mutate(p.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </li>
             ))}
             {(prs.data ?? []).length === 0 && <li className="p-5 text-sm text-muted-foreground">No payment requests yet.</li>}
