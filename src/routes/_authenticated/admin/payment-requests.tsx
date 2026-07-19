@@ -27,6 +27,19 @@ function PaymentRequestsPage() {
   const fetchDepartments = useServerFn(listDepartments);
   const fetchPRs = useServerFn(listPaymentRequests);
   const create = useServerFn(createPaymentRequest);
+  const setActive = useServerFn(setPaymentRequestActive);
+  const del = useServerFn(deletePaymentRequest);
+
+  const toggleActive = useMutation({
+    mutationFn: (v: { id: string; active: boolean }) => setActive({ data: v }),
+    onSuccess: (_, v) => { toast.success(v.active ? "Resumed" : "Paused"); qc.invalidateQueries({ queryKey: ["payment-requests"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const removeMut = useMutation({
+    mutationFn: (id: string) => del({ data: { id } }),
+    onSuccess: (r: any) => { toast.success(r?.softDeleted ? "Has transactions — deactivated instead" : "Deleted"); qc.invalidateQueries({ queryKey: ["payment-requests"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const campuses = useQuery({ queryKey: ["campuses"], queryFn: () => fetchCampuses() });
   const faculties = useQuery({ queryKey: ["faculties"], queryFn: () => fetchFaculties() });
