@@ -27,11 +27,37 @@ function Dashboard() {
   const fetchTxns = useServerFn(getMyTransactions);
   const fetchRoles = useServerFn(getMyRoles);
   const grant = useServerFn(grantAdminToMe);
+  const verify = useServerFn(verifyPayment);
 
   const profile = useQuery({ queryKey: ["me"], queryFn: () => fetchProfile() });
   const roles = useQuery({ queryKey: ["my-roles"], queryFn: () => fetchRoles() });
   const eligible = useQuery({ queryKey: ["eligible"], queryFn: () => fetchEligible() });
-  const txns = useQuery({ queryKey: ["my-txns"], queryFn: () => fetchTxns() });
+  const txns = useQuery({ queryKey: ["my-txns"], queryFn: () => fetchTxns(), refetchInterval: (query) => {
+    const rows = (query.state.data as any[] | undefined) ?? [];
+    return rows.some((t) => t.status === "pending") ? 4000 : false;
+  } });
+
+  const verifiedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reference = params.get("reference") ?? params.get("trxref");
+    if (!reference || verifiedRef.current.has(reference)) return;
+    verifiedRef.current.add(reference);
+    verify({ data: { reference } })
+      .then((r) => {
+        if (r.status === "paid") {
+          toast.success("Payment successful");
+          qc.invalidateQueries({ queryKey: ["my-txns"] });
+        }
+      })
+      .catch(() => { /* webhook will finalize; polling picks it up */ })
+      .finally(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("reference");
+        url.searchParams.delete("trxref");
+        window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+      });
+  }, [verify, qc]);
 
   const claim = useMutation({
     mutationFn: () => grant(),
