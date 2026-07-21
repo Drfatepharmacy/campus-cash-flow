@@ -135,3 +135,43 @@ export const initiatePayment = createServerFn({ method: "POST" })
 
     return { authorization_url: json.data.authorization_url, reference };
   });
+
+export const verifyPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ reference: z.string().min(4) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+    if (!PAYSTACK_SECRET_KEY) throw new Error("Payments not configured");
+
+    const { data: txn } = await context.supabase
+      .from("transactions")
+      .select("id, status, student_id")
+      .eq("reference", data.reference)
+      .maybeSingle();
+    if (!txn) throw new Error("Transaction not found");
+    if (txn.student_id !== context.userId) throw new Error("Forbidden");
+    if (txn.status === "paid") return { status: "paid" as const };
+
+    const res = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(data.reference)}`, {
+      headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
+    });
+    const json = await res.json() as { status: boolean; data?: { status: string; paid_at?: string; id?: number } };
+    if (!res.ok || !json.status || !json.data) throw new Error("Verification failed");
+    if (json.data.status !== "success") return { status: "pending" as const };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const paidAt = json.data.paid_at ?? new Date().toISOString();
+    await supabaseAdmin
+      .from("transactions")
+      .update({ status: "paid", paid_at: paidAt, paystack_ref: String(json.data.id ?? ""), paystack_response: json.data as any })
+      .eq("id", txn.id)
+      .neq("status", "paid");
+
+    const { data: existing } = await supabaseAdmin.from("receipts").select("id, qr_token").eq("transaction_id", txn.id).maybeSingle();
+    if (!existing) {
+      const qrToken = `${data.reference}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+      await supabaseAdmin.from("receipts").insert({ transaction_id: txn.id, qr_token: qrToken });
+    }
+
+    return { status: "paid" as const };
+  });
