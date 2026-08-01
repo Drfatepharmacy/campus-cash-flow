@@ -64,22 +64,30 @@ export const getMyTransactions = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+/** Server-authoritative pricing. Never trust an amount supplied by the client. */
+async function resolveAmounts(supabase: any, payment_request_id: string) {
+  const { data: pr } = await supabase.from("payment_requests").select("*").eq("id", payment_request_id).maybeSingle();
+  if (!pr) throw new Error("Payment request not found");
+  const { data: rules } = await supabase.from("service_charge_rules").select("*").eq("active", true);
+  const rule = rules?.find((r: any) => r.scope === "payment_request" && r.payment_request_id === pr.id)
+    ?? rules?.find((r: any) => r.scope === "department" && r.department_id === pr.target_department_id)
+    ?? rules?.find((r: any) => r.scope === "global");
+  const baseMinor = toMinor(Number(pr.base_amount));
+  const chargeMinor = calcServiceChargeMinor(baseMinor, (rule?.tiers as Tier[] | undefined) ?? undefined);
+  return { pr, baseMinor, chargeMinor, totalMinor: baseMinor + chargeMinor };
+}
+
 export const previewCharge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ payment_request_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: pr } = await context.supabase.from("payment_requests").select("*").eq("id", data.payment_request_id).maybeSingle();
-    if (!pr) throw new Error("Payment request not found");
-    const { data: rules } = await context.supabase.from("service_charge_rules").select("*").eq("active", true);
-    const rule = rules?.find((r) => r.scope === "payment_request" && r.payment_request_id === pr.id)
-      ?? rules?.find((r) => r.scope === "department" && r.department_id === pr.target_department_id)
-      ?? rules?.find((r) => r.scope === "global");
-    const charge = calcServiceCharge(Number(pr.base_amount), (rule?.tiers as Tier[] | undefined) ?? undefined);
+    const { pr, baseMinor, chargeMinor, totalMinor } = await resolveAmounts(context.supabase, data.payment_request_id);
     return {
       title: pr.title,
-      base_amount: Number(pr.base_amount),
-      service_charge: charge,
-      total_amount: Number(pr.base_amount) + charge,
+      base_amount: fromMinor(baseMinor),
+      service_charge: fromMinor(chargeMinor),
+      total_amount: fromMinor(totalMinor),
+      currency: "NGN",
     };
   });
 
@@ -90,31 +98,37 @@ export const initiatePayment = createServerFn({ method: "POST" })
     callback_url: z.string().url(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-    if (!PAYSTACK_SECRET_KEY) {
-      throw new Error("Payments are not yet configured. Ask the admin to add a Paystack secret key.");
-    }
-    const { data: pr } = await context.supabase.from("payment_requests").select("*").eq("id", data.payment_request_id).maybeSingle();
-    if (!pr || !pr.active) throw new Error("Payment request unavailable");
-    const { data: profile } = await context.supabase.from("profiles").select("email, full_name").eq("id", context.userId).maybeSingle();
+    const { getPaystackSecret } = await import("@/lib/payments-guard.server");
+    const PAYSTACK_SECRET_KEY = getPaystackSecret();
+
+    const { pr, baseMinor, chargeMinor, totalMinor } = await resolveAmounts(context.supabase, data.payment_request_id);
+    if (!pr.active) throw new Error("Payment request unavailable");
+    if (pr.opens_at && new Date(pr.opens_at) > new Date()) throw new Error("This payment is not open yet");
+    if (pr.closes_at && new Date(pr.closes_at) < new Date()) throw new Error("This payment has closed");
+
+    const { data: profile } = await context.supabase
+      .from("profiles").select("email, full_name, campus_id, faculty_id, department_id, level").eq("id", context.userId).maybeSingle();
     if (!profile?.email) throw new Error("Complete your profile before paying");
 
-    const { data: rules } = await context.supabase.from("service_charge_rules").select("*").eq("active", true);
-    const rule = rules?.find((r) => r.scope === "payment_request" && r.payment_request_id === pr.id)
-      ?? rules?.find((r) => r.scope === "department" && r.department_id === pr.target_department_id)
-      ?? rules?.find((r) => r.scope === "global");
-    const base = Number(pr.base_amount);
-    const charge = calcServiceCharge(base, (rule?.tiers as Tier[] | undefined) ?? undefined);
-    const total = base + charge;
-    const reference = `UPN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    // Tenant/eligibility check enforced server-side, not by the UI filter.
+    if (pr.target_faculty_id && pr.target_faculty_id !== profile.faculty_id) throw new Error("You are not eligible for this payment");
+    if (pr.target_department_id && pr.target_department_id !== profile.department_id) throw new Error("You are not eligible for this payment");
+    if (pr.target_level && pr.target_level !== profile.level) throw new Error("You are not eligible for this payment");
+
+    // Reuse an existing pending attempt instead of stacking references.
+    const reference = `UEG-${Date.now().toString(36).toUpperCase()}-${randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase()}`;
 
     const { error: insErr } = await context.supabase.from("transactions").insert({
       reference,
       student_id: context.userId,
       payment_request_id: pr.id,
-      base_amount: base,
-      service_charge: charge,
-      total_amount: total,
+      base_amount: fromMinor(baseMinor),
+      service_charge: fromMinor(chargeMinor),
+      total_amount: fromMinor(totalMinor),
+      base_minor: baseMinor,
+      charge_minor: chargeMinor,
+      total_minor: totalMinor,
+      currency: "NGN",
       status: "pending",
     });
     if (insErr) throw new Error(insErr.message);
@@ -124,10 +138,17 @@ export const initiatePayment = createServerFn({ method: "POST" })
       headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         email: profile.email,
-        amount: Math.round(total * 100),
+        amount: totalMinor,
+        currency: "NGN",
         reference,
         callback_url: data.callback_url,
-        metadata: { payment_request_id: pr.id, student_id: context.userId, full_name: profile.full_name },
+        metadata: {
+          payment_request_id: pr.id,
+          student_id: context.userId,
+          campus_id: pr.campus_id,
+          department_id: pr.target_department_id,
+          full_name: profile.full_name,
+        },
       }),
     });
     const json = await res.json() as { status: boolean; message: string; data?: { authorization_url: string; reference: string } };
@@ -138,40 +159,52 @@ export const initiatePayment = createServerFn({ method: "POST" })
 
 export const verifyPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ reference: z.string().min(4) }).parse(d))
+  .inputValidator((d: unknown) => z.object({ reference: z.string().trim().min(8).max(80).regex(/^[A-Za-z0-9-]+$/) }).parse(d))
   .handler(async ({ data, context }) => {
-    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-    if (!PAYSTACK_SECRET_KEY) throw new Error("Payments not configured");
+    const { getPaystackSecret } = await import("@/lib/payments-guard.server");
+    const PAYSTACK_SECRET_KEY = getPaystackSecret();
 
+    // Ownership is checked against the caller's own RLS-scoped view.
     const { data: txn } = await context.supabase
       .from("transactions")
-      .select("id, status, student_id")
+      .select("id, status, student_id, total_minor, currency, payment_request_id")
       .eq("reference", data.reference)
       .maybeSingle();
-    if (!txn) throw new Error("Transaction not found");
-    if (txn.student_id !== context.userId) throw new Error("Forbidden");
+    if (!txn || txn.student_id !== context.userId) throw new Error("Transaction not found");
     if (txn.status === "paid") return { status: "paid" as const };
 
     const res = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(data.reference)}`, {
       headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
     });
-    const json = await res.json() as { status: boolean; data?: { status: string; paid_at?: string; id?: number } };
+    const json = await res.json() as {
+      status: boolean;
+      data?: { status: string; paid_at?: string; id?: number; amount?: number; currency?: string; reference?: string; customer?: { email?: string }; metadata?: Record<string, unknown> };
+    };
     if (!res.ok || !json.status || !json.data) throw new Error("Verification failed");
-    if (json.data.status !== "success") return { status: "pending" as const };
+    const p = json.data;
+    if (p.status !== "success") return { status: "pending" as const };
+    // Reference echoed back by the provider must match what we asked about.
+    if (p.reference && p.reference !== data.reference) throw new Error("Verification failed");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const paidAt = json.data.paid_at ?? new Date().toISOString();
-    await supabaseAdmin
-      .from("transactions")
-      .update({ status: "paid", paid_at: paidAt, paystack_ref: String(json.data.id ?? ""), paystack_response: json.data as any })
-      .eq("id", txn.id)
-      .neq("status", "paid");
+    const { data: result, error } = await supabaseAdmin.rpc("finalize_payment", {
+      _reference: data.reference,
+      _provider: "paystack",
+      _provider_ref: String(p.id ?? ""),
+      _provider_event_id: `verify:${data.reference}`,
+      _amount_minor: Number(p.amount ?? -1),
+      _currency: String(p.currency ?? "NGN").toUpperCase(),
+      _customer_email: p.customer?.email ?? null,
+      _paid_at: p.paid_at ?? new Date().toISOString(),
+      _raw: p as never,
+    });
+    if (error) throw new Error(error.message);
 
-    const { data: existing } = await supabaseAdmin.from("receipts").select("id, qr_token").eq("transaction_id", txn.id).maybeSingle();
-    if (!existing) {
-      const qrToken = `${data.reference}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
-      await supabaseAdmin.from("receipts").insert({ transaction_id: txn.id, qr_token: qrToken });
+    const outcome = (Array.isArray(result) ? result[0]?.outcome : (result as any)?.outcome) as string | undefined;
+    if (outcome === "captured" || outcome === "already_paid") return { status: "paid" as const };
+    if (outcome === "amount_mismatch" || outcome === "currency_mismatch") {
+      throw new Error("Payment could not be confirmed — the amount received does not match this invoice. Support has been notified.");
     }
-
-    return { status: "paid" as const };
+    return { status: "pending" as const };
   });
+
