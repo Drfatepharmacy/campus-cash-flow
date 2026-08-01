@@ -195,7 +195,7 @@ export const verifyPayment = createServerFn({ method: "POST" })
       _provider_event_id: `verify:${data.reference}`,
       _amount_minor: Number(p.amount ?? -1),
       _currency: String(p.currency ?? "NGN").toUpperCase(),
-      _customer_email: p.customer?.email ?? null,
+      _customer_email: p.customer?.email ?? "",
       _paid_at: p.paid_at ?? new Date().toISOString(),
       _raw: p as never,
     });
