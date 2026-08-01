@@ -185,6 +185,56 @@ export type Database = {
           },
         ]
       }
+      payment_ledger: {
+        Row: {
+          amount_minor: number
+          created_at: string
+          currency: string
+          entry_type: string
+          id: string
+          metadata: Json
+          provider: string | null
+          provider_event_id: string | null
+          provider_ref: string | null
+          reference: string
+          transaction_id: string | null
+        }
+        Insert: {
+          amount_minor: number
+          created_at?: string
+          currency?: string
+          entry_type: string
+          id?: string
+          metadata?: Json
+          provider?: string | null
+          provider_event_id?: string | null
+          provider_ref?: string | null
+          reference: string
+          transaction_id?: string | null
+        }
+        Update: {
+          amount_minor?: number
+          created_at?: string
+          currency?: string
+          entry_type?: string
+          id?: string
+          metadata?: Json
+          provider?: string | null
+          provider_event_id?: string | null
+          provider_ref?: string | null
+          reference?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_ledger_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_requests: {
         Row: {
           active: boolean
@@ -553,7 +603,10 @@ export type Database = {
       transactions: {
         Row: {
           base_amount: number
+          base_minor: number
+          charge_minor: number
           created_at: string
+          currency: string
           id: string
           paid_at: string | null
           payment_request_id: string
@@ -565,11 +618,15 @@ export type Database = {
           status: Database["public"]["Enums"]["txn_status"]
           student_id: string
           total_amount: number
+          total_minor: number
           updated_at: string
         }
         Insert: {
           base_amount: number
+          base_minor: number
+          charge_minor: number
           created_at?: string
+          currency?: string
           id?: string
           paid_at?: string | null
           payment_request_id: string
@@ -581,11 +638,15 @@ export type Database = {
           status?: Database["public"]["Enums"]["txn_status"]
           student_id: string
           total_amount: number
+          total_minor: number
           updated_at?: string
         }
         Update: {
           base_amount?: number
+          base_minor?: number
+          charge_minor?: number
           created_at?: string
+          currency?: string
           id?: string
           paid_at?: string | null
           payment_request_id?: string
@@ -597,6 +658,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["txn_status"]
           student_id?: string
           total_amount?: number
+          total_minor?: number
           updated_at?: string
         }
         Relationships: [
@@ -637,11 +699,63 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_events: {
+        Row: {
+          event_id: string
+          event_type: string | null
+          id: string
+          outcome: string | null
+          payload_hash: string
+          processed_at: string
+          provider: string
+          reference: string | null
+        }
+        Insert: {
+          event_id: string
+          event_type?: string | null
+          id?: string
+          outcome?: string | null
+          payload_hash: string
+          processed_at?: string
+          provider: string
+          reference?: string | null
+        }
+        Update: {
+          event_id?: string
+          event_type?: string | null
+          id?: string
+          outcome?: string | null
+          payload_hash?: string
+          processed_at?: string
+          provider?: string
+          reference?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      finalize_payment: {
+        Args: {
+          _amount_minor: number
+          _currency: string
+          _customer_email: string
+          _paid_at: string
+          _provider: string
+          _provider_event_id: string
+          _provider_ref: string
+          _raw: Json
+          _reference: string
+        }
+        Returns: {
+          outcome: string
+          qr_token: string
+          transaction_id: string
+        }[]
+      }
+      gen_receipt_token: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

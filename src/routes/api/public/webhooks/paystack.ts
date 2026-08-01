@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, createHash, timingSafeEqual } from "crypto";
 import QRCode from "qrcode";
 
 
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
 
         const signature = request.headers.get("x-paystack-signature") ?? "";
         const body = await request.text();
+        if (body.length > 200_000) return new Response("payload too large", { status: 413 });
         const expected = createHmac("sha512", secret).update(body).digest("hex");
         const a = Buffer.from(signature);
         const b = Buffer.from(expected);
@@ -19,41 +20,73 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
           return new Response("invalid signature", { status: 401 });
         }
 
-        const event = JSON.parse(body) as { event: string; data: { reference: string; status: string; paid_at?: string; id?: number; metadata?: Record<string, unknown> } };
+        let event: {
+          event: string;
+          id?: string | number;
+          data: {
+            reference: string; status: string; paid_at?: string; id?: number;
+            amount?: number; currency?: string; customer?: { email?: string };
+            metadata?: Record<string, unknown>;
+          };
+        };
+        try { event = JSON.parse(body); } catch { return new Response("bad json", { status: 400 }); }
         if (event.event !== "charge.success") return new Response("ok", { status: 200 });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        const reference = event.data.reference;
-        const { data: txn, error: findErr } = await supabaseAdmin
-          .from("transactions")
-          .select("*, student:profiles!transactions_student_id_fkey(email, full_name), payment_request:payment_requests(title)")
-          .eq("reference", reference)
-          .maybeSingle();
-        if (findErr || !txn) return new Response("txn not found", { status: 404 });
-        if (txn.status === "paid") return new Response("already processed", { status: 200 });
+        const reference = String(event.data?.reference ?? "");
+        if (!/^[A-Za-z0-9-]{8,80}$/.test(reference)) return new Response("bad reference", { status: 400 });
 
-        const paidAt = event.data.paid_at ?? new Date().toISOString();
-        const { error: upErr } = await supabaseAdmin
-          .from("transactions")
-          .update({ status: "paid", paid_at: paidAt, paystack_ref: String(event.data.id ?? ""), paystack_response: event.data as any })
-          .eq("id", txn.id);
-        if (upErr) return new Response("update failed", { status: 500 });
-
-        // Idempotent receipt: insert if not exists.
-        const qrToken = `${reference}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
-        const { data: existing } = await supabaseAdmin.from("receipts").select("id, qr_token").eq("transaction_id", txn.id).maybeSingle();
-        const receiptToken = existing?.qr_token ?? qrToken;
-        if (!existing) {
-          await supabaseAdmin.from("receipts").insert({ transaction_id: txn.id, qr_token: qrToken });
+        // Replay protection: the (provider, event_id) pair may only be processed once.
+        const payloadHash = createHash("sha256").update(body).digest("hex");
+        const eventId = String(event.id ?? event.data?.id ?? payloadHash);
+        const { error: dupErr } = await supabaseAdmin.from("webhook_events").insert({
+          provider: "paystack",
+          event_id: eventId,
+          event_type: event.event,
+          reference,
+          payload_hash: payloadHash,
+          outcome: "processing",
+        });
+        if (dupErr) {
+          // Unique violation => already handled. Ack so Paystack stops retrying.
+          return new Response("duplicate", { status: 200 });
         }
 
-        await supabaseAdmin.from("audit_logs").insert({
-          action: "payment.completed",
-          entity: "transaction",
-          entity_id: txn.id,
-          metadata: { reference, total_amount: txn.total_amount } as any,
+        const { data: rpc, error: finErr } = await supabaseAdmin.rpc("finalize_payment", {
+          _reference: reference,
+          _provider: "paystack",
+          _provider_ref: String(event.data.id ?? ""),
+          _provider_event_id: eventId,
+          _amount_minor: Number(event.data.amount ?? -1),
+          _currency: String(event.data.currency ?? "NGN").toUpperCase(),
+          _customer_email: event.data.customer?.email ?? "",
+          _paid_at: event.data.paid_at ?? new Date().toISOString(),
+          _raw: event.data as never,
         });
+        if (finErr) {
+          await supabaseAdmin.from("webhook_events").update({ outcome: "error" }).eq("provider", "paystack").eq("event_id", eventId);
+          return new Response("finalize failed", { status: 500 });
+        }
+
+        const row = (Array.isArray(rpc) ? rpc[0] : rpc) as { outcome: string; transaction_id: string | null; qr_token: string | null } | null;
+        const outcome = row?.outcome ?? "unknown";
+        await supabaseAdmin.from("webhook_events").update({ outcome }).eq("provider", "paystack").eq("event_id", eventId);
+
+        if (outcome !== "captured") {
+          // already_paid / amount_mismatch / not_found are recorded in the ledger; ack to stop retries.
+          return new Response(outcome, { status: 200 });
+        }
+
+        const receiptToken = row?.qr_token ?? "";
+        const { data: txn } = await supabaseAdmin
+          .from("transactions")
+          .select("id, total_amount, student:profiles!transactions_student_id_fkey(email, full_name), payment_request:payment_requests(title)")
+          .eq("reference", reference)
+          .maybeSingle();
+        if (!txn) return new Response("ok", { status: 200 });
+        const paidAt = event.data.paid_at ?? new Date().toISOString();
+
 
         // Send receipt email via Resend connector gateway.
         const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
