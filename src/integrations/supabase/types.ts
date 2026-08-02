@@ -676,6 +676,13 @@ export type Database = {
             referencedRelation: "settlements"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transactions_student_id_profiles_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
