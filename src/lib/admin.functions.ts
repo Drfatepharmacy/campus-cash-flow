@@ -45,7 +45,7 @@ export const listTransactions = createServerFn({ method: "GET" })
     await assertAdmin(context as never);
     const { data } = await context.supabase
       .from("transactions")
-      .select("*, student:profiles!transactions_student_id_fkey(full_name, matric_no, email), payment_request:payment_requests(title)")
+      .select("*, student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no, email), payment_request:payment_requests(title)")
       .order("created_at", { ascending: false })
       .limit(200);
     return data ?? [];

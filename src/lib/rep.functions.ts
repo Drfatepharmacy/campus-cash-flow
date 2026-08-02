@@ -26,7 +26,7 @@ export const getRepOverview = createServerFn({ method: "GET" })
     // Build query against transactions joined to payment_requests for scope filter
     let query = supabaseAdmin
       .from("transactions")
-      .select("id, reference, base_amount, service_charge, total_amount, status, paid_at, created_at, student:profiles!transactions_student_id_fkey(full_name, matric_no), payment_request:payment_requests!inner(title, target_faculty_id, target_department_id)")
+      .select("id, reference, base_amount, service_charge, total_amount, status, paid_at, created_at, student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no), payment_request:payment_requests!inner(title, target_faculty_id, target_department_id)")
       .order("created_at", { ascending: false })
       .limit(200);
 
