@@ -81,7 +81,7 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
         const receiptToken = row?.qr_token ?? "";
         const { data: txn } = await supabaseAdmin
           .from("transactions")
-          .select("id, total_amount, student:profiles!transactions_student_id_fkey(email, full_name), payment_request:payment_requests(title)")
+          .select("id, total_amount, student:profiles!transactions_student_id_profiles_fkey(email, full_name), payment_request:payment_requests(title)")
           .eq("reference", reference)
           .maybeSingle();
         if (!txn) return new Response("ok", { status: 200 });

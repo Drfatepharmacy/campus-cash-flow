@@ -8,7 +8,7 @@ export const getMyReceipt = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: receipt } = await context.supabase
       .from("receipts")
-      .select("id, qr_token, issued_at, transaction:transactions(*, payment_request:payment_requests(title, description), student:profiles!transactions_student_id_fkey(full_name, matric_no, email))")
+      .select("id, qr_token, issued_at, transaction:transactions(*, payment_request:payment_requests(title, description), student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no, email))")
       .eq("qr_token", data.token)
       .maybeSingle();
     if (!receipt) throw new Error("Receipt not found");

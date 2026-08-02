@@ -8,7 +8,7 @@ export const verifyReceipt = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: receipt } = await supabaseAdmin
       .from("receipts")
-      .select("id, issued_at, transaction:transactions(reference, base_amount, service_charge, total_amount, status, paid_at, payment_request:payment_requests(title), student:profiles!transactions_student_id_fkey(full_name, matric_no))")
+      .select("id, issued_at, transaction:transactions(reference, base_amount, service_charge, total_amount, status, paid_at, payment_request:payment_requests(title), student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no))")
       .eq("qr_token", data.token)
       .maybeSingle();
     if (!receipt || !receipt.transaction) return { valid: false as const };
