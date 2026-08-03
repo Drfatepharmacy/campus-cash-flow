@@ -47,6 +47,7 @@ import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
 import { Route as AuthenticatedAssociationSlugRouteRouteImport } from './routes/_authenticated/association/$slug/route'
+import { Route as AuthenticatedAssociationSlugIndexRouteImport } from './routes/_authenticated/association/$slug/index'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
 
 const AuthRoute = AuthRouteImport.update({
@@ -254,6 +255,12 @@ const AuthenticatedAssociationSlugRouteRoute =
     path: '/association/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAssociationSlugIndexRoute =
+  AuthenticatedAssociationSlugIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
 const ApiPublicWebhooksPaystackRoute =
   ApiPublicWebhooksPaystackRouteImport.update({
     id: '/api/public/webhooks/paystack',
@@ -281,7 +288,7 @@ export interface FileRoutesByFullPath {
   '/verify/$token': typeof VerifyTokenRoute
   '/associations/': typeof AssociationsIndexRoute
   '/verify/': typeof VerifyIndexRoute
-  '/association/$slug': typeof AuthenticatedAssociationSlugRouteRoute
+  '/association/$slug': typeof AuthenticatedAssociationSlugRouteRouteWithChildren
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
@@ -300,6 +307,7 @@ export interface FileRoutesByFullPath {
   '/rep/': typeof AuthenticatedRepIndexRoute
   '/runner/': typeof AuthenticatedRunnerIndexRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
+  '/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -318,7 +326,6 @@ export interface FileRoutesByTo {
   '/verify/$token': typeof VerifyTokenRoute
   '/associations': typeof AssociationsIndexRoute
   '/verify': typeof VerifyIndexRoute
-  '/association/$slug': typeof AuthenticatedAssociationSlugRouteRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/rep': typeof AuthenticatedRepIndexRoute
   '/runner': typeof AuthenticatedRunnerIndexRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
+  '/association/$slug': typeof AuthenticatedAssociationSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -360,7 +368,7 @@ export interface FileRoutesById {
   '/verify/$token': typeof VerifyTokenRoute
   '/associations/': typeof AssociationsIndexRoute
   '/verify/': typeof VerifyIndexRoute
-  '/_authenticated/association/$slug': typeof AuthenticatedAssociationSlugRouteRoute
+  '/_authenticated/association/$slug': typeof AuthenticatedAssociationSlugRouteRouteWithChildren
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
@@ -379,6 +387,7 @@ export interface FileRoutesById {
   '/_authenticated/rep/': typeof AuthenticatedRepIndexRoute
   '/_authenticated/runner/': typeof AuthenticatedRunnerIndexRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
+  '/_authenticated/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -421,6 +430,7 @@ export interface FileRouteTypes {
     | '/rep/'
     | '/runner/'
     | '/api/public/webhooks/paystack'
+    | '/association/$slug/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -439,7 +449,6 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/associations'
     | '/verify'
-    | '/association/$slug'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/faculties'
@@ -458,6 +467,7 @@ export interface FileRouteTypes {
     | '/rep'
     | '/runner'
     | '/api/public/webhooks/paystack'
+    | '/association/$slug'
   id:
     | '__root__'
     | '/'
@@ -499,6 +509,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rep/'
     | '/_authenticated/runner/'
     | '/api/public/webhooks/paystack'
+    | '/_authenticated/association/$slug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -780,6 +791,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssociationSlugRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/association/$slug/': {
+      id: '/_authenticated/association/$slug/'
+      path: '/'
+      fullPath: '/association/$slug/'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugIndexRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
     '/api/public/webhooks/paystack': {
       id: '/api/public/webhooks/paystack'
       path: '/api/public/webhooks/paystack'
@@ -854,13 +872,28 @@ const AuthenticatedRunnerRouteRouteWithChildren =
     AuthenticatedRunnerRouteRouteChildren,
   )
 
+interface AuthenticatedAssociationSlugRouteRouteChildren {
+  AuthenticatedAssociationSlugIndexRoute: typeof AuthenticatedAssociationSlugIndexRoute
+}
+
+const AuthenticatedAssociationSlugRouteRouteChildren: AuthenticatedAssociationSlugRouteRouteChildren =
+  {
+    AuthenticatedAssociationSlugIndexRoute:
+      AuthenticatedAssociationSlugIndexRoute,
+  }
+
+const AuthenticatedAssociationSlugRouteRouteWithChildren =
+  AuthenticatedAssociationSlugRouteRoute._addFileChildren(
+    AuthenticatedAssociationSlugRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedRepRouteRoute: typeof AuthenticatedRepRouteRouteWithChildren
   AuthenticatedRunnerRouteRoute: typeof AuthenticatedRunnerRouteRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
-  AuthenticatedAssociationSlugRouteRoute: typeof AuthenticatedAssociationSlugRouteRoute
+  AuthenticatedAssociationSlugRouteRoute: typeof AuthenticatedAssociationSlugRouteRouteWithChildren
   AuthenticatedAssociationsNewRoute: typeof AuthenticatedAssociationsNewRoute
   AuthenticatedPayRequestIdRoute: typeof AuthenticatedPayRequestIdRoute
   AuthenticatedReceiptTokenRoute: typeof AuthenticatedReceiptTokenRoute
@@ -873,7 +906,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedAssociationSlugRouteRoute:
-    AuthenticatedAssociationSlugRouteRoute,
+    AuthenticatedAssociationSlugRouteRouteWithChildren,
   AuthenticatedAssociationsNewRoute: AuthenticatedAssociationsNewRoute,
   AuthenticatedPayRequestIdRoute: AuthenticatedPayRequestIdRoute,
   AuthenticatedReceiptTokenRoute: AuthenticatedReceiptTokenRoute,
