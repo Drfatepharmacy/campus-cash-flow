@@ -14,6 +14,7 @@ import { Route as LegalRouteRouteImport } from './routes/legal.route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VerifyIndexRouteImport } from './routes/verify.index'
+import { Route as AssociationsIndexRouteImport } from './routes/associations.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalSecurityRouteImport } from './routes/legal.security'
@@ -33,6 +34,7 @@ import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
+import { Route as AuthenticatedAssociationsNewRouteImport } from './routes/_authenticated/associations/new'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin/transactions'
 import { Route as AuthenticatedAdminStudentsRouteImport } from './routes/_authenticated/admin/students'
@@ -44,7 +46,14 @@ import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/
 import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin/faculties'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
+import { Route as AuthenticatedAssociationSlugRouteRouteImport } from './routes/_authenticated/association/$slug/route'
+import { Route as AuthenticatedAssociationSlugIndexRouteImport } from './routes/_authenticated/association/$slug/index'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
+import { Route as AuthenticatedAssociationSlugMembersRouteImport } from './routes/_authenticated/association/$slug/members'
+import { Route as AuthenticatedAssociationSlugFinanceRouteImport } from './routes/_authenticated/association/$slug/finance'
+import { Route as AuthenticatedAssociationSlugExecutivesRouteImport } from './routes/_authenticated/association/$slug/executives'
+import { Route as AuthenticatedAssociationSlugAuditRouteImport } from './routes/_authenticated/association/$slug/audit'
+import { Route as AuthenticatedAssociationSlugApprovalsRouteImport } from './routes/_authenticated/association/$slug/approvals'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -68,6 +77,11 @@ const IndexRoute = IndexRouteImport.update({
 const VerifyIndexRoute = VerifyIndexRouteImport.update({
   id: '/verify/',
   path: '/verify/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssociationsIndexRoute = AssociationsIndexRouteImport.update({
+  id: '/associations/',
+  path: '/associations/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyTokenRoute = VerifyTokenRouteImport.update({
@@ -170,6 +184,12 @@ const AuthenticatedPayRequestIdRoute =
     path: '/pay/$requestId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAssociationsNewRoute =
+  AuthenticatedAssociationsNewRouteImport.update({
+    id: '/associations/new',
+    path: '/associations/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -234,11 +254,53 @@ const AuthenticatedAdminAnalyticsRoute =
     path: '/analytics',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAssociationSlugRouteRoute =
+  AuthenticatedAssociationSlugRouteRouteImport.update({
+    id: '/association/$slug',
+    path: '/association/$slug',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugIndexRoute =
+  AuthenticatedAssociationSlugIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
 const ApiPublicWebhooksPaystackRoute =
   ApiPublicWebhooksPaystackRouteImport.update({
     id: '/api/public/webhooks/paystack',
     path: '/api/public/webhooks/paystack',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedAssociationSlugMembersRoute =
+  AuthenticatedAssociationSlugMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugFinanceRoute =
+  AuthenticatedAssociationSlugFinanceRouteImport.update({
+    id: '/finance',
+    path: '/finance',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugExecutivesRoute =
+  AuthenticatedAssociationSlugExecutivesRouteImport.update({
+    id: '/executives',
+    path: '/executives',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugAuditRoute =
+  AuthenticatedAssociationSlugAuditRouteImport.update({
+    id: '/audit',
+    path: '/audit',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugApprovalsRoute =
+  AuthenticatedAssociationSlugApprovalsRouteImport.update({
+    id: '/approvals',
+    path: '/approvals',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -259,7 +321,9 @@ export interface FileRoutesByFullPath {
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/associations/': typeof AssociationsIndexRoute
   '/verify/': typeof VerifyIndexRoute
+  '/association/$slug': typeof AuthenticatedAssociationSlugRouteRouteWithChildren
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
@@ -271,12 +335,19 @@ export interface FileRoutesByFullPath {
   '/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/rep/': typeof AuthenticatedRepIndexRoute
   '/runner/': typeof AuthenticatedRunnerIndexRoute
+  '/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
+  '/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
+  '/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
+  '/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
+  '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
+  '/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -293,6 +364,7 @@ export interface FileRoutesByTo {
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/associations': typeof AssociationsIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -305,12 +377,19 @@ export interface FileRoutesByTo {
   '/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/rep': typeof AuthenticatedRepIndexRoute
   '/runner': typeof AuthenticatedRunnerIndexRoute
+  '/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
+  '/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
+  '/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
+  '/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
+  '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
+  '/association/$slug': typeof AuthenticatedAssociationSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -332,7 +411,9 @@ export interface FileRoutesById {
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/associations/': typeof AssociationsIndexRoute
   '/verify/': typeof VerifyIndexRoute
+  '/_authenticated/association/$slug': typeof AuthenticatedAssociationSlugRouteRouteWithChildren
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
@@ -344,12 +425,19 @@ export interface FileRoutesById {
   '/_authenticated/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/_authenticated/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/_authenticated/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/rep/': typeof AuthenticatedRepIndexRoute
   '/_authenticated/runner/': typeof AuthenticatedRunnerIndexRoute
+  '/_authenticated/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
+  '/_authenticated/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
+  '/_authenticated/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
+  '/_authenticated/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
+  '/_authenticated/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
+  '/_authenticated/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -371,7 +459,9 @@ export interface FileRouteTypes {
     | '/legal/security'
     | '/legal/terms'
     | '/verify/$token'
+    | '/associations/'
     | '/verify/'
+    | '/association/$slug'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/faculties'
@@ -383,12 +473,19 @@ export interface FileRouteTypes {
     | '/admin/students'
     | '/admin/transactions'
     | '/admin/users'
+    | '/associations/new'
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/admin/'
     | '/rep/'
     | '/runner/'
+    | '/association/$slug/approvals'
+    | '/association/$slug/audit'
+    | '/association/$slug/executives'
+    | '/association/$slug/finance'
+    | '/association/$slug/members'
     | '/api/public/webhooks/paystack'
+    | '/association/$slug/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -405,6 +502,7 @@ export interface FileRouteTypes {
     | '/legal/security'
     | '/legal/terms'
     | '/verify/$token'
+    | '/associations'
     | '/verify'
     | '/admin/analytics'
     | '/admin/audit'
@@ -417,12 +515,19 @@ export interface FileRouteTypes {
     | '/admin/students'
     | '/admin/transactions'
     | '/admin/users'
+    | '/associations/new'
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/admin'
     | '/rep'
     | '/runner'
+    | '/association/$slug/approvals'
+    | '/association/$slug/audit'
+    | '/association/$slug/executives'
+    | '/association/$slug/finance'
+    | '/association/$slug/members'
     | '/api/public/webhooks/paystack'
+    | '/association/$slug'
   id:
     | '__root__'
     | '/'
@@ -443,7 +548,9 @@ export interface FileRouteTypes {
     | '/legal/security'
     | '/legal/terms'
     | '/verify/$token'
+    | '/associations/'
     | '/verify/'
+    | '/_authenticated/association/$slug'
     | '/_authenticated/admin/analytics'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/faculties'
@@ -455,12 +562,19 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/students'
     | '/_authenticated/admin/transactions'
     | '/_authenticated/admin/users'
+    | '/_authenticated/associations/new'
     | '/_authenticated/pay/$requestId'
     | '/_authenticated/receipt/$token'
     | '/_authenticated/admin/'
     | '/_authenticated/rep/'
     | '/_authenticated/runner/'
+    | '/_authenticated/association/$slug/approvals'
+    | '/_authenticated/association/$slug/audit'
+    | '/_authenticated/association/$slug/executives'
+    | '/_authenticated/association/$slug/finance'
+    | '/_authenticated/association/$slug/members'
     | '/api/public/webhooks/paystack'
+    | '/_authenticated/association/$slug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -469,6 +583,7 @@ export interface RootRouteChildren {
   LegalRouteRoute: typeof LegalRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
+  AssociationsIndexRoute: typeof AssociationsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   ApiPublicWebhooksPaystackRoute: typeof ApiPublicWebhooksPaystackRoute
 }
@@ -508,6 +623,13 @@ declare module '@tanstack/react-router' {
       path: '/verify'
       fullPath: '/verify/'
       preLoaderRoute: typeof VerifyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/associations/': {
+      id: '/associations/'
+      path: '/associations'
+      fullPath: '/associations/'
+      preLoaderRoute: typeof AssociationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify/$token': {
@@ -643,6 +765,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPayRequestIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/associations/new': {
+      id: '/_authenticated/associations/new'
+      path: '/associations/new'
+      fullPath: '/associations/new'
+      preLoaderRoute: typeof AuthenticatedAssociationsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/users'
@@ -720,12 +849,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/association/$slug': {
+      id: '/_authenticated/association/$slug'
+      path: '/association/$slug'
+      fullPath: '/association/$slug'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/association/$slug/': {
+      id: '/_authenticated/association/$slug/'
+      path: '/'
+      fullPath: '/association/$slug/'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugIndexRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
     '/api/public/webhooks/paystack': {
       id: '/api/public/webhooks/paystack'
       path: '/api/public/webhooks/paystack'
       fullPath: '/api/public/webhooks/paystack'
       preLoaderRoute: typeof ApiPublicWebhooksPaystackRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/association/$slug/members': {
+      id: '/_authenticated/association/$slug/members'
+      path: '/members'
+      fullPath: '/association/$slug/members'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugMembersRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
+    '/_authenticated/association/$slug/finance': {
+      id: '/_authenticated/association/$slug/finance'
+      path: '/finance'
+      fullPath: '/association/$slug/finance'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugFinanceRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
+    '/_authenticated/association/$slug/executives': {
+      id: '/_authenticated/association/$slug/executives'
+      path: '/executives'
+      fullPath: '/association/$slug/executives'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugExecutivesRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
+    '/_authenticated/association/$slug/audit': {
+      id: '/_authenticated/association/$slug/audit'
+      path: '/audit'
+      fullPath: '/association/$slug/audit'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugAuditRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
+    '/_authenticated/association/$slug/approvals': {
+      id: '/_authenticated/association/$slug/approvals'
+      path: '/approvals'
+      fullPath: '/association/$slug/approvals'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugApprovalsRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
     }
   }
 }
@@ -794,12 +972,44 @@ const AuthenticatedRunnerRouteRouteWithChildren =
     AuthenticatedRunnerRouteRouteChildren,
   )
 
+interface AuthenticatedAssociationSlugRouteRouteChildren {
+  AuthenticatedAssociationSlugApprovalsRoute: typeof AuthenticatedAssociationSlugApprovalsRoute
+  AuthenticatedAssociationSlugAuditRoute: typeof AuthenticatedAssociationSlugAuditRoute
+  AuthenticatedAssociationSlugExecutivesRoute: typeof AuthenticatedAssociationSlugExecutivesRoute
+  AuthenticatedAssociationSlugFinanceRoute: typeof AuthenticatedAssociationSlugFinanceRoute
+  AuthenticatedAssociationSlugMembersRoute: typeof AuthenticatedAssociationSlugMembersRoute
+  AuthenticatedAssociationSlugIndexRoute: typeof AuthenticatedAssociationSlugIndexRoute
+}
+
+const AuthenticatedAssociationSlugRouteRouteChildren: AuthenticatedAssociationSlugRouteRouteChildren =
+  {
+    AuthenticatedAssociationSlugApprovalsRoute:
+      AuthenticatedAssociationSlugApprovalsRoute,
+    AuthenticatedAssociationSlugAuditRoute:
+      AuthenticatedAssociationSlugAuditRoute,
+    AuthenticatedAssociationSlugExecutivesRoute:
+      AuthenticatedAssociationSlugExecutivesRoute,
+    AuthenticatedAssociationSlugFinanceRoute:
+      AuthenticatedAssociationSlugFinanceRoute,
+    AuthenticatedAssociationSlugMembersRoute:
+      AuthenticatedAssociationSlugMembersRoute,
+    AuthenticatedAssociationSlugIndexRoute:
+      AuthenticatedAssociationSlugIndexRoute,
+  }
+
+const AuthenticatedAssociationSlugRouteRouteWithChildren =
+  AuthenticatedAssociationSlugRouteRoute._addFileChildren(
+    AuthenticatedAssociationSlugRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedRepRouteRoute: typeof AuthenticatedRepRouteRouteWithChildren
   AuthenticatedRunnerRouteRoute: typeof AuthenticatedRunnerRouteRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedAssociationSlugRouteRoute: typeof AuthenticatedAssociationSlugRouteRouteWithChildren
+  AuthenticatedAssociationsNewRoute: typeof AuthenticatedAssociationsNewRoute
   AuthenticatedPayRequestIdRoute: typeof AuthenticatedPayRequestIdRoute
   AuthenticatedReceiptTokenRoute: typeof AuthenticatedReceiptTokenRoute
 }
@@ -810,6 +1020,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRunnerRouteRoute: AuthenticatedRunnerRouteRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedAssociationSlugRouteRoute:
+    AuthenticatedAssociationSlugRouteRouteWithChildren,
+  AuthenticatedAssociationsNewRoute: AuthenticatedAssociationsNewRoute,
   AuthenticatedPayRequestIdRoute: AuthenticatedPayRequestIdRoute,
   AuthenticatedReceiptTokenRoute: AuthenticatedReceiptTokenRoute,
 }
@@ -849,19 +1062,10 @@ const rootRouteChildren: RootRouteChildren = {
   LegalRouteRoute: LegalRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   VerifyTokenRoute: VerifyTokenRoute,
+  AssociationsIndexRoute: AssociationsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   ApiPublicWebhooksPaystackRoute: ApiPublicWebhooksPaystackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
