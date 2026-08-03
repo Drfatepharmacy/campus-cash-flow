@@ -14,6 +14,7 @@ import { Route as LegalRouteRouteImport } from './routes/legal.route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VerifyIndexRouteImport } from './routes/verify.index'
+import { Route as AssociationsIndexRouteImport } from './routes/associations.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalSecurityRouteImport } from './routes/legal.security'
@@ -33,6 +34,7 @@ import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
+import { Route as AuthenticatedAssociationsNewRouteImport } from './routes/_authenticated/associations/new'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin/transactions'
 import { Route as AuthenticatedAdminStudentsRouteImport } from './routes/_authenticated/admin/students'
@@ -68,6 +70,11 @@ const IndexRoute = IndexRouteImport.update({
 const VerifyIndexRoute = VerifyIndexRouteImport.update({
   id: '/verify/',
   path: '/verify/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssociationsIndexRoute = AssociationsIndexRouteImport.update({
+  id: '/associations/',
+  path: '/associations/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyTokenRoute = VerifyTokenRouteImport.update({
@@ -170,6 +177,12 @@ const AuthenticatedPayRequestIdRoute =
     path: '/pay/$requestId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAssociationsNewRoute =
+  AuthenticatedAssociationsNewRouteImport.update({
+    id: '/associations/new',
+    path: '/associations/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -259,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/associations/': typeof AssociationsIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -271,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -293,6 +308,7 @@ export interface FileRoutesByTo {
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/associations': typeof AssociationsIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -305,6 +321,7 @@ export interface FileRoutesByTo {
   '/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -332,6 +349,7 @@ export interface FileRoutesById {
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/associations/': typeof AssociationsIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -344,6 +362,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/_authenticated/admin/transactions': typeof AuthenticatedAdminTransactionsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/_authenticated/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/_authenticated/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -371,6 +390,7 @@ export interface FileRouteTypes {
     | '/legal/security'
     | '/legal/terms'
     | '/verify/$token'
+    | '/associations/'
     | '/verify/'
     | '/admin/analytics'
     | '/admin/audit'
@@ -383,6 +403,7 @@ export interface FileRouteTypes {
     | '/admin/students'
     | '/admin/transactions'
     | '/admin/users'
+    | '/associations/new'
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/admin/'
@@ -405,6 +426,7 @@ export interface FileRouteTypes {
     | '/legal/security'
     | '/legal/terms'
     | '/verify/$token'
+    | '/associations'
     | '/verify'
     | '/admin/analytics'
     | '/admin/audit'
@@ -417,6 +439,7 @@ export interface FileRouteTypes {
     | '/admin/students'
     | '/admin/transactions'
     | '/admin/users'
+    | '/associations/new'
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/admin'
@@ -443,6 +466,7 @@ export interface FileRouteTypes {
     | '/legal/security'
     | '/legal/terms'
     | '/verify/$token'
+    | '/associations/'
     | '/verify/'
     | '/_authenticated/admin/analytics'
     | '/_authenticated/admin/audit'
@@ -455,6 +479,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/students'
     | '/_authenticated/admin/transactions'
     | '/_authenticated/admin/users'
+    | '/_authenticated/associations/new'
     | '/_authenticated/pay/$requestId'
     | '/_authenticated/receipt/$token'
     | '/_authenticated/admin/'
@@ -469,6 +494,7 @@ export interface RootRouteChildren {
   LegalRouteRoute: typeof LegalRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
+  AssociationsIndexRoute: typeof AssociationsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   ApiPublicWebhooksPaystackRoute: typeof ApiPublicWebhooksPaystackRoute
 }
@@ -508,6 +534,13 @@ declare module '@tanstack/react-router' {
       path: '/verify'
       fullPath: '/verify/'
       preLoaderRoute: typeof VerifyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/associations/': {
+      id: '/associations/'
+      path: '/associations'
+      fullPath: '/associations/'
+      preLoaderRoute: typeof AssociationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify/$token': {
@@ -641,6 +674,13 @@ declare module '@tanstack/react-router' {
       path: '/pay/$requestId'
       fullPath: '/pay/$requestId'
       preLoaderRoute: typeof AuthenticatedPayRequestIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/associations/new': {
+      id: '/_authenticated/associations/new'
+      path: '/associations/new'
+      fullPath: '/associations/new'
+      preLoaderRoute: typeof AuthenticatedAssociationsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/users': {
@@ -800,6 +840,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRunnerRouteRoute: typeof AuthenticatedRunnerRouteRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedAssociationsNewRoute: typeof AuthenticatedAssociationsNewRoute
   AuthenticatedPayRequestIdRoute: typeof AuthenticatedPayRequestIdRoute
   AuthenticatedReceiptTokenRoute: typeof AuthenticatedReceiptTokenRoute
 }
@@ -810,6 +851,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRunnerRouteRoute: AuthenticatedRunnerRouteRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedAssociationsNewRoute: AuthenticatedAssociationsNewRoute,
   AuthenticatedPayRequestIdRoute: AuthenticatedPayRequestIdRoute,
   AuthenticatedReceiptTokenRoute: AuthenticatedReceiptTokenRoute,
 }
@@ -849,19 +891,10 @@ const rootRouteChildren: RootRouteChildren = {
   LegalRouteRoute: LegalRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   VerifyTokenRoute: VerifyTokenRoute,
+  AssociationsIndexRoute: AssociationsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   ApiPublicWebhooksPaystackRoute: ApiPublicWebhooksPaystackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

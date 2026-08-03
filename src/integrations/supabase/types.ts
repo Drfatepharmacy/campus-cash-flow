@@ -14,10 +14,367 @@ export type Database = {
   }
   public: {
     Tables: {
+      approval_requests: {
+        Row: {
+          action_type: string
+          approved_at: string | null
+          approved_by: string | null
+          association_id: string
+          created_at: string
+          decision_reason: string | null
+          executed_at: string | null
+          id: string
+          payload: Json
+          reason: string | null
+          requested_by: string
+          requires_super_admin: boolean
+          status: Database["public"]["Enums"]["approval_request_status"]
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          approved_at?: string | null
+          approved_by?: string | null
+          association_id: string
+          created_at?: string
+          decision_reason?: string | null
+          executed_at?: string | null
+          id?: string
+          payload?: Json
+          reason?: string | null
+          requested_by: string
+          requires_super_admin?: boolean
+          status?: Database["public"]["Enums"]["approval_request_status"]
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          association_id?: string
+          created_at?: string
+          decision_reason?: string | null
+          executed_at?: string | null
+          id?: string
+          payload?: Json
+          reason?: string | null
+          requested_by?: string
+          requires_super_admin?: boolean
+          status?: Database["public"]["Enums"]["approval_request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_requests_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      association_financial_accounts: {
+        Row: {
+          account_last4: string
+          account_name: string
+          account_number: string
+          association_id: string
+          bank_name: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_primary: boolean
+          updated_at: string
+          verified: boolean
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          account_last4: string
+          account_name: string
+          account_number: string
+          association_id: string
+          bank_name: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_primary?: boolean
+          updated_at?: string
+          verified?: boolean
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          account_last4?: string
+          account_name?: string
+          account_number?: string
+          association_id?: string
+          bank_name?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_primary?: boolean
+          updated_at?: string
+          verified?: boolean
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_financial_accounts_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      association_memberships: {
+        Row: {
+          association_id: string
+          created_at: string
+          id: string
+          joined_at: string | null
+          status: Database["public"]["Enums"]["membership_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          association_id: string
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          status?: Database["public"]["Enums"]["membership_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          association_id?: string
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          status?: Database["public"]["Enums"]["membership_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_memberships_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      association_role_assignments: {
+        Row: {
+          appointment_source: string
+          approved_at: string | null
+          approved_by: string | null
+          association_id: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          revocation_reason: string | null
+          role_key: string
+          starts_at: string
+          status: Database["public"]["Enums"]["assignment_status"]
+          term_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          appointment_source?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          association_id: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          revocation_reason?: string | null
+          role_key: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["assignment_status"]
+          term_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          appointment_source?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          association_id?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          revocation_reason?: string | null
+          role_key?: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["assignment_status"]
+          term_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_role_assignments_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "association_role_assignments_role_key_fkey"
+            columns: ["role_key"]
+            isOneToOne: false
+            referencedRelation: "association_roles"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "association_role_assignments_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "executive_terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      association_roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          is_head: boolean
+          key: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          is_head?: boolean
+          key: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          is_head?: boolean
+          key?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      associations: {
+        Row: {
+          banner_url: string | null
+          campus_id: string | null
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          faculty_id: string | null
+          financials_enabled: boolean
+          id: string
+          institution: string
+          logo_url: string | null
+          name: string
+          official_email: string | null
+          official_phone: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          session_year: string | null
+          short_name: string | null
+          slug: string
+          status: Database["public"]["Enums"]["association_status"]
+          status_reason: string | null
+          type: Database["public"]["Enums"]["association_type"]
+          updated_at: string
+          verification_documents: Json
+        }
+        Insert: {
+          banner_url?: string | null
+          campus_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          faculty_id?: string | null
+          financials_enabled?: boolean
+          id?: string
+          institution: string
+          logo_url?: string | null
+          name: string
+          official_email?: string | null
+          official_phone?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          session_year?: string | null
+          short_name?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["association_status"]
+          status_reason?: string | null
+          type?: Database["public"]["Enums"]["association_type"]
+          updated_at?: string
+          verification_documents?: Json
+        }
+        Update: {
+          banner_url?: string | null
+          campus_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          faculty_id?: string | null
+          financials_enabled?: boolean
+          id?: string
+          institution?: string
+          logo_url?: string | null
+          name?: string
+          official_email?: string | null
+          official_phone?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          session_year?: string | null
+          short_name?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["association_status"]
+          status_reason?: string | null
+          type?: Database["public"]["Enums"]["association_type"]
+          updated_at?: string
+          verification_documents?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "associations_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "associations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "associations_faculty_id_fkey"
+            columns: ["faculty_id"]
+            isOneToOne: false
+            referencedRelation: "faculties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
           actor_id: string | null
+          association_id: string | null
           created_at: string
           entity: string | null
           entity_id: string | null
@@ -28,6 +385,7 @@ export type Database = {
         Insert: {
           action: string
           actor_id?: string | null
+          association_id?: string | null
           created_at?: string
           entity?: string | null
           entity_id?: string | null
@@ -38,6 +396,7 @@ export type Database = {
         Update: {
           action?: string
           actor_id?: string | null
+          association_id?: string | null
           created_at?: string
           entity?: string | null
           entity_id?: string | null
@@ -45,7 +404,15 @@ export type Database = {
           ip?: string | null
           metadata?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       campuses: {
         Row: {
@@ -153,6 +520,53 @@ export type Database = {
           },
         ]
       }
+      executive_terms: {
+        Row: {
+          association_id: string
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          is_current: boolean
+          label: string
+          session_year: string | null
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          association_id: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          is_current?: boolean
+          label: string
+          session_year?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          association_id?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          is_current?: boolean
+          label?: string
+          session_year?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_terms_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faculties: {
         Row: {
           campus_id: string
@@ -181,6 +595,85 @@ export type Database = {
             columns: ["campus_id"]
             isOneToOne: false
             referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leadership_nominations: {
+        Row: {
+          association_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reason: string | null
+          evidence: Json
+          id: string
+          nominee_email: string | null
+          nominee_name: string
+          nominee_user_id: string | null
+          notes: string | null
+          role_key: string
+          status: Database["public"]["Enums"]["nomination_status"]
+          submitted_by: string | null
+          term_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          association_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          evidence?: Json
+          id?: string
+          nominee_email?: string | null
+          nominee_name: string
+          nominee_user_id?: string | null
+          notes?: string | null
+          role_key: string
+          status?: Database["public"]["Enums"]["nomination_status"]
+          submitted_by?: string | null
+          term_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          association_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          evidence?: Json
+          id?: string
+          nominee_email?: string | null
+          nominee_name?: string
+          nominee_user_id?: string | null
+          notes?: string | null
+          role_key?: string
+          status?: Database["public"]["Enums"]["nomination_status"]
+          submitted_by?: string | null
+          term_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leadership_nominations_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leadership_nominations_role_key_fkey"
+            columns: ["role_key"]
+            isOneToOne: false
+            referencedRelation: "association_roles"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "leadership_nominations_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "executive_terms"
             referencedColumns: ["id"]
           },
         ]
@@ -238,6 +731,7 @@ export type Database = {
       payment_requests: {
         Row: {
           active: boolean
+          association_id: string | null
           base_amount: number
           campus_id: string
           closes_at: string | null
@@ -254,6 +748,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          association_id?: string | null
           base_amount: number
           campus_id: string
           closes_at?: string | null
@@ -270,6 +765,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          association_id?: string | null
           base_amount?: number
           campus_id?: string
           closes_at?: string | null
@@ -285,6 +781,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payment_requests_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payment_requests_campus_id_fkey"
             columns: ["campus_id"]
@@ -307,6 +810,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      permissions: {
+        Row: {
+          description: string
+          key: string
+          sensitive: boolean
+        }
+        Insert: {
+          description: string
+          key: string
+          sensitive?: boolean
+        }
+        Update: {
+          description?: string
+          key?: string
+          sensitive?: boolean
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -505,6 +1026,36 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          permission_key: string
+          role_key: string
+        }
+        Insert: {
+          permission_key: string
+          role_key: string
+        }
+        Update: {
+          permission_key?: string
+          role_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_key_fkey"
+            columns: ["role_key"]
+            isOneToOne: false
+            referencedRelation: "association_roles"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       service_charge_rules: {
         Row: {
           active: boolean
@@ -556,6 +1107,7 @@ export type Database = {
       settlements: {
         Row: {
           amount: number
+          association_id: string | null
           bank_reference: string | null
           created_at: string
           department_id: string | null
@@ -568,6 +1120,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          association_id?: string | null
           bank_reference?: string | null
           created_at?: string
           department_id?: string | null
@@ -580,6 +1133,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          association_id?: string | null
           bank_reference?: string | null
           created_at?: string
           department_id?: string | null
@@ -592,6 +1146,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "settlements_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "settlements_department_id_fkey"
             columns: ["department_id"]
             isOneToOne: false
@@ -602,6 +1163,7 @@ export type Database = {
       }
       transactions: {
         Row: {
+          association_id: string | null
           base_amount: number
           base_minor: number
           charge_minor: number
@@ -622,6 +1184,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          association_id?: string | null
           base_amount: number
           base_minor: number
           charge_minor: number
@@ -642,6 +1205,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          association_id?: string | null
           base_amount?: number
           base_minor?: number
           charge_minor?: number
@@ -662,6 +1226,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_payment_request_id_fkey"
             columns: ["payment_request_id"]
@@ -744,6 +1315,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      expire_role_assignments: { Args: never; Returns: number }
       finalize_payment: {
         Args: {
           _amount_minor: number
@@ -763,6 +1335,10 @@ export type Database = {
         }[]
       }
       gen_receipt_token: { Args: never; Returns: string }
+      has_assoc_permission: {
+        Args: { _association_id: string; _permission: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -770,6 +1346,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_association_member: {
+        Args: { _association_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       qr_log_scan: {
         Args: { _ip: string; _token: string; _ua: string }
         Returns: Database["public"]["Enums"]["qr_scan_result"]
@@ -798,6 +1379,43 @@ export type Database = {
         | "department_rep"
         | "faculty_rep"
         | "bank_runner"
+      approval_request_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "executed"
+        | "cancelled"
+      assignment_status:
+        | "pending"
+        | "active"
+        | "expired"
+        | "suspended"
+        | "revoked"
+      association_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "verified"
+        | "active"
+        | "suspended"
+        | "archived"
+      association_type:
+        | "departmental"
+        | "faculty"
+        | "institutional"
+        | "religious"
+        | "social"
+        | "professional"
+        | "sports"
+        | "other"
+      membership_status: "pending" | "active" | "suspended" | "removed"
+      nomination_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "approved"
+        | "rejected"
+        | "withdrawn"
       qr_scan_result:
         | "valid"
         | "expired"
@@ -947,6 +1565,48 @@ export const Constants = {
         "department_rep",
         "faculty_rep",
         "bank_runner",
+      ],
+      approval_request_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "executed",
+        "cancelled",
+      ],
+      assignment_status: [
+        "pending",
+        "active",
+        "expired",
+        "suspended",
+        "revoked",
+      ],
+      association_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "verified",
+        "active",
+        "suspended",
+        "archived",
+      ],
+      association_type: [
+        "departmental",
+        "faculty",
+        "institutional",
+        "religious",
+        "social",
+        "professional",
+        "sports",
+        "other",
+      ],
+      membership_status: ["pending", "active", "suspended", "removed"],
+      nomination_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+        "withdrawn",
       ],
       qr_scan_result: [
         "valid",
