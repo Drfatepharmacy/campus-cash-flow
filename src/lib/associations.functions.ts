@@ -131,6 +131,13 @@ export const submitAssociationForReview = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
     await recordAudit({ actor_id: context.userId, action: "association.submitted", entity: "association", entity_id: assoc.id, association_id: assoc.id });
+    const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
+    await notifyPlatformAdmins(`Association submitted for review: ${assoc.name}`, [
+      `Name: ${assoc.name}`,
+      `Institution: ${assoc.institution}`,
+      `Official email: ${assoc.official_email}`,
+      `Review it in the Super Admin console: /admin/associations`,
+    ]);
     return { ok: true };
   });
 
