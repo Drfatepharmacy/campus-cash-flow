@@ -98,6 +98,15 @@ export const createAssociation = createServerFn({ method: "POST" })
 
     const { recordAudit } = await import("@/lib/association-audit.server");
     await recordAudit({ actor_id: context.userId, action: "association.created", entity: "association", entity_id: row.id, association_id: row.id, metadata: { name: data.name } });
+
+    const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
+    await notifyPlatformAdmins(`New association registration: ${data.name}`, [
+      `Name: ${data.name}`,
+      `Type: ${data.type} · Institution: ${data.institution}`,
+      `Official email: ${data.official_email ?? "not provided"}`,
+      `Workspace slug: ${row.slug}`,
+      "Status: draft — it will appear for review once submitted.",
+    ]);
     return row;
   });
 
