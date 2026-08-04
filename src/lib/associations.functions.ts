@@ -98,6 +98,15 @@ export const createAssociation = createServerFn({ method: "POST" })
 
     const { recordAudit } = await import("@/lib/association-audit.server");
     await recordAudit({ actor_id: context.userId, action: "association.created", entity: "association", entity_id: row.id, association_id: row.id, metadata: { name: data.name } });
+
+    const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
+    await notifyPlatformAdmins(`New association registration: ${data.name}`, [
+      `Name: ${data.name}`,
+      `Type: ${data.type} · Institution: ${data.institution}`,
+      `Official email: ${data.official_email ?? "not provided"}`,
+      `Workspace slug: ${row.slug}`,
+      "Status: draft — it will appear for review once submitted.",
+    ]);
     return row;
   });
 
@@ -122,6 +131,13 @@ export const submitAssociationForReview = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
     await recordAudit({ actor_id: context.userId, action: "association.submitted", entity: "association", entity_id: assoc.id, association_id: assoc.id });
+    const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
+    await notifyPlatformAdmins(`Association submitted for review: ${assoc.name}`, [
+      `Name: ${assoc.name}`,
+      `Institution: ${assoc.institution}`,
+      `Official email: ${assoc.official_email}`,
+      `Review it in the Super Admin console: /admin/associations`,
+    ]);
     return { ok: true };
   });
 
@@ -312,7 +328,7 @@ export const raiseApprovalRequest = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({
       slug: z.string().min(1).max(80),
-      action_type: z.enum(["settlement.payout", "bank_details.change"]),
+      action_type: z.enum(["settlement.payout", "bank_details.change", "settlement.status_update"]),
       payload: z.record(z.string(), z.unknown()).default({}),
       reason: z.string().trim().max(500).optional().nullable(),
     }).parse(d),
@@ -321,6 +337,7 @@ export const raiseApprovalRequest = createServerFn({ method: "POST" })
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "approvals.request");
     if (data.action_type === "settlement.payout") requirePermission(ctx, "settlement.request");
+    if (data.action_type === "settlement.status_update") requirePermission(ctx, "settlement.request");
     if (data.action_type === "bank_details.change") requirePermission(ctx, "bank_details.change_request");
 
     const { error } = await context.supabase.from("approval_requests").insert({
@@ -368,9 +385,200 @@ export const decideApprovalRequest = createServerFn({ method: "POST" })
       .update({ status: data.decision, approved_by: context.userId, approved_at: new Date().toISOString(), decision_reason: data.reason ?? null })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+
+    // Checker approval is what executes the operation — never the maker's request.
+    let executed = false;
+    if (data.decision === "approved" && req.action_type === "settlement.status_update") {
+      requirePermission(ctx, "settlement.approve");
+      const payload = (req.payload ?? {}) as { settlement_id?: string; status?: string };
+      const allowed = ["pending", "assigned", "in_progress", "deposited", "confirmed", "flagged"];
+      if (payload.settlement_id && payload.status && allowed.includes(payload.status)) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin
+          .from("settlements")
+          .update({
+            status: payload.status as never,
+            settled_at: payload.status === "confirmed" ? new Date().toISOString() : null,
+          })
+          .eq("id", payload.settlement_id)
+          .eq("association_id", ctx.association.id);
+        await supabaseAdmin.from("approval_requests").update({ executed_at: new Date().toISOString(), status: "executed" }).eq("id", data.id);
+        executed = true;
+      }
+    }
+
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: `approval.${data.decision}`, entity: "approval_request", entity_id: data.id, association_id: ctx.association.id, metadata: { action_type: req.action_type } });
+    await recordAudit({ actor_id: context.userId, action: `approval.${data.decision}`, entity: "approval_request", entity_id: data.id, association_id: ctx.association.id, metadata: { action_type: req.action_type, executed } });
+    return { ok: true, executed };
+  });
+
+/* ---------------------------------------------------------------- Dues --- */
+
+export const listAssociationDues = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
+    requirePermission(ctx, "dues.view");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: dues } = await supabaseAdmin
+      .from("payment_requests")
+      .select("*")
+      .eq("association_id", ctx.association.id)
+      .order("created_at", { ascending: false });
+    const ids = (dues ?? []).map((d: any) => d.id);
+    let stats = new Map<string, { paid: number; pending: number; collected_minor: number }>();
+    if (ids.length) {
+      const { data: txns } = await supabaseAdmin
+        .from("transactions")
+        .select("payment_request_id, status, total_minor")
+        .in("payment_request_id", ids);
+      for (const t of txns ?? []) {
+        const s = stats.get(t.payment_request_id) ?? { paid: 0, pending: 0, collected_minor: 0 };
+        if (t.status === "paid") { s.paid += 1; s.collected_minor += Number(t.total_minor ?? 0); }
+        if (t.status === "pending") s.pending += 1;
+        stats.set(t.payment_request_id, s);
+      }
+    }
+    return {
+      dues: (dues ?? []).map((d: any) => ({ ...d, stats: stats.get(d.id) ?? { paid: 0, pending: 0, collected_minor: 0 } })),
+      canManage: ctx.permissions.includes("dues.manage"),
+      hasCampus: Boolean(ctx.association.campus_id),
+    };
+  });
+
+export const createAssociationDues = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      slug: z.string().min(1).max(80),
+      title: z.string().trim().min(3).max(160),
+      description: z.string().trim().max(1000).optional().nullable(),
+      base_amount: z.number().positive().max(10_000_000),
+      target_level: z.number().int().min(100).max(900).optional().nullable(),
+      closes_at: z.string().optional().nullable(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
+    requirePermission(ctx, "dues.manage");
+    if (!["active", "verified"].includes(String(ctx.association.status))) {
+      throw new Error("Dues can only be created once the association is verified and active");
+    }
+    if (!ctx.association.campus_id) throw new Error("This association has no campus set — a platform administrator must set it first");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("payment_requests").insert({
+      association_id: ctx.association.id,
+      campus_id: ctx.association.campus_id,
+      target_faculty_id: ctx.association.faculty_id ?? null,
+      target_department_id: ctx.association.department_id ?? null,
+      target_level: data.target_level ?? null,
+      title: data.title,
+      description: data.description ?? null,
+      base_amount: data.base_amount,
+      closes_at: data.closes_at || null,
+      active: true,
+      created_by: context.userId,
+    } as never);
+    if (error) throw new Error(error.message);
+    const { recordAudit } = await import("@/lib/association-audit.server");
+    await recordAudit({ actor_id: context.userId, action: "dues.created", entity: "payment_request", association_id: ctx.association.id, metadata: { title: data.title, base_amount: data.base_amount } });
     return { ok: true };
+  });
+
+export const setAssociationDuesActive = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80), id: z.string().uuid(), active: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
+    requirePermission(ctx, "dues.manage");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("payment_requests").update({ active: data.active })
+      .eq("id", data.id).eq("association_id", ctx.association.id);
+    if (error) throw new Error(error.message);
+    const { recordAudit } = await import("@/lib/association-audit.server");
+    await recordAudit({ actor_id: context.userId, action: data.active ? "dues.resumed" : "dues.paused", entity: "payment_request", entity_id: data.id, association_id: ctx.association.id });
+    return { ok: true };
+  });
+
+/* ------------------------------------------------ Finance sub-resources --- */
+
+export const listAssociationTransactions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      slug: z.string().min(1).max(80),
+      status: z.enum(["all", "pending", "paid", "failed", "refunded"]).default("all"),
+      payment_request_id: z.string().uuid().optional().nullable(),
+      search: z.string().trim().max(80).optional().nullable(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
+    requirePermission(ctx, "transactions.view");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin
+      .from("transactions")
+      .select("id, reference, status, total_minor, base_minor, charge_minor, created_at, paid_at, payment_request:payment_requests(title), student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no)")
+      .eq("association_id", ctx.association.id)
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (data.status !== "all") q = q.eq("status", data.status as never);
+    if (data.payment_request_id) q = q.eq("payment_request_id", data.payment_request_id);
+    if (data.search) q = q.ilike("reference", `%${data.search}%`);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const listAssociationSettlements = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
+    requirePermission(ctx, "settlement.view");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows } = await supabaseAdmin
+      .from("settlements").select("*").eq("association_id", ctx.association.id)
+      .order("created_at", { ascending: false }).limit(100);
+    const { data: pending } = await supabaseAdmin
+      .from("approval_requests").select("id, payload, status, requested_by, created_at")
+      .eq("association_id", ctx.association.id).eq("action_type", "settlement.status_update").eq("status", "pending");
+    return {
+      settlements: rows ?? [],
+      pendingUpdates: pending ?? [],
+      canRequest: ctx.permissions.includes("settlement.request"),
+      canApprove: ctx.permissions.includes("settlement.approve"),
+    };
+  });
+
+export const listAssociationReceipts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80), search: z.string().trim().max(80).optional().nullable() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
+    requirePermission(ctx, "receipts.view");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: txns } = await supabaseAdmin
+      .from("transactions")
+      .select("id, reference, total_minor, paid_at, payment_request:payment_requests(title), student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no)")
+      .eq("association_id", ctx.association.id).eq("status", "paid")
+      .order("paid_at", { ascending: false }).limit(200);
+    const ids = (txns ?? []).map((t: any) => t.id);
+    let map = new Map<string, any>();
+    if (ids.length) {
+      const { data: receipts } = await supabaseAdmin.from("receipts").select("id, transaction_id, qr_token, issued_at").in("transaction_id", ids);
+      map = new Map((receipts ?? []).map((r: any) => [r.transaction_id, r]));
+    }
+    const rows = (txns ?? []).map((t: any) => ({ ...t, receipt: map.get(t.id) ?? null }));
+    if (!data.search) return rows;
+    const s = data.search.toLowerCase();
+    return rows.filter((r: any) =>
+      r.reference?.toLowerCase().includes(s) ||
+      r.student?.matric_no?.toLowerCase().includes(s) ||
+      r.student?.full_name?.toLowerCase().includes(s));
   });
 
 export const listAssociationAudit = createServerFn({ method: "POST" })
