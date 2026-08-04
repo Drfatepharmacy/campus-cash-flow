@@ -471,7 +471,6 @@ export const createAssociationDues = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("payment_requests").insert({
       association_id: ctx.association.id,
       campus_id: ctx.association.campus_id,
-      faculty_id: ctx.association.faculty_id ?? null,
       target_faculty_id: ctx.association.faculty_id ?? null,
       target_department_id: ctx.association.department_id ?? null,
       target_level: data.target_level ?? null,
