@@ -54,6 +54,7 @@ import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/publ
 import { Route as AuthenticatedAssociationSlugMembersRouteImport } from './routes/_authenticated/association/$slug/members'
 import { Route as AuthenticatedAssociationSlugFinanceRouteImport } from './routes/_authenticated/association/$slug/finance'
 import { Route as AuthenticatedAssociationSlugExecutivesRouteImport } from './routes/_authenticated/association/$slug/executives'
+import { Route as AuthenticatedAssociationSlugDuesRouteImport } from './routes/_authenticated/association/$slug/dues'
 import { Route as AuthenticatedAssociationSlugAuditRouteImport } from './routes/_authenticated/association/$slug/audit'
 import { Route as AuthenticatedAssociationSlugApprovalsRouteImport } from './routes/_authenticated/association/$slug/approvals'
 
@@ -304,6 +305,12 @@ const AuthenticatedAssociationSlugExecutivesRoute =
     path: '/executives',
     getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
   } as any)
+const AuthenticatedAssociationSlugDuesRoute =
+  AuthenticatedAssociationSlugDuesRouteImport.update({
+    id: '/dues',
+    path: '/dues',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
 const AuthenticatedAssociationSlugAuditRoute =
   AuthenticatedAssociationSlugAuditRouteImport.update({
     id: '/audit',
@@ -359,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/runner/': typeof AuthenticatedRunnerIndexRoute
   '/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
   '/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
+  '/association/$slug/dues': typeof AuthenticatedAssociationSlugDuesRoute
   '/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
   '/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
@@ -403,6 +411,7 @@ export interface FileRoutesByTo {
   '/runner': typeof AuthenticatedRunnerIndexRoute
   '/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
   '/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
+  '/association/$slug/dues': typeof AuthenticatedAssociationSlugDuesRoute
   '/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
   '/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
@@ -453,6 +462,7 @@ export interface FileRoutesById {
   '/_authenticated/runner/': typeof AuthenticatedRunnerIndexRoute
   '/_authenticated/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
   '/_authenticated/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
+  '/_authenticated/association/$slug/dues': typeof AuthenticatedAssociationSlugDuesRoute
   '/_authenticated/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
   '/_authenticated/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/_authenticated/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
@@ -503,6 +513,7 @@ export interface FileRouteTypes {
     | '/runner/'
     | '/association/$slug/approvals'
     | '/association/$slug/audit'
+    | '/association/$slug/dues'
     | '/association/$slug/executives'
     | '/association/$slug/finance'
     | '/association/$slug/members'
@@ -547,6 +558,7 @@ export interface FileRouteTypes {
     | '/runner'
     | '/association/$slug/approvals'
     | '/association/$slug/audit'
+    | '/association/$slug/dues'
     | '/association/$slug/executives'
     | '/association/$slug/finance'
     | '/association/$slug/members'
@@ -596,6 +608,7 @@ export interface FileRouteTypes {
     | '/_authenticated/runner/'
     | '/_authenticated/association/$slug/approvals'
     | '/_authenticated/association/$slug/audit'
+    | '/_authenticated/association/$slug/dues'
     | '/_authenticated/association/$slug/executives'
     | '/_authenticated/association/$slug/finance'
     | '/_authenticated/association/$slug/members'
@@ -931,6 +944,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssociationSlugExecutivesRouteImport
       parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
     }
+    '/_authenticated/association/$slug/dues': {
+      id: '/_authenticated/association/$slug/dues'
+      path: '/dues'
+      fullPath: '/association/$slug/dues'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugDuesRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
     '/_authenticated/association/$slug/audit': {
       id: '/_authenticated/association/$slug/audit'
       path: '/audit'
@@ -1019,6 +1039,7 @@ const AuthenticatedRunnerRouteRouteWithChildren =
 interface AuthenticatedAssociationSlugRouteRouteChildren {
   AuthenticatedAssociationSlugApprovalsRoute: typeof AuthenticatedAssociationSlugApprovalsRoute
   AuthenticatedAssociationSlugAuditRoute: typeof AuthenticatedAssociationSlugAuditRoute
+  AuthenticatedAssociationSlugDuesRoute: typeof AuthenticatedAssociationSlugDuesRoute
   AuthenticatedAssociationSlugExecutivesRoute: typeof AuthenticatedAssociationSlugExecutivesRoute
   AuthenticatedAssociationSlugFinanceRoute: typeof AuthenticatedAssociationSlugFinanceRoute
   AuthenticatedAssociationSlugMembersRoute: typeof AuthenticatedAssociationSlugMembersRoute
@@ -1031,6 +1052,8 @@ const AuthenticatedAssociationSlugRouteRouteChildren: AuthenticatedAssociationSl
       AuthenticatedAssociationSlugApprovalsRoute,
     AuthenticatedAssociationSlugAuditRoute:
       AuthenticatedAssociationSlugAuditRoute,
+    AuthenticatedAssociationSlugDuesRoute:
+      AuthenticatedAssociationSlugDuesRoute,
     AuthenticatedAssociationSlugExecutivesRoute:
       AuthenticatedAssociationSlugExecutivesRoute,
     AuthenticatedAssociationSlugFinanceRoute:
