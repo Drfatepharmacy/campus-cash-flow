@@ -30,6 +30,7 @@ import { Route as AuthenticatedSuperadminRouteRouteImport } from './routes/_auth
 import { Route as AuthenticatedRunnerRouteRouteImport } from './routes/_authenticated/runner/route'
 import { Route as AuthenticatedRepRouteRouteImport } from './routes/_authenticated/rep/route'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedSuperadminIndexRouteImport } from './routes/_authenticated/superadmin/index'
 import { Route as AuthenticatedRunnerIndexRouteImport } from './routes/_authenticated/runner/index'
 import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticated/rep/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
@@ -166,6 +167,12 @@ const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSuperadminIndexRoute =
+  AuthenticatedSuperadminIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
 const AuthenticatedRunnerIndexRoute =
   AuthenticatedRunnerIndexRouteImport.update({
     id: '/',
@@ -372,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/rep/': typeof AuthenticatedRepIndexRoute
   '/runner/': typeof AuthenticatedRunnerIndexRoute
+  '/superadmin/': typeof AuthenticatedSuperadminIndexRoute
   '/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
   '/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
   '/association/$slug/dues': typeof AuthenticatedAssociationSlugDuesRoute
@@ -385,7 +393,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/legal': typeof LegalRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/superadmin': typeof AuthenticatedSuperadminRouteRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/legal/association-verification': typeof LegalAssociationVerificationRoute
@@ -418,6 +425,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/rep': typeof AuthenticatedRepIndexRoute
   '/runner': typeof AuthenticatedRunnerIndexRoute
+  '/superadmin': typeof AuthenticatedSuperadminIndexRoute
   '/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
   '/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
   '/association/$slug/dues': typeof AuthenticatedAssociationSlugDuesRoute
@@ -470,6 +478,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/rep/': typeof AuthenticatedRepIndexRoute
   '/_authenticated/runner/': typeof AuthenticatedRunnerIndexRoute
+  '/_authenticated/superadmin/': typeof AuthenticatedSuperadminIndexRoute
   '/_authenticated/association/$slug/approvals': typeof AuthenticatedAssociationSlugApprovalsRoute
   '/_authenticated/association/$slug/audit': typeof AuthenticatedAssociationSlugAuditRoute
   '/_authenticated/association/$slug/dues': typeof AuthenticatedAssociationSlugDuesRoute
@@ -522,6 +531,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/rep/'
     | '/runner/'
+    | '/superadmin/'
     | '/association/$slug/approvals'
     | '/association/$slug/audit'
     | '/association/$slug/dues'
@@ -535,7 +545,6 @@ export interface FileRouteTypes {
     | '/'
     | '/legal'
     | '/auth'
-    | '/superadmin'
     | '/dashboard'
     | '/onboarding'
     | '/legal/association-verification'
@@ -568,6 +577,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/rep'
     | '/runner'
+    | '/superadmin'
     | '/association/$slug/approvals'
     | '/association/$slug/audit'
     | '/association/$slug/dues'
@@ -619,6 +629,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/rep/'
     | '/_authenticated/runner/'
+    | '/_authenticated/superadmin/'
     | '/_authenticated/association/$slug/approvals'
     | '/_authenticated/association/$slug/audit'
     | '/_authenticated/association/$slug/dues'
@@ -788,6 +799,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/superadmin/': {
+      id: '/_authenticated/superadmin/'
+      path: '/'
+      fullPath: '/superadmin/'
+      preLoaderRoute: typeof AuthenticatedSuperadminIndexRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
     '/_authenticated/runner/': {
       id: '/_authenticated/runner/'
@@ -1055,6 +1073,7 @@ const AuthenticatedRunnerRouteRouteWithChildren =
 interface AuthenticatedSuperadminRouteRouteChildren {
   AuthenticatedSuperadminAssociationsRoute: typeof AuthenticatedSuperadminAssociationsRoute
   AuthenticatedSuperadminNominationsRoute: typeof AuthenticatedSuperadminNominationsRoute
+  AuthenticatedSuperadminIndexRoute: typeof AuthenticatedSuperadminIndexRoute
 }
 
 const AuthenticatedSuperadminRouteRouteChildren: AuthenticatedSuperadminRouteRouteChildren =
@@ -1063,6 +1082,7 @@ const AuthenticatedSuperadminRouteRouteChildren: AuthenticatedSuperadminRouteRou
       AuthenticatedSuperadminAssociationsRoute,
     AuthenticatedSuperadminNominationsRoute:
       AuthenticatedSuperadminNominationsRoute,
+    AuthenticatedSuperadminIndexRoute: AuthenticatedSuperadminIndexRoute,
   }
 
 const AuthenticatedSuperadminRouteRouteWithChildren =
