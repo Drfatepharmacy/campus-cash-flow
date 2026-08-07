@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { toast } from "sonner";
 import { ShieldCheck, Search, Ban, RotateCcw, Eye } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/associations")({
+export const Route = createFileRoute("/_authenticated/superadmin/associations")({
   head: () => ({
     meta: [
       { title: "Association review — UniEgo Super Admin" },

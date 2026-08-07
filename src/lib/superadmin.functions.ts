@@ -7,7 +7,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const listAllAssociations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
@@ -20,7 +20,7 @@ export const listAllAssociations = createServerFn({ method: "GET" })
 export const listAllNominations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
@@ -42,7 +42,7 @@ export const setAssociationStatus = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: before } = await supabaseAdmin.from("associations").select("status, financials_enabled").eq("id", data.id).maybeSingle();
@@ -84,7 +84,7 @@ export const decideNomination = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { recordAudit } = await import("@/lib/association-audit.server");
@@ -169,7 +169,7 @@ export const listAssignmentsForAssociation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ association_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await supabaseAdmin
@@ -192,7 +192,7 @@ export const changeAssignmentStatus = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), status: z.enum(["active", "suspended", "revoked", "expired"]), reason: z.string().trim().max(500).optional().nullable() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin.from("association_role_assignments").select("*").eq("id", data.id).maybeSingle();
@@ -215,7 +215,7 @@ export const changeAssignmentStatus = createServerFn({ method: "POST" })
 export const expireLapsedTenures = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin.rpc("expire_role_assignments");
@@ -234,7 +234,7 @@ export const setAssociationBankAccount = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("association_financial_accounts").update({ is_primary: false }).eq("association_id", data.association_id);

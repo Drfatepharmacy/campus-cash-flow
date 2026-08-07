@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Gavel, Clock } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/nominations")({
+export const Route = createFileRoute("/_authenticated/superadmin/nominations")({
   head: () => ({
     meta: [
       { title: "Leadership approvals — UniEgo Super Admin" },
