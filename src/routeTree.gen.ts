@@ -32,6 +32,8 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedRunnerIndexRouteImport } from './routes/_authenticated/runner/index'
 import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticated/rep/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedSuperadminNominationsRouteImport } from './routes/_authenticated/superadmin/nominations'
+import { Route as AuthenticatedSuperadminAssociationsRouteImport } from './routes/_authenticated/superadmin/associations'
 import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
 import { Route as AuthenticatedAssociationsNewRouteImport } from './routes/_authenticated/associations/new'
@@ -43,10 +45,8 @@ import { Route as AuthenticatedAdminRunnersRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminReconcileRouteImport } from './routes/_authenticated/admin/reconcile'
 import { Route as AuthenticatedAdminQrCodesRouteImport } from './routes/_authenticated/admin/qr-codes'
 import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/_authenticated/admin/payment-requests'
-import { Route as AuthenticatedAdminNominationsRouteImport } from './routes/_authenticated/admin/nominations'
 import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin/faculties'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
-import { Route as AuthenticatedAdminAssociationsRouteImport } from './routes/_authenticated/admin/associations'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
 import { Route as AuthenticatedAssociationSlugRouteRouteImport } from './routes/_authenticated/association/$slug/route'
 import { Route as AuthenticatedAssociationSlugIndexRouteImport } from './routes/_authenticated/association/$slug/index'
@@ -175,6 +175,18 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedSuperadminNominationsRoute =
+  AuthenticatedSuperadminNominationsRouteImport.update({
+    id: '/superadmin/nominations',
+    path: '/superadmin/nominations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSuperadminAssociationsRoute =
+  AuthenticatedSuperadminAssociationsRouteImport.update({
+    id: '/superadmin/associations',
+    path: '/superadmin/associations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedReceiptTokenRoute =
   AuthenticatedReceiptTokenRouteImport.update({
     id: '/receipt/$token',
@@ -240,12 +252,6 @@ const AuthenticatedAdminPaymentRequestsRoute =
     path: '/payment-requests',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const AuthenticatedAdminNominationsRoute =
-  AuthenticatedAdminNominationsRouteImport.update({
-    id: '/nominations',
-    path: '/nominations',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
 const AuthenticatedAdminFacultiesRoute =
   AuthenticatedAdminFacultiesRouteImport.update({
     id: '/faculties',
@@ -257,12 +263,6 @@ const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
-const AuthenticatedAdminAssociationsRoute =
-  AuthenticatedAdminAssociationsRouteImport.update({
-    id: '/associations',
-    path: '/associations',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
 const AuthenticatedAdminAnalyticsRoute =
   AuthenticatedAdminAnalyticsRouteImport.update({
     id: '/analytics',
@@ -346,10 +346,8 @@ export interface FileRoutesByFullPath {
   '/verify/': typeof VerifyIndexRoute
   '/association/$slug': typeof AuthenticatedAssociationSlugRouteRouteWithChildren
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
-  '/admin/associations': typeof AuthenticatedAdminAssociationsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
-  '/admin/nominations': typeof AuthenticatedAdminNominationsRoute
   '/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
   '/admin/qr-codes': typeof AuthenticatedAdminQrCodesRoute
   '/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
@@ -361,6 +359,8 @@ export interface FileRoutesByFullPath {
   '/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
+  '/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/rep/': typeof AuthenticatedRepIndexRoute
   '/runner/': typeof AuthenticatedRunnerIndexRoute
@@ -391,10 +391,8 @@ export interface FileRoutesByTo {
   '/associations': typeof AssociationsIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
-  '/admin/associations': typeof AuthenticatedAdminAssociationsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
-  '/admin/nominations': typeof AuthenticatedAdminNominationsRoute
   '/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
   '/admin/qr-codes': typeof AuthenticatedAdminQrCodesRoute
   '/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
@@ -406,6 +404,8 @@ export interface FileRoutesByTo {
   '/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
+  '/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/rep': typeof AuthenticatedRepIndexRoute
   '/runner': typeof AuthenticatedRunnerIndexRoute
@@ -442,10 +442,8 @@ export interface FileRoutesById {
   '/verify/': typeof VerifyIndexRoute
   '/_authenticated/association/$slug': typeof AuthenticatedAssociationSlugRouteRouteWithChildren
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
-  '/_authenticated/admin/associations': typeof AuthenticatedAdminAssociationsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/faculties': typeof AuthenticatedAdminFacultiesRoute
-  '/_authenticated/admin/nominations': typeof AuthenticatedAdminNominationsRoute
   '/_authenticated/admin/payment-requests': typeof AuthenticatedAdminPaymentRequestsRoute
   '/_authenticated/admin/qr-codes': typeof AuthenticatedAdminQrCodesRoute
   '/_authenticated/admin/reconcile': typeof AuthenticatedAdminReconcileRoute
@@ -457,6 +455,8 @@ export interface FileRoutesById {
   '/_authenticated/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/_authenticated/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/_authenticated/receipt/$token': typeof AuthenticatedReceiptTokenRoute
+  '/_authenticated/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/_authenticated/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/rep/': typeof AuthenticatedRepIndexRoute
   '/_authenticated/runner/': typeof AuthenticatedRunnerIndexRoute
@@ -493,10 +493,8 @@ export interface FileRouteTypes {
     | '/verify/'
     | '/association/$slug'
     | '/admin/analytics'
-    | '/admin/associations'
     | '/admin/audit'
     | '/admin/faculties'
-    | '/admin/nominations'
     | '/admin/payment-requests'
     | '/admin/qr-codes'
     | '/admin/reconcile'
@@ -508,6 +506,8 @@ export interface FileRouteTypes {
     | '/associations/new'
     | '/pay/$requestId'
     | '/receipt/$token'
+    | '/superadmin/associations'
+    | '/superadmin/nominations'
     | '/admin/'
     | '/rep/'
     | '/runner/'
@@ -538,10 +538,8 @@ export interface FileRouteTypes {
     | '/associations'
     | '/verify'
     | '/admin/analytics'
-    | '/admin/associations'
     | '/admin/audit'
     | '/admin/faculties'
-    | '/admin/nominations'
     | '/admin/payment-requests'
     | '/admin/qr-codes'
     | '/admin/reconcile'
@@ -553,6 +551,8 @@ export interface FileRouteTypes {
     | '/associations/new'
     | '/pay/$requestId'
     | '/receipt/$token'
+    | '/superadmin/associations'
+    | '/superadmin/nominations'
     | '/admin'
     | '/rep'
     | '/runner'
@@ -588,10 +588,8 @@ export interface FileRouteTypes {
     | '/verify/'
     | '/_authenticated/association/$slug'
     | '/_authenticated/admin/analytics'
-    | '/_authenticated/admin/associations'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/faculties'
-    | '/_authenticated/admin/nominations'
     | '/_authenticated/admin/payment-requests'
     | '/_authenticated/admin/qr-codes'
     | '/_authenticated/admin/reconcile'
@@ -603,6 +601,8 @@ export interface FileRouteTypes {
     | '/_authenticated/associations/new'
     | '/_authenticated/pay/$requestId'
     | '/_authenticated/receipt/$token'
+    | '/_authenticated/superadmin/associations'
+    | '/_authenticated/superadmin/nominations'
     | '/_authenticated/admin/'
     | '/_authenticated/rep/'
     | '/_authenticated/runner/'
@@ -790,6 +790,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/superadmin/nominations': {
+      id: '/_authenticated/superadmin/nominations'
+      path: '/superadmin/nominations'
+      fullPath: '/superadmin/nominations'
+      preLoaderRoute: typeof AuthenticatedSuperadminNominationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/superadmin/associations': {
+      id: '/_authenticated/superadmin/associations'
+      path: '/superadmin/associations'
+      fullPath: '/superadmin/associations'
+      preLoaderRoute: typeof AuthenticatedSuperadminAssociationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/receipt/$token': {
       id: '/_authenticated/receipt/$token'
       path: '/receipt/$token'
@@ -867,13 +881,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPaymentRequestsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/admin/nominations': {
-      id: '/_authenticated/admin/nominations'
-      path: '/nominations'
-      fullPath: '/admin/nominations'
-      preLoaderRoute: typeof AuthenticatedAdminNominationsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
     '/_authenticated/admin/faculties': {
       id: '/_authenticated/admin/faculties'
       path: '/faculties'
@@ -886,13 +893,6 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/admin/audit'
       preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/associations': {
-      id: '/_authenticated/admin/associations'
-      path: '/associations'
-      fullPath: '/admin/associations'
-      preLoaderRoute: typeof AuthenticatedAdminAssociationsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/analytics': {
@@ -970,10 +970,8 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAnalyticsRoute: typeof AuthenticatedAdminAnalyticsRoute
-  AuthenticatedAdminAssociationsRoute: typeof AuthenticatedAdminAssociationsRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminFacultiesRoute: typeof AuthenticatedAdminFacultiesRoute
-  AuthenticatedAdminNominationsRoute: typeof AuthenticatedAdminNominationsRoute
   AuthenticatedAdminPaymentRequestsRoute: typeof AuthenticatedAdminPaymentRequestsRoute
   AuthenticatedAdminQrCodesRoute: typeof AuthenticatedAdminQrCodesRoute
   AuthenticatedAdminReconcileRoute: typeof AuthenticatedAdminReconcileRoute
@@ -988,10 +986,8 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAnalyticsRoute: AuthenticatedAdminAnalyticsRoute,
-    AuthenticatedAdminAssociationsRoute: AuthenticatedAdminAssociationsRoute,
     AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
     AuthenticatedAdminFacultiesRoute: AuthenticatedAdminFacultiesRoute,
-    AuthenticatedAdminNominationsRoute: AuthenticatedAdminNominationsRoute,
     AuthenticatedAdminPaymentRequestsRoute:
       AuthenticatedAdminPaymentRequestsRoute,
     AuthenticatedAdminQrCodesRoute: AuthenticatedAdminQrCodesRoute,
@@ -1079,6 +1075,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssociationsNewRoute: typeof AuthenticatedAssociationsNewRoute
   AuthenticatedPayRequestIdRoute: typeof AuthenticatedPayRequestIdRoute
   AuthenticatedReceiptTokenRoute: typeof AuthenticatedReceiptTokenRoute
+  AuthenticatedSuperadminAssociationsRoute: typeof AuthenticatedSuperadminAssociationsRoute
+  AuthenticatedSuperadminNominationsRoute: typeof AuthenticatedSuperadminNominationsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1092,6 +1090,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssociationsNewRoute: AuthenticatedAssociationsNewRoute,
   AuthenticatedPayRequestIdRoute: AuthenticatedPayRequestIdRoute,
   AuthenticatedReceiptTokenRoute: AuthenticatedReceiptTokenRoute,
+  AuthenticatedSuperadminAssociationsRoute:
+    AuthenticatedSuperadminAssociationsRoute,
+  AuthenticatedSuperadminNominationsRoute:
+    AuthenticatedSuperadminNominationsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -1136,13 +1138,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
