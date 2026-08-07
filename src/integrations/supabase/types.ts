@@ -1379,6 +1379,7 @@ export type Database = {
         | "department_rep"
         | "faculty_rep"
         | "bank_runner"
+        | "super_admin"
       approval_request_status:
         | "pending"
         | "approved"
@@ -1565,6 +1566,7 @@ export const Constants = {
         "department_rep",
         "faculty_rep",
         "bank_runner",
+        "super_admin",
       ],
       approval_request_status: [
         "pending",

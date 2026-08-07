@@ -148,24 +148,30 @@ export const setUserRole = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({
       user_id: z.string().uuid(),
-      role: z.enum(["admin", "student", "department_rep", "faculty_rep", "bank_runner"]),
+      role: z.enum(["super_admin", "admin", "student", "department_rep", "faculty_rep", "bank_runner"]),
       grant: z.boolean(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
+    // Only a Super Admin may create or remove another Super Admin.
+    if (data.role === "super_admin") {
+      const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+      if (!isSuper) throw new Error("Forbidden: only a Super Admin can manage Super Admin access");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.grant) {
       const { error } = await supabaseAdmin.from("user_roles").insert({ user_id: data.user_id, role: data.role });
       if (error && !String(error.message).toLowerCase().includes("duplicate")) throw new Error(error.message);
     } else {
-      // Safety: don't allow removing the last admin
-      if (data.role === "admin") {
-        const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
-        if ((admins ?? []).length <= 1) throw new Error("Cannot remove the last admin.");
+      // Safety: don't allow removing the last admin or the last super admin
+      if (data.role === "admin" || data.role === "super_admin") {
+        const { data: holders } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", data.role);
+        if ((holders ?? []).length <= 1) throw new Error(`Cannot remove the last ${data.role === "admin" ? "admin" : "Super Admin"}.`);
       }
       const { error } = await supabaseAdmin.from("user_roles").delete().eq("user_id", data.user_id).eq("role", data.role);
       if (error) throw new Error(error.message);
     }
     return { ok: true };
   });
+

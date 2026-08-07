@@ -15,15 +15,17 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
   component: UsersPage,
 });
 
-type Role = "admin" | "student" | "faculty_rep" | "department_rep" | "bank_runner";
+type Role = "super_admin" | "admin" | "student" | "faculty_rep" | "department_rep" | "bank_runner";
 
 const ROLES: { value: Role; label: string; tone: string }[] = [
+  { value: "super_admin", label: "Super admin", tone: "bg-foreground text-background" },
   { value: "admin", label: "Admin", tone: "bg-royal text-royal-foreground" },
   { value: "faculty_rep", label: "Faculty rep", tone: "bg-gold text-gold-foreground" },
   { value: "department_rep", label: "Dept rep", tone: "bg-emerald text-emerald-foreground" },
   { value: "bank_runner", label: "Bank runner", tone: "bg-foreground text-background" },
   { value: "student", label: "Student", tone: "" },
 ];
+
 
 function UsersPage() {
   const qc = useQueryClient();

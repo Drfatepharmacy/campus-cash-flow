@@ -67,6 +67,8 @@ function Dashboard() {
 
   const incomplete = profile.data && (!profile.data.matric_no || !profile.data.faculty_id || !profile.data.level);
   const isAdmin = (roles.data ?? []).includes("admin");
+  const isSuperAdmin = (roles.data ?? []).includes("super_admin");
+
   const isRunner = (roles.data ?? []).includes("bank_runner");
   const isRep = (roles.data ?? []).includes("faculty_rep") || (roles.data ?? []).includes("department_rep");
 
@@ -86,6 +88,8 @@ function Dashboard() {
             {isRep && <Link to="/rep"><Button variant="outline" size="sm">Rep portal</Button></Link>}
             {isRunner && <Link to="/runner"><Button variant="outline" size="sm">Runner</Button></Link>}
             {isAdmin && <Link to="/admin"><Button variant="outline" size="sm">Admin</Button></Link>}
+            {isSuperAdmin && <Link to="/superadmin"><Button size="sm">Super Admin</Button></Link>}
+
             <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1.5"/>Sign out</Button>
           </div>
         </div>
