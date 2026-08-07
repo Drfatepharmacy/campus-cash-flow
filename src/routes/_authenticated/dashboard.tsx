@@ -67,6 +67,8 @@ function Dashboard() {
 
   const incomplete = profile.data && (!profile.data.matric_no || !profile.data.faculty_id || !profile.data.level);
   const isAdmin = (roles.data ?? []).includes("admin");
+  const isSuperAdmin = (roles.data ?? []).includes("super_admin");
+
   const isRunner = (roles.data ?? []).includes("bank_runner");
   const isRep = (roles.data ?? []).includes("faculty_rep") || (roles.data ?? []).includes("department_rep");
 
