@@ -54,7 +54,7 @@ export async function loadAssociationContext(
   if (error) throw new Error(error.message);
   if (!association) throw new Error("Association not found");
 
-  const { data: isSuper } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+  const { data: isSuper } = await supabase.rpc("has_role", { _user_id: userId, _role: "super_admin" });
 
   const { data: membership } = await supabase
     .from("association_memberships")

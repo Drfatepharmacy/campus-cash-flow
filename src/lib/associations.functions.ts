@@ -35,16 +35,16 @@ export const myAssociations = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: memberships } = await context.supabase
       .from("association_memberships")
-      .select("status, association:associations(id, slug, name, short_name, status, logo_url, institution)")
+      .select("status, association:associations(id, slug, name, short_name, status, status_reason, logo_url, institution)")
       .eq("user_id", context.userId);
     const { data: assignments } = await context.supabase
       .from("association_role_assignments")
-      .select("role_key, status, ends_at, association:associations(id, slug, name, short_name, status, logo_url, institution)")
+      .select("role_key, status, ends_at, association:associations(id, slug, name, short_name, status, status_reason, logo_url, institution)")
       .eq("user_id", context.userId)
       .eq("status", "active");
     const { data: created } = await context.supabase
       .from("associations")
-      .select("id, slug, name, short_name, status, logo_url, institution")
+      .select("id, slug, name, short_name, status, status_reason, logo_url, institution")
       .eq("created_by", context.userId);
 
     const map = new Map<string, any>();
