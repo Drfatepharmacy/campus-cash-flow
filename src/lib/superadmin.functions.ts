@@ -258,3 +258,81 @@ export const setAssociationBankAccount = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+/**
+ * Approve an association application: activates the association and provisions
+ * its workspace (tenure, executives, memberships) in one idempotent step.
+ * Super Admin only — verified server-side on every call.
+ */
+export const approveAssociationRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), term_months: z.number().int().min(1).max(48).default(12) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+    if (!isSuper) throw new Error("Forbidden: platform administrators only");
+
+    const { provisionApprovedAssociation } = await import("@/lib/association-provision.server");
+    const result = await provisionApprovedAssociation(data.id, context.userId, data.term_months);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: assoc } = await supabaseAdmin.from("associations").select("name, slug, created_by, official_email").eq("id", data.id).maybeSingle();
+    const { notifyEmail } = await import("@/lib/platform-notify.server");
+    let requesterEmail: string | null = assoc?.official_email ?? null;
+    if (assoc?.created_by) {
+      const { data: prof } = await supabaseAdmin.from("profiles").select("email").eq("id", assoc.created_by).maybeSingle();
+      requesterEmail = prof?.email ?? requesterEmail;
+    }
+    if (requesterEmail) {
+      await notifyEmail(requesterEmail, "Association Creation Approved", [
+        `Your association "${assoc?.name}" has been approved and activated on UniEgo.`,
+        `Your association dashboard is now available at /association/${assoc?.slug}`,
+        result.pending_signup.length
+          ? `Still to onboard: ${result.pending_signup.map((p) => `${p.name} (${p.email}) as ${p.role_key.replace("_", " ")}`).join(", ")}. Ask them to sign up with that exact email, then re-run approval or approve their nomination.`
+          : "All proposed executives have been assigned to their roles.",
+      ]);
+    }
+    return result;
+  });
+
+/** Decline an association application with a reason the requester can see. */
+export const rejectAssociationRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), reason: z.string().trim().min(3).max(500) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+    if (!isSuper) throw new Error("Forbidden: platform administrators only");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: before } = await supabaseAdmin.from("associations").select("status, name, slug, created_by, official_email").eq("id", data.id).maybeSingle();
+    if (!before) throw new Error("Association not found");
+    if (before.status === "active") throw new Error("This association is already active — suspend it instead of rejecting");
+
+    const { error } = await supabaseAdmin.from("associations")
+      .update({ status: "rejected", status_reason: data.reason, financials_enabled: false, reviewed_by: context.userId, reviewed_at: new Date().toISOString() })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+
+    const { recordAudit } = await import("@/lib/association-audit.server");
+    await recordAudit({
+      actor_id: context.userId, action: "association.rejected", entity: "association", entity_id: data.id, association_id: data.id,
+      metadata: { previous_status: before.status, new_status: "rejected", rejection_reason: data.reason },
+    });
+
+    let requesterEmail: string | null = before.official_email ?? null;
+    if (before.created_by) {
+      const { data: prof } = await supabaseAdmin.from("profiles").select("email").eq("id", before.created_by).maybeSingle();
+      requesterEmail = prof?.email ?? requesterEmail;
+    }
+    const { notifyEmail } = await import("@/lib/platform-notify.server");
+    if (requesterEmail) {
+      await notifyEmail(requesterEmail, "Association Creation Rejected", [
+        `Your request to create "${before.name}" on UniEgo was not approved.`,
+        `Reason: ${data.reason}`,
+        "You can update the details and submit the application again.",
+      ]);
+    }
+    return { ok: true };
+  });
