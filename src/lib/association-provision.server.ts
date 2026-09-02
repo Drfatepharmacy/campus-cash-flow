@@ -56,7 +56,7 @@ export async function provisionApprovedAssociation(
   const pending_signup: ProvisionResult["pending_signup"] = [];
 
   for (const nom of nominations ?? []) {
-    let userId: string | null = nom.nominee_user_id;
+    let userId: string | null = nom.nominee_user_id ?? null;
     if (!userId && nom.nominee_email) {
       const { data: prof } = await supabaseAdmin.from("profiles").select("id").ilike("email", nom.nominee_email).maybeSingle();
       userId = prof?.id ?? null;
