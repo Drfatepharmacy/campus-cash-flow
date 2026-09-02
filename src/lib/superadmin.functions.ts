@@ -36,7 +36,7 @@ export const setAssociationStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({
       id: z.string().uuid(),
-      status: z.enum(["draft", "submitted", "under_review", "verified", "active", "suspended", "archived"]),
+      status: z.enum(["draft", "submitted", "under_review", "verified", "active", "rejected", "suspended", "archived"]),
       reason: z.string().trim().max(500).optional().nullable(),
       financials_enabled: z.boolean().optional(),
     }).parse(d),
