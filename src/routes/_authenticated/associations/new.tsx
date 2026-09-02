@@ -45,6 +45,9 @@ function NewAssociation() {
     official_email: "", official_phone: "", description: "", session_year: String(new Date().getFullYear()),
   });
   const [head, setHead] = useState({ nominee_name: "", nominee_email: "", notes: "" });
+  const [officers, setOfficers] = useState<Record<string, { name: string; email: string }>>({});
+  const setOfficer = (key: string, field: "name" | "email", value: string) =>
+    setOfficers((prev) => ({ ...prev, [key]: { name: "", email: "", ...prev[key], [field]: value } }));
 
   const mCreate = useMutation({
     mutationFn: () =>
