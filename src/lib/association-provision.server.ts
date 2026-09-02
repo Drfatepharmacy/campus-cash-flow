@@ -63,7 +63,7 @@ export async function provisionApprovedAssociation(
     }
     if (!userId) {
       // No fake accounts — the nominee must onboard with the nominated email first.
-      pending_signup.push({ role_key: nom.role_key, email: nom.nominee_email, name: nom.nominee_name });
+      pending_signup.push({ role_key: nom.role_key, email: nom.nominee_email ?? "", name: nom.nominee_name ?? "" });
       continue;
     }
 
