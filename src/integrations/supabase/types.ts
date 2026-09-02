@@ -1400,6 +1400,7 @@ export type Database = {
         | "active"
         | "suspended"
         | "archived"
+        | "rejected"
       association_type:
         | "departmental"
         | "faculty"
@@ -1590,6 +1591,7 @@ export const Constants = {
         "active",
         "suspended",
         "archived",
+        "rejected",
       ],
       association_type: [
         "departmental",
