@@ -166,25 +166,42 @@ function NewAssociation() {
         {step === 2 && (
           <Card>
             <CardHeader>
-              <CardTitle>Propose a {headRole?.name ?? "President"}</CardTitle>
-              <CardDescription>Nomination alone grants nothing. UniEgo verifies and approves the head before any privilege is activated.</CardDescription>
+              <CardTitle>Proposed executives</CardTitle>
+              <CardDescription>
+                Nomination alone grants nothing. UniEgo verifies the association and only then activates these roles — each with its own
+                permissions. {headRole?.name ?? "President"} is required; the rest are optional and can be nominated later.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); mNominate.mutate(); }}>
-                <div>
-                  <Label htmlFor="hn">Full name</Label>
-                  <Input id="hn" required minLength={2} maxLength={120} value={head.nominee_name} onChange={(e) => setHead({ ...head, nominee_name: e.target.value })} />
-                </div>
-                <div>
-                  <Label htmlFor="he">Email used on UniEgo</Label>
-                  <Input id="he" type="email" required maxLength={255} value={head.nominee_email} onChange={(e) => setHead({ ...head, nominee_email: e.target.value })} />
-                </div>
+              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); mNominate.mutate(); }}>
+                {OFFICERS.map((o) => (
+                  <div key={o.key} className="space-y-3 border rounded-xl p-4">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium">{o.label}</p>
+                      <span className="text-xs text-muted-foreground">{o.required ? "Required" : "Optional"}</span>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor={`${o.key}-n`}>Full name</Label>
+                        <Input id={`${o.key}-n`} required={o.required} maxLength={120}
+                          value={officers[o.key]?.name ?? ""}
+                          onChange={(e) => setOfficer(o.key, "name", e.target.value)} />
+                      </div>
+                      <div>
+                        <Label htmlFor={`${o.key}-e`}>Email used on UniEgo</Label>
+                        <Input id={`${o.key}-e`} type="email" required={o.required} maxLength={255}
+                          value={officers[o.key]?.email ?? ""}
+                          onChange={(e) => setOfficer(o.key, "email", e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
                 <div>
                   <Label htmlFor="hnote">Supporting note or evidence</Label>
                   <Textarea id="hnote" rows={3} maxLength={1000} value={head.notes} onChange={(e) => setHead({ ...head, notes: e.target.value })} placeholder="Election minutes, appointment letter reference, staff adviser confirmation…" />
                 </div>
                 <Button type="submit" disabled={mNominate.isPending}>
-                  {mNominate.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Submit nomination
+                  {mNominate.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Submit nominations
                 </Button>
               </form>
             </CardContent>
