@@ -277,22 +277,21 @@ export const approveAssociationRequest = createServerFn({ method: "POST" })
     const result = await provisionApprovedAssociation(data.id, context.userId, data.term_months);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: assoc } = await supabaseAdmin.from("associations").select("name, slug, created_by, official_email").eq("id", data.id).maybeSingle();
-    const { notifyEmail } = await import("@/lib/platform-notify.server");
-    let requesterEmail: string | null = assoc?.official_email ?? null;
-    if (assoc?.created_by) {
-      const { data: prof } = await supabaseAdmin.from("profiles").select("email").eq("id", assoc.created_by).maybeSingle();
-      requesterEmail = prof?.email ?? requesterEmail;
-    }
-    if (requesterEmail) {
-      await notifyEmail(requesterEmail, "Association Creation Approved", [
+    const { data: assoc } = await supabaseAdmin.from("associations").select("name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
+    const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
+    const contact = await resolveRequesterContact(supabaseAdmin, assoc ?? {});
+    await notifyRequester(
+      contact,
+      "Association Creation Approved",
+      [
         `Your association "${assoc?.name}" has been approved and activated on UniEgo.`,
         `Your association dashboard is now available at /association/${assoc?.slug}`,
         result.pending_signup.length
           ? `Still to onboard: ${result.pending_signup.map((p) => `${p.name} (${p.email}) as ${p.role_key.replace("_", " ")}`).join(", ")}. Ask them to sign up with that exact email, then re-run approval or approve their nomination.`
           : "All proposed executives have been assigned to their roles.",
-      ]);
-    }
+      ],
+      `UniEgo: "${assoc?.name}" has been approved and activated. Open your dashboard at /association/${assoc?.slug}`,
+    );
     return result;
   });
 
@@ -306,7 +305,7 @@ export const rejectAssociationRequest = createServerFn({ method: "POST" })
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: before } = await supabaseAdmin.from("associations").select("status, name, slug, created_by, official_email").eq("id", data.id).maybeSingle();
+    const { data: before } = await supabaseAdmin.from("associations").select("status, name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
     if (!before) throw new Error("Association not found");
     if (before.status === "active") throw new Error("This association is already active — suspend it instead of rejecting");
 
@@ -321,18 +320,17 @@ export const rejectAssociationRequest = createServerFn({ method: "POST" })
       metadata: { previous_status: before.status, new_status: "rejected", rejection_reason: data.reason },
     });
 
-    let requesterEmail: string | null = before.official_email ?? null;
-    if (before.created_by) {
-      const { data: prof } = await supabaseAdmin.from("profiles").select("email").eq("id", before.created_by).maybeSingle();
-      requesterEmail = prof?.email ?? requesterEmail;
-    }
-    const { notifyEmail } = await import("@/lib/platform-notify.server");
-    if (requesterEmail) {
-      await notifyEmail(requesterEmail, "Association Creation Rejected", [
+    const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
+    const contact = await resolveRequesterContact(supabaseAdmin, before);
+    await notifyRequester(
+      contact,
+      "Association Creation Rejected",
+      [
         `Your request to create "${before.name}" on UniEgo was not approved.`,
         `Reason: ${data.reason}`,
         "You can update the details and submit the application again.",
-      ]);
-    }
+      ],
+      `UniEgo: your request to create "${before.name}" was not approved. Reason: ${data.reason}. You can update and resubmit.`,
+    );
     return { ok: true };
   });
