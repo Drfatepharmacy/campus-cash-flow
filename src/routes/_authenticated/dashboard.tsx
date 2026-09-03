@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { ArrowRight, LogOut, ShieldAlert, QrCode, Receipt as ReceiptIcon, Loader2 } from "lucide-react";
 import { grantAdminToMe } from "@/lib/admin.functions";
 import { getMyRoles } from "@/lib/payments.functions";
+import { myAssociations } from "@/lib/associations.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — UniEgo" }] }),
@@ -28,9 +29,11 @@ function Dashboard() {
   const fetchRoles = useServerFn(getMyRoles);
   const grant = useServerFn(grantAdminToMe);
   const verify = useServerFn(verifyPayment);
+  const fetchAssociations = useServerFn(myAssociations);
 
   const profile = useQuery({ queryKey: ["me"], queryFn: () => fetchProfile() });
   const roles = useQuery({ queryKey: ["my-roles"], queryFn: () => fetchRoles() });
+  const assocs = useQuery({ queryKey: ["my-associations"], queryFn: () => fetchAssociations(), retry: false });
   const eligible = useQuery({ queryKey: ["eligible"], queryFn: () => fetchEligible() });
   const txns = useQuery({ queryKey: ["my-txns"], queryFn: () => fetchTxns(), refetchInterval: (query) => {
     const rows = (query.state.data as any[] | undefined) ?? [];
@@ -125,6 +128,59 @@ function Dashboard() {
             </CardContent>
           </Card>
         )}
+
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold">My associations</h2>
+            <Link to="/associations/new"><Button size="sm" variant="outline">Register an association</Button></Link>
+          </div>
+          {(assocs.data ?? []).length === 0 ? (
+            <Card><CardContent className="p-5 text-sm text-muted-foreground">
+              You don&apos;t belong to an association yet. Register one — it becomes active only after UniEgo approves it.
+            </CardContent></Card>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(assocs.data ?? []).map((a: any) => {
+                const status = String(a.status ?? "draft");
+                const label = status === "active" ? "Association active"
+                  : status === "rejected" ? "Rejected"
+                  : status === "draft" ? "Draft"
+                  : status === "submitted" || status === "under_review" ? "Pending approval"
+                  : status.replace("_", " ");
+                const tone = status === "active" ? "default" : status === "rejected" || status === "suspended" ? "destructive" : "secondary";
+                return (
+                  <Card key={a.id}>
+                    <CardContent className="p-5 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-display font-semibold truncate">{a.short_name || a.name}</div>
+                          <div className="text-xs text-muted-foreground truncate">{a.institution}</div>
+                        </div>
+                        <Badge variant={tone as any} className="capitalize shrink-0">{label}</Badge>
+                      </div>
+                      {status === "rejected" && a.status_reason && (
+                        <p className="text-xs text-destructive">Reason: {a.status_reason}</p>
+                      )}
+                      {status !== "active" && status !== "rejected" && (
+                        <p className="text-xs text-muted-foreground">Awaiting UniEgo verification. Your dashboard unlocks on approval.</p>
+                      )}
+                      {(a.roles ?? []).length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {(a.roles as string[]).map((r) => <Badge key={r} variant="outline" className="capitalize">{r.replace("_", " ")}</Badge>)}
+                        </div>
+                      )}
+                      {status === "active" && (
+                        <Link to="/association/$slug" params={{ slug: a.slug }}>
+                          <Button size="sm" className="mt-1">Open association dashboard <ArrowRight className="h-4 w-4 ml-1" /></Button>
+                        </Link>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
         <section className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
