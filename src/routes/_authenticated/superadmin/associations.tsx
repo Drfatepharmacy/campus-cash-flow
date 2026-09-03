@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAllAssociations, setAssociationStatus, listAssignmentsForAssociation, changeAssignmentStatus } from "@/lib/superadmin.functions";
+import { listAllAssociations, setAssociationStatus, listAssignmentsForAssociation, changeAssignmentStatus, approveAssociationRequest, rejectAssociationRequest } from "@/lib/superadmin.functions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ShieldCheck, Search, Ban, RotateCcw, Eye } from "lucide-react";
+import { ShieldCheck, Search, Ban, RotateCcw, Eye, Check, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/superadmin/associations")({
   head: () => ({
@@ -24,12 +24,14 @@ export const Route = createFileRoute("/_authenticated/superadmin/associations")(
   component: AdminAssociationsPage,
 });
 
-const FILTERS = ["submitted", "under_review", "verified", "active", "suspended", "all"] as const;
+const FILTERS = ["submitted", "under_review", "verified", "active", "rejected", "suspended", "all"] as const;
 
 function AdminAssociationsPage() {
   const qc = useQueryClient();
   const load = useServerFn(listAllAssociations);
   const setStatus = useServerFn(setAssociationStatus);
+  const approve = useServerFn(approveAssociationRequest);
+  const reject = useServerFn(rejectAssociationRequest);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("submitted");
   const [search, setSearch] = useState("");
   const [detail, setDetail] = useState<any | null>(null);
@@ -40,6 +42,25 @@ function AdminAssociationsPage() {
   const m = useMutation({
     mutationFn: (v: { id: string; status: any; reason?: string | null; financials_enabled?: boolean }) => setStatus({ data: v }),
     onSuccess: () => { toast.success("Association updated — the change is recorded in the audit log"); setReason(""); qc.invalidateQueries({ queryKey: ["admin-associations"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const mApprove = useMutation({
+    mutationFn: (v: { id: string }) => approve({ data: { id: v.id, term_months: 12 } }),
+    onSuccess: (r: any) => {
+      toast.success(
+        r?.pending_signup?.length
+          ? `Approved and activated. Still to onboard: ${r.pending_signup.map((p: any) => `${p.name} (${p.email})`).join(", ")}`
+          : "Approved — association activated and its dashboard provisioned",
+      );
+      qc.invalidateQueries({ queryKey: ["admin-associations"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const mReject = useMutation({
+    mutationFn: (v: { id: string; reason: string }) => reject({ data: v }),
+    onSuccess: () => { toast.success("Application rejected — the requester has been notified"); setReason(""); qc.invalidateQueries({ queryKey: ["admin-associations"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -92,7 +113,7 @@ function AdminAssociationsPage() {
                       <p className="text-xs text-muted-foreground mt-1">{a.official_email ?? "no official email"} · applied {new Date(a.created_at).toLocaleDateString()}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant={a.status === "active" ? "default" : a.status === "suspended" || a.status === "archived" ? "destructive" : "secondary"} className="capitalize">
+                      <Badge variant={a.status === "active" ? "default" : a.status === "suspended" || a.status === "archived" || a.status === "rejected" ? "destructive" : "secondary"} className="capitalize">
                         {String(a.status).replace("_", " ")}
                       </Badge>
                       {a.financials_enabled && <Badge variant="outline">Financials on</Badge>}
@@ -110,11 +131,22 @@ function AdminAssociationsPage() {
                         <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate({ id: a.id, status: "draft", reason: "More information required" })}>Request more info</Button>
                       </>
                     )}
+                    {["submitted", "under_review", "verified", "rejected"].includes(a.status) && (
+                      <Button size="sm" disabled={mApprove.isPending} onClick={() => mApprove.mutate({ id: a.id })}>
+                        <Check className="h-4 w-4 mr-1" /> Approve &amp; activate
+                      </Button>
+                    )}
+                    {["draft", "submitted", "under_review", "verified"].includes(a.status) && (
+                      <Button size="sm" variant="destructive" disabled={mReject.isPending}
+                        onClick={() => {
+                          if (!reason.trim()) { toast.error("Add a decision note below — a rejection needs a reason"); return; }
+                          mReject.mutate({ id: a.id, reason: reason.trim() });
+                        }}>
+                        <X className="h-4 w-4 mr-1" /> Reject
+                      </Button>
+                    )}
                     {a.status === "verified" && (
-                      <>
-                        <Button size="sm" disabled={m.isPending} onClick={() => m.mutate({ id: a.id, status: "active" })}>Activate</Button>
-                        <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate({ id: a.id, status: "active", financials_enabled: true })}>Activate + enable financials</Button>
-                      </>
+                      <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate({ id: a.id, status: "active", financials_enabled: true })}>Activate + enable financials</Button>
                     )}
                     {a.status === "active" && (
                       <>
@@ -145,7 +177,7 @@ function AdminAssociationsPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Decision note</CardTitle><CardDescription>Attached to the next suspend or archive action and stored in the audit trail.</CardDescription></CardHeader>
+        <CardHeader><CardTitle className="text-base">Decision note</CardTitle><CardDescription>Required for a rejection, and attached to the next suspend or archive action and stored in the audit trail.</CardDescription></CardHeader>
         <CardContent><Textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Optional reason" /></CardContent>
       </Card>
 
