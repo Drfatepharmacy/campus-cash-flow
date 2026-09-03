@@ -120,7 +120,7 @@ export const submitAssociationForReview = createServerFn({ method: "POST" })
       const ctx = await loadAssociationContext(context.supabase, context.userId, assoc.id);
       requirePermission(ctx, "association.manage");
     }
-    if (!["draft", "under_review"].includes(assoc.status)) throw new Error(`Cannot submit an association in state "${assoc.status}"`);
+    if (!["draft", "under_review", "rejected"].includes(assoc.status)) throw new Error(`Cannot submit an association in state "${assoc.status}"`);
     if (!assoc.official_email) throw new Error("An official email is required before submitting");
 
     const { data: nominations } = await context.supabase

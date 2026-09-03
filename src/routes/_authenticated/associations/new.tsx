@@ -30,6 +30,14 @@ export const Route = createFileRoute("/_authenticated/associations/new")({
 
 const TYPES = ["departmental", "faculty", "institutional", "religious", "social", "professional", "sports", "other"] as const;
 
+/** Proposed executive slate. Approval by UniEgo is what actually activates these roles. */
+const OFFICERS: { key: string; label: string; required: boolean }[] = [
+  { key: "president", label: "President / Head", required: true },
+  { key: "treasurer", label: "Treasurer", required: false },
+  { key: "financial_secretary", label: "Financial Secretary", required: false },
+  { key: "staff_adviser", label: "Staff Adviser", required: false },
+];
+
 function NewAssociation() {
   const navigate = useNavigate();
   const create = useServerFn(createAssociation);
@@ -47,7 +55,7 @@ function NewAssociation() {
   const [head, setHead] = useState({ nominee_name: "", nominee_email: "", notes: "" });
   const [officers, setOfficers] = useState<Record<string, { name: string; email: string }>>({});
   const setOfficer = (key: string, field: "name" | "email", value: string) =>
-    setOfficers((prev) => ({ ...prev, [key]: { name: "", email: "", ...prev[key], [field]: value } }));
+    setOfficers((prev) => ({ ...prev, [key]: { ...(prev[key] ?? { name: "", email: "" }), [field]: value } }));
 
   const mCreate = useMutation({
     mutationFn: () =>
@@ -68,10 +76,34 @@ function NewAssociation() {
   });
 
   const mNominate = useMutation({
-    mutationFn: () => nominate({ data: { slug: created!.slug, role_key: "president", nominee_name: head.nominee_name.trim(), nominee_email: head.nominee_email.trim(), notes: head.notes.trim() || null } }),
-    onSuccess: (r: any) => {
+    mutationFn: async () => {
+      const filled = OFFICERS
+        .map((o) => ({ o, v: officers[o.key] }))
+        .filter(({ v }) => v?.name?.trim() && v?.email?.trim());
+      if (!filled.some(({ o }) => o.key === "president")) throw new Error("A proposed President is required");
+      const results: { role: string; hasAccount: boolean }[] = [];
+      for (const { o, v } of filled) {
+        const r: any = await nominate({
+          data: {
+            slug: created!.slug,
+            role_key: o.key,
+            nominee_name: v!.name.trim(),
+            nominee_email: v!.email.trim(),
+            notes: head.notes.trim() || null,
+          },
+        });
+        results.push({ role: o.label, hasAccount: Boolean(r?.nominee_has_account) });
+      }
+      return results;
+    },
+    onSuccess: (results) => {
       setStep(3);
-      toast.success(r?.nominee_has_account ? "President nominated" : "President nominated — ask them to sign up with that email");
+      const missing = results.filter((r) => !r.hasAccount).map((r) => r.role);
+      toast.success(
+        missing.length
+          ? `Nominations submitted — ask ${missing.join(", ")} to sign up with the email you gave`
+          : "Nominations submitted",
+      );
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -102,7 +134,7 @@ function NewAssociation() {
         </div>
 
         <ol className="flex items-center gap-2 text-sm">
-          {["Association details", "Proposed President", "Submit for review"].map((label, i) => (
+          {["Association details", "Proposed executives", "Submit for review"].map((label, i) => (
             <li key={label} className={`flex items-center gap-2 ${step > i ? "text-foreground" : "text-muted-foreground"}`}>
               <span className={`h-6 w-6 rounded-full grid place-items-center text-xs font-semibold ${step > i + 1 ? "bg-emerald-600 text-white" : step === i + 1 ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                 {step > i + 1 ? <Check className="h-3.5 w-3.5" /> : i + 1}
