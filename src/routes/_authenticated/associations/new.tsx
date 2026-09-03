@@ -76,10 +76,34 @@ function NewAssociation() {
   });
 
   const mNominate = useMutation({
-    mutationFn: () => nominate({ data: { slug: created!.slug, role_key: "president", nominee_name: head.nominee_name.trim(), nominee_email: head.nominee_email.trim(), notes: head.notes.trim() || null } }),
-    onSuccess: (r: any) => {
+    mutationFn: async () => {
+      const filled = OFFICERS
+        .map((o) => ({ o, v: officers[o.key] }))
+        .filter(({ v }) => v?.name?.trim() && v?.email?.trim());
+      if (!filled.some(({ o }) => o.key === "president")) throw new Error("A proposed President is required");
+      const results: { role: string; hasAccount: boolean }[] = [];
+      for (const { o, v } of filled) {
+        const r: any = await nominate({
+          data: {
+            slug: created!.slug,
+            role_key: o.key,
+            nominee_name: v!.name.trim(),
+            nominee_email: v!.email.trim(),
+            notes: head.notes.trim() || null,
+          },
+        });
+        results.push({ role: o.label, hasAccount: Boolean(r?.nominee_has_account) });
+      }
+      return results;
+    },
+    onSuccess: (results) => {
       setStep(3);
-      toast.success(r?.nominee_has_account ? "President nominated" : "President nominated — ask them to sign up with that email");
+      const missing = results.filter((r) => !r.hasAccount).map((r) => r.role);
+      toast.success(
+        missing.length
+          ? `Nominations submitted — ask ${missing.join(", ")} to sign up with the email you gave`
+          : "Nominations submitted",
+      );
     },
     onError: (e: Error) => toast.error(e.message),
   });
