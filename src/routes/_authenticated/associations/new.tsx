@@ -134,7 +134,7 @@ function NewAssociation() {
         </div>
 
         <ol className="flex items-center gap-2 text-sm">
-          {["Association details", "Proposed President", "Submit for review"].map((label, i) => (
+          {["Association details", "Proposed executives", "Submit for review"].map((label, i) => (
             <li key={label} className={`flex items-center gap-2 ${step > i ? "text-foreground" : "text-muted-foreground"}`}>
               <span className={`h-6 w-6 rounded-full grid place-items-center text-xs font-semibold ${step > i + 1 ? "bg-emerald-600 text-white" : step === i + 1 ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                 {step > i + 1 ? <Check className="h-3.5 w-3.5" /> : i + 1}
