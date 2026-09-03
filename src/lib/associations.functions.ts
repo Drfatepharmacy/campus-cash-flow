@@ -127,17 +127,36 @@ export const submitAssociationForReview = createServerFn({ method: "POST" })
       .from("leadership_nominations").select("id").eq("association_id", assoc.id).eq("role_key", "president").limit(1);
     if (!(nominations ?? []).length) throw new Error("Nominate a proposed President before submitting for review");
 
+    const wasRejected = assoc.status === "rejected";
     const { error } = await context.supabase.from("associations").update({ status: "submitted" }).eq("id", assoc.id);
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "association.submitted", entity: "association", entity_id: assoc.id, association_id: assoc.id });
+    await recordAudit({
+      actor_id: context.userId,
+      action: wasRejected ? "association.resubmitted" : "association.submitted",
+      entity: "association", entity_id: assoc.id, association_id: assoc.id,
+    });
     const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
-    await notifyPlatformAdmins(`Association submitted for review: ${assoc.name}`, [
+    await notifyPlatformAdmins(`Association ${wasRejected ? "resubmitted" : "submitted"} for review: ${assoc.name}`, [
       `Name: ${assoc.name}`,
       `Institution: ${assoc.institution}`,
       `Official email: ${assoc.official_email}`,
       `Review it in the Super Admin console: /admin/associations`,
     ]);
+
+    // Confirm to the requester by email and SMS that the application is back in the queue.
+    const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const contact = await resolveRequesterContact(supabaseAdmin, assoc);
+    await notifyRequester(
+      contact,
+      wasRejected ? "Association Application Resubmitted" : "Association Application Submitted",
+      [
+        `Your application for "${assoc.name}" has been ${wasRejected ? "resubmitted" : "submitted"} for review.`,
+        "A platform administrator will review it shortly and you will be notified of the decision.",
+      ],
+      `UniEgo: your application for "${assoc.name}" has been ${wasRejected ? "resubmitted" : "submitted"} for review. We'll notify you of the decision.`,
+    );
     return { ok: true };
   });
 
