@@ -30,6 +30,14 @@ export const Route = createFileRoute("/_authenticated/associations/new")({
 
 const TYPES = ["departmental", "faculty", "institutional", "religious", "social", "professional", "sports", "other"] as const;
 
+/** Proposed executive slate. Approval by UniEgo is what actually activates these roles. */
+const OFFICERS: { key: string; label: string; required: boolean }[] = [
+  { key: "president", label: "President / Head", required: true },
+  { key: "treasurer", label: "Treasurer", required: false },
+  { key: "financial_secretary", label: "Financial Secretary", required: false },
+  { key: "staff_adviser", label: "Staff Adviser", required: false },
+];
+
 function NewAssociation() {
   const navigate = useNavigate();
   const create = useServerFn(createAssociation);
