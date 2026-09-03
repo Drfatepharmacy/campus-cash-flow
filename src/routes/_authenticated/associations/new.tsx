@@ -55,7 +55,7 @@ function NewAssociation() {
   const [head, setHead] = useState({ nominee_name: "", nominee_email: "", notes: "" });
   const [officers, setOfficers] = useState<Record<string, { name: string; email: string }>>({});
   const setOfficer = (key: string, field: "name" | "email", value: string) =>
-    setOfficers((prev) => ({ ...prev, [key]: { name: "", email: "", ...prev[key], [field]: value } }));
+    setOfficers((prev) => ({ ...prev, [key]: { ...(prev[key] ?? { name: "", email: "" }), [field]: value } }));
 
   const mCreate = useMutation({
     mutationFn: () =>
