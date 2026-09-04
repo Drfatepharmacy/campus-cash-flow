@@ -359,6 +359,20 @@ export const raiseApprovalRequest = createServerFn({ method: "POST" })
     if (data.action_type === "settlement.status_update") requirePermission(ctx, "settlement.request");
     if (data.action_type === "bank_details.change") requirePermission(ctx, "bank_details.change_request");
 
+    // Money can only ever move to a fully verified primary settlement account.
+    if (data.action_type === "settlement.payout") {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: acct } = await supabaseAdmin
+        .from("association_financial_accounts")
+        .select("id")
+        .eq("association_id", ctx.association.id)
+        .eq("is_primary", true)
+        .eq("status", "verified")
+        .maybeSingle();
+      if (!acct) throw new Error("Add and verify a settlement bank account before requesting a payout");
+    }
+
+
     const { error } = await context.supabase.from("approval_requests").insert({
       association_id: ctx.association.id,
       action_type: data.action_type,
