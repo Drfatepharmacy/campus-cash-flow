@@ -84,6 +84,11 @@ export type Database = {
           created_by: string | null
           id: string
           is_primary: boolean
+          officer_approved_at: string | null
+          officer_approved_by: string | null
+          rejection_reason: string | null
+          status: string
+          submitted_by: string | null
           updated_at: string
           verified: boolean
           verified_at: string | null
@@ -99,6 +104,11 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_primary?: boolean
+          officer_approved_at?: string | null
+          officer_approved_by?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submitted_by?: string | null
           updated_at?: string
           verified?: boolean
           verified_at?: string | null
@@ -114,6 +124,11 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_primary?: boolean
+          officer_approved_at?: string | null
+          officer_approved_by?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submitted_by?: string | null
           updated_at?: string
           verified?: boolean
           verified_at?: string | null
