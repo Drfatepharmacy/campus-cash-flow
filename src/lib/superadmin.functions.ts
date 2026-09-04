@@ -246,6 +246,8 @@ export const setAssociationBankAccount = createServerFn({ method: "POST" })
       account_last4: data.account_number.slice(-4),
       is_primary: true,
       verified: true,
+      status: "verified",
+      submitted_by: context.userId,
       verified_by: context.userId,
       verified_at: new Date().toISOString(),
       created_by: context.userId,
@@ -332,5 +334,63 @@ export const rejectAssociationRequest = createServerFn({ method: "POST" })
       ],
       `UniEgo: your request to create "${before.name}" was not approved. Reason: ${data.reason}. You can update and resubmit.`,
     );
+    return { ok: true };
+  });
+
+/** Accounts that passed officer maker-checker and await platform verification. */
+export const listBankVerifications = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+    if (!isSuper) throw new Error("Forbidden: platform administrators only");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows } = await supabaseAdmin
+      .from("association_financial_accounts")
+      .select("id, association_id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, officer_approved_at, verified_at, created_at, association:associations(name, slug, status)")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    return (rows ?? []).map((r: any) => ({ ...r, masked: `•••• •••• ${r.account_last4}` }));
+  });
+
+/** Final stage of the three-step bank control. Super Admin only. */
+export const decideBankVerification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), decision: z.enum(["verified", "rejected"]), reason: z.string().trim().max(500).optional().nullable() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+    if (!isSuper) throw new Error("Forbidden: platform administrators only");
+    if (data.decision === "rejected" && !data.reason) throw new Error("A reason is required when rejecting a bank account");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin.from("association_financial_accounts").select("*").eq("id", data.id).maybeSingle();
+    if (!row) throw new Error("Bank account not found");
+    if (row.status !== "officer_approved") throw new Error("Only officer-approved accounts can be verified");
+
+    if (data.decision === "verified") {
+      await supabaseAdmin.from("association_financial_accounts").update({ is_primary: false }).eq("association_id", row.association_id);
+      const { error } = await supabaseAdmin
+        .from("association_financial_accounts")
+        .update({ status: "verified", verified: true, is_primary: true, verified_by: context.userId, verified_at: new Date().toISOString(), rejection_reason: null })
+        .eq("id", data.id);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabaseAdmin
+        .from("association_financial_accounts")
+        .update({ status: "rejected", verified: false, is_primary: false, rejection_reason: data.reason ?? null })
+        .eq("id", data.id);
+      if (error) throw new Error(error.message);
+    }
+
+    const { recordAudit } = await import("@/lib/association-audit.server");
+    await recordAudit({
+      actor_id: context.userId,
+      action: `bank_details.${data.decision}`,
+      entity: "association_financial_account",
+      entity_id: data.id,
+      association_id: row.association_id,
+      metadata: { bank_name: row.bank_name, last4: row.account_last4, reason: data.reason ?? null },
+    });
     return { ok: true };
   });
