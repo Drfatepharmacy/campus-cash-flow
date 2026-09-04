@@ -359,6 +359,20 @@ export const raiseApprovalRequest = createServerFn({ method: "POST" })
     if (data.action_type === "settlement.status_update") requirePermission(ctx, "settlement.request");
     if (data.action_type === "bank_details.change") requirePermission(ctx, "bank_details.change_request");
 
+    // Money can only ever move to a fully verified primary settlement account.
+    if (data.action_type === "settlement.payout") {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: acct } = await supabaseAdmin
+        .from("association_financial_accounts")
+        .select("id")
+        .eq("association_id", ctx.association.id)
+        .eq("is_primary", true)
+        .eq("status", "verified")
+        .maybeSingle();
+      if (!acct) throw new Error("Add and verify a settlement bank account before requesting a payout");
+    }
+
+
     const { error } = await context.supabase.from("approval_requests").insert({
       association_id: ctx.association.id,
       action_type: data.action_type,
@@ -425,6 +439,31 @@ export const decideApprovalRequest = createServerFn({ method: "POST" })
         executed = true;
       }
     }
+
+    // Officer approval of a bank change stages the account for Super Admin verification.
+    if (data.decision === "approved" && req.action_type === "bank_details.change") {
+      const p = (req.payload ?? {}) as { bank_name?: string; account_name?: string; account_number?: string };
+      if (p.bank_name && p.account_name && /^\d{10}$/.test(String(p.account_number ?? ""))) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin.from("association_financial_accounts").insert({
+          association_id: ctx.association.id,
+          bank_name: p.bank_name,
+          account_name: p.account_name,
+          account_number: p.account_number!,
+          account_last4: p.account_number!.slice(-4),
+          is_primary: false,
+          verified: false,
+          status: "officer_approved",
+          submitted_by: req.requested_by,
+          officer_approved_by: context.userId,
+          officer_approved_at: new Date().toISOString(),
+          created_by: req.requested_by,
+        } as never);
+        await supabaseAdmin.from("approval_requests").update({ executed_at: new Date().toISOString(), status: "executed" }).eq("id", data.id);
+        executed = true;
+      }
+    }
+
 
     const { recordAudit } = await import("@/lib/association-audit.server");
     await recordAudit({ actor_id: context.userId, action: `approval.${data.decision}`, entity: "approval_request", entity_id: data.id, association_id: ctx.association.id, metadata: { action_type: req.action_type, executed } });
