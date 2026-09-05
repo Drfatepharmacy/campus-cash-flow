@@ -6,7 +6,7 @@ import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LayoutDashboard, Users, ShieldCheck, Banknote, ClipboardCheck, ScrollText, Coins, ArrowLeft, AlertTriangle } from "lucide-react";
+import { LayoutDashboard, Users, ShieldCheck, Banknote, Landmark, ClipboardCheck, ScrollText, Coins, ArrowLeft, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/association/$slug")({
   head: () => ({ meta: [{ title: "Association workspace — UniEgo" }] }),
