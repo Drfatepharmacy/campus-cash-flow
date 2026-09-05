@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as LegalRouteRouteImport } from './routes/legal.route'
@@ -63,6 +64,11 @@ import { Route as AuthenticatedAssociationSlugBankRouteImport } from './routes/_
 import { Route as AuthenticatedAssociationSlugAuditRouteImport } from './routes/_authenticated/association/$slug/audit'
 import { Route as AuthenticatedAssociationSlugApprovalsRouteImport } from './routes/_authenticated/association/$slug/approvals'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -363,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/legal': typeof LegalRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/rep': typeof AuthenticatedRepRouteRouteWithChildren
   '/runner': typeof AuthenticatedRunnerRouteRouteWithChildren
@@ -417,6 +424,7 @@ export interface FileRoutesByTo {
   '/legal': typeof LegalRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/legal/association-verification': typeof LegalAssociationVerificationRoute
@@ -468,6 +476,7 @@ export interface FileRoutesById {
   '/legal': typeof LegalRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/rep': typeof AuthenticatedRepRouteRouteWithChildren
   '/_authenticated/runner': typeof AuthenticatedRunnerRouteRouteWithChildren
@@ -524,6 +533,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/auth'
     | '/forgot-password'
+    | '/reset-password'
     | '/admin'
     | '/rep'
     | '/runner'
@@ -578,6 +588,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/auth'
     | '/forgot-password'
+    | '/reset-password'
     | '/dashboard'
     | '/onboarding'
     | '/legal/association-verification'
@@ -628,6 +639,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/auth'
     | '/forgot-password'
+    | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/rep'
     | '/_authenticated/runner'
@@ -684,6 +696,7 @@ export interface RootRouteChildren {
   LegalRouteRoute: typeof LegalRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
   AssociationsIndexRoute: typeof AssociationsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
@@ -692,6 +705,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
@@ -1252,6 +1272,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalRouteRoute: LegalRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   VerifyTokenRoute: VerifyTokenRoute,
   AssociationsIndexRoute: AssociationsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
