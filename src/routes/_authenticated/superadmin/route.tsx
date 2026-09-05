@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/logo";
-import { ArrowLeft, Building2, Crown, LayoutDashboard } from "lucide-react";
+import { ArrowLeft, Building2, Crown, Landmark, LayoutDashboard } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/superadmin")({
   ssr: false,
@@ -14,10 +14,11 @@ export const Route = createFileRoute("/_authenticated/superadmin")({
   component: SuperAdminLayout,
 });
 
-const nav: { to: "/superadmin" | "/superadmin/associations" | "/superadmin/nominations"; label: string; icon: any; exact?: boolean }[] = [
+const nav: { to: "/superadmin" | "/superadmin/associations" | "/superadmin/nominations" | "/superadmin/bank-verifications"; label: string; icon: any; exact?: boolean }[] = [
   { to: "/superadmin", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/superadmin/associations", label: "Association applications", icon: Building2 },
   { to: "/superadmin/nominations", label: "Leadership approvals", icon: Crown },
+  { to: "/superadmin/bank-verifications", label: "Bank verifications", icon: Landmark },
 ];
 
 function SuperAdminLayout() {

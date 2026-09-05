@@ -9,7 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AssociationLoginRouteImport } from './routes/association-login'
 import { Route as LegalRouteRouteImport } from './routes/legal.route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -35,6 +38,7 @@ import { Route as AuthenticatedRunnerIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticated/rep/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedSuperadminNominationsRouteImport } from './routes/_authenticated/superadmin/nominations'
+import { Route as AuthenticatedSuperadminBankVerificationsRouteImport } from './routes/_authenticated/superadmin/bank-verifications'
 import { Route as AuthenticatedSuperadminAssociationsRouteImport } from './routes/_authenticated/superadmin/associations'
 import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
@@ -61,9 +65,24 @@ import { Route as AuthenticatedAssociationSlugBankRouteImport } from './routes/_
 import { Route as AuthenticatedAssociationSlugAuditRouteImport } from './routes/_authenticated/association/$slug/audit'
 import { Route as AuthenticatedAssociationSlugApprovalsRouteImport } from './routes/_authenticated/association/$slug/approvals'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssociationLoginRoute = AssociationLoginRouteImport.update({
+  id: '/association-login',
+  path: '/association-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalRouteRoute = LegalRouteRouteImport.update({
@@ -194,6 +213,12 @@ const AuthenticatedSuperadminNominationsRoute =
   AuthenticatedSuperadminNominationsRouteImport.update({
     id: '/nominations',
     path: '/nominations',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
+const AuthenticatedSuperadminBankVerificationsRoute =
+  AuthenticatedSuperadminBankVerificationsRouteImport.update({
+    id: '/bank-verifications',
+    path: '/bank-verifications',
     getParentRoute: () => AuthenticatedSuperadminRouteRoute,
   } as any)
 const AuthenticatedSuperadminAssociationsRoute =
@@ -348,7 +373,10 @@ const AuthenticatedAssociationSlugApprovalsRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/legal': typeof LegalRouteRouteWithChildren
+  '/association-login': typeof AssociationLoginRoute
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/rep': typeof AuthenticatedRepRouteRouteWithChildren
   '/runner': typeof AuthenticatedRunnerRouteRouteWithChildren
@@ -382,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/rep/': typeof AuthenticatedRepIndexRoute
@@ -400,7 +429,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/legal': typeof LegalRouteRouteWithChildren
+  '/association-login': typeof AssociationLoginRoute
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/legal/association-verification': typeof LegalAssociationVerificationRoute
@@ -429,6 +461,7 @@ export interface FileRoutesByTo {
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/rep': typeof AuthenticatedRepIndexRoute
@@ -449,7 +482,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/legal': typeof LegalRouteRouteWithChildren
+  '/association-login': typeof AssociationLoginRoute
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/rep': typeof AuthenticatedRepRouteRouteWithChildren
   '/_authenticated/runner': typeof AuthenticatedRunnerRouteRouteWithChildren
@@ -483,6 +519,7 @@ export interface FileRoutesById {
   '/_authenticated/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/_authenticated/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/_authenticated/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/_authenticated/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/_authenticated/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/rep/': typeof AuthenticatedRepIndexRoute
@@ -503,7 +540,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/legal'
+    | '/association-login'
     | '/auth'
+    | '/forgot-password'
+    | '/reset-password'
     | '/admin'
     | '/rep'
     | '/runner'
@@ -537,6 +577,7 @@ export interface FileRouteTypes {
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/superadmin/associations'
+    | '/superadmin/bank-verifications'
     | '/superadmin/nominations'
     | '/admin/'
     | '/rep/'
@@ -555,7 +596,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/legal'
+    | '/association-login'
     | '/auth'
+    | '/forgot-password'
+    | '/reset-password'
     | '/dashboard'
     | '/onboarding'
     | '/legal/association-verification'
@@ -584,6 +628,7 @@ export interface FileRouteTypes {
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/superadmin/associations'
+    | '/superadmin/bank-verifications'
     | '/superadmin/nominations'
     | '/admin'
     | '/rep'
@@ -603,7 +648,10 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/legal'
+    | '/association-login'
     | '/auth'
+    | '/forgot-password'
+    | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/rep'
     | '/_authenticated/runner'
@@ -637,6 +685,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pay/$requestId'
     | '/_authenticated/receipt/$token'
     | '/_authenticated/superadmin/associations'
+    | '/_authenticated/superadmin/bank-verifications'
     | '/_authenticated/superadmin/nominations'
     | '/_authenticated/admin/'
     | '/_authenticated/rep/'
@@ -657,7 +706,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LegalRouteRoute: typeof LegalRouteRouteWithChildren
+  AssociationLoginRoute: typeof AssociationLoginRoute
   AuthRoute: typeof AuthRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
   AssociationsIndexRoute: typeof AssociationsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
@@ -666,11 +718,32 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/association-login': {
+      id: '/association-login'
+      path: '/association-login'
+      fullPath: '/association-login'
+      preLoaderRoute: typeof AssociationLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal': {
@@ -846,6 +919,13 @@ declare module '@tanstack/react-router' {
       path: '/nominations'
       fullPath: '/superadmin/nominations'
       preLoaderRoute: typeof AuthenticatedSuperadminNominationsRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    }
+    '/_authenticated/superadmin/bank-verifications': {
+      id: '/_authenticated/superadmin/bank-verifications'
+      path: '/bank-verifications'
+      fullPath: '/superadmin/bank-verifications'
+      preLoaderRoute: typeof AuthenticatedSuperadminBankVerificationsRouteImport
       parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
     '/_authenticated/superadmin/associations': {
@@ -1092,6 +1172,7 @@ const AuthenticatedRunnerRouteRouteWithChildren =
 
 interface AuthenticatedSuperadminRouteRouteChildren {
   AuthenticatedSuperadminAssociationsRoute: typeof AuthenticatedSuperadminAssociationsRoute
+  AuthenticatedSuperadminBankVerificationsRoute: typeof AuthenticatedSuperadminBankVerificationsRoute
   AuthenticatedSuperadminNominationsRoute: typeof AuthenticatedSuperadminNominationsRoute
   AuthenticatedSuperadminIndexRoute: typeof AuthenticatedSuperadminIndexRoute
 }
@@ -1100,6 +1181,8 @@ const AuthenticatedSuperadminRouteRouteChildren: AuthenticatedSuperadminRouteRou
   {
     AuthenticatedSuperadminAssociationsRoute:
       AuthenticatedSuperadminAssociationsRoute,
+    AuthenticatedSuperadminBankVerificationsRoute:
+      AuthenticatedSuperadminBankVerificationsRoute,
     AuthenticatedSuperadminNominationsRoute:
       AuthenticatedSuperadminNominationsRoute,
     AuthenticatedSuperadminIndexRoute: AuthenticatedSuperadminIndexRoute,
@@ -1207,7 +1290,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LegalRouteRoute: LegalRouteRouteWithChildren,
+  AssociationLoginRoute: AssociationLoginRoute,
   AuthRoute: AuthRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   VerifyTokenRoute: VerifyTokenRoute,
   AssociationsIndexRoute: AssociationsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,

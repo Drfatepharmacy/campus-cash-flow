@@ -6,7 +6,7 @@ import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LayoutDashboard, Users, ShieldCheck, Banknote, ClipboardCheck, ScrollText, Coins, ArrowLeft, AlertTriangle } from "lucide-react";
+import { LayoutDashboard, Users, ShieldCheck, Banknote, Landmark, ClipboardCheck, ScrollText, Coins, ArrowLeft, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/association/$slug")({
   head: () => ({ meta: [{ title: "Association workspace — UniEgo" }] }),
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/association/$slug")({
 });
 
 type NavItem = {
-  to: "/association/$slug" | "/association/$slug/members" | "/association/$slug/executives" | "/association/$slug/dues" | "/association/$slug/finance" | "/association/$slug/approvals" | "/association/$slug/audit";
+  to: "/association/$slug" | "/association/$slug/members" | "/association/$slug/executives" | "/association/$slug/dues" | "/association/$slug/finance" | "/association/$slug/bank" | "/association/$slug/approvals" | "/association/$slug/audit";
   label: string;
   icon: any;
   permission?: string;
@@ -27,9 +27,11 @@ const NAV: NavItem[] = [
   { to: "/association/$slug/executives", label: "Executives", icon: ShieldCheck, permission: "executives.view" },
   { to: "/association/$slug/dues", label: "Dues", icon: Coins, permission: "dues.view" },
   { to: "/association/$slug/finance", label: "Finance", icon: Banknote, permission: "finance.view" },
+  { to: "/association/$slug/bank", label: "Bank details", icon: Landmark, permission: "bank_details.view" },
   { to: "/association/$slug/approvals", label: "Approvals", icon: ClipboardCheck, permission: "approvals.view" },
   { to: "/association/$slug/audit", label: "Audit log", icon: ScrollText, permission: "audit.view" },
 ];
+
 
 export function useWorkspace() {
   const { slug } = useParams({ from: "/_authenticated/association/$slug" });
