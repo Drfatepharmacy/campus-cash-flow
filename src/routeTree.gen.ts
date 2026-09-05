@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AssociationLoginRouteImport } from './routes/association-login'
 import { Route as LegalRouteRouteImport } from './routes/legal.route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -77,6 +78,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssociationLoginRoute = AssociationLoginRouteImport.update({
+  id: '/association-login',
+  path: '/association-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalRouteRoute = LegalRouteRouteImport.update({
@@ -367,6 +373,7 @@ const AuthenticatedAssociationSlugApprovalsRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/legal': typeof LegalRouteRouteWithChildren
+  '/association-login': typeof AssociationLoginRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -422,6 +429,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/legal': typeof LegalRouteRouteWithChildren
+  '/association-login': typeof AssociationLoginRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -474,6 +482,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/legal': typeof LegalRouteRouteWithChildren
+  '/association-login': typeof AssociationLoginRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -531,6 +540,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/legal'
+    | '/association-login'
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
@@ -586,6 +596,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/legal'
+    | '/association-login'
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
@@ -637,6 +648,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/legal'
+    | '/association-login'
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
@@ -694,6 +706,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LegalRouteRoute: typeof LegalRouteRouteWithChildren
+  AssociationLoginRoute: typeof AssociationLoginRoute
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -724,6 +737,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/association-login': {
+      id: '/association-login'
+      path: '/association-login'
+      fullPath: '/association-login'
+      preLoaderRoute: typeof AssociationLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal': {
@@ -1270,6 +1290,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LegalRouteRoute: LegalRouteRouteWithChildren,
+  AssociationLoginRoute: AssociationLoginRoute,
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
