@@ -35,6 +35,7 @@ import { Route as AuthenticatedRunnerIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticated/rep/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedSuperadminNominationsRouteImport } from './routes/_authenticated/superadmin/nominations'
+import { Route as AuthenticatedSuperadminBankVerificationsRouteImport } from './routes/_authenticated/superadmin/bank-verifications'
 import { Route as AuthenticatedSuperadminAssociationsRouteImport } from './routes/_authenticated/superadmin/associations'
 import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
@@ -194,6 +195,12 @@ const AuthenticatedSuperadminNominationsRoute =
   AuthenticatedSuperadminNominationsRouteImport.update({
     id: '/nominations',
     path: '/nominations',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
+const AuthenticatedSuperadminBankVerificationsRoute =
+  AuthenticatedSuperadminBankVerificationsRouteImport.update({
+    id: '/bank-verifications',
+    path: '/bank-verifications',
     getParentRoute: () => AuthenticatedSuperadminRouteRoute,
   } as any)
 const AuthenticatedSuperadminAssociationsRoute =
@@ -382,6 +389,7 @@ export interface FileRoutesByFullPath {
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/rep/': typeof AuthenticatedRepIndexRoute
@@ -429,6 +437,7 @@ export interface FileRoutesByTo {
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/rep': typeof AuthenticatedRepIndexRoute
@@ -483,6 +492,7 @@ export interface FileRoutesById {
   '/_authenticated/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/_authenticated/receipt/$token': typeof AuthenticatedReceiptTokenRoute
   '/_authenticated/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
+  '/_authenticated/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/_authenticated/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/rep/': typeof AuthenticatedRepIndexRoute
@@ -537,6 +547,7 @@ export interface FileRouteTypes {
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/superadmin/associations'
+    | '/superadmin/bank-verifications'
     | '/superadmin/nominations'
     | '/admin/'
     | '/rep/'
@@ -584,6 +595,7 @@ export interface FileRouteTypes {
     | '/pay/$requestId'
     | '/receipt/$token'
     | '/superadmin/associations'
+    | '/superadmin/bank-verifications'
     | '/superadmin/nominations'
     | '/admin'
     | '/rep'
@@ -637,6 +649,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pay/$requestId'
     | '/_authenticated/receipt/$token'
     | '/_authenticated/superadmin/associations'
+    | '/_authenticated/superadmin/bank-verifications'
     | '/_authenticated/superadmin/nominations'
     | '/_authenticated/admin/'
     | '/_authenticated/rep/'
@@ -846,6 +859,13 @@ declare module '@tanstack/react-router' {
       path: '/nominations'
       fullPath: '/superadmin/nominations'
       preLoaderRoute: typeof AuthenticatedSuperadminNominationsRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    }
+    '/_authenticated/superadmin/bank-verifications': {
+      id: '/_authenticated/superadmin/bank-verifications'
+      path: '/bank-verifications'
+      fullPath: '/superadmin/bank-verifications'
+      preLoaderRoute: typeof AuthenticatedSuperadminBankVerificationsRouteImport
       parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
     '/_authenticated/superadmin/associations': {
@@ -1092,6 +1112,7 @@ const AuthenticatedRunnerRouteRouteWithChildren =
 
 interface AuthenticatedSuperadminRouteRouteChildren {
   AuthenticatedSuperadminAssociationsRoute: typeof AuthenticatedSuperadminAssociationsRoute
+  AuthenticatedSuperadminBankVerificationsRoute: typeof AuthenticatedSuperadminBankVerificationsRoute
   AuthenticatedSuperadminNominationsRoute: typeof AuthenticatedSuperadminNominationsRoute
   AuthenticatedSuperadminIndexRoute: typeof AuthenticatedSuperadminIndexRoute
 }
@@ -1100,6 +1121,8 @@ const AuthenticatedSuperadminRouteRouteChildren: AuthenticatedSuperadminRouteRou
   {
     AuthenticatedSuperadminAssociationsRoute:
       AuthenticatedSuperadminAssociationsRoute,
+    AuthenticatedSuperadminBankVerificationsRoute:
+      AuthenticatedSuperadminBankVerificationsRoute,
     AuthenticatedSuperadminNominationsRoute:
       AuthenticatedSuperadminNominationsRoute,
     AuthenticatedSuperadminIndexRoute: AuthenticatedSuperadminIndexRoute,
