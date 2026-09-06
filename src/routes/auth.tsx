@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/logo";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/user-error";
 import { Loader2, MailCheck } from "lucide-react";
 
 const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
@@ -43,7 +44,7 @@ function AuthPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error("Sign in failed", { description: toUserMessage(error) });
     toast.success("Welcome back");
     navigate({ to: "/dashboard" });
   }
@@ -56,7 +57,7 @@ function AuthPage() {
       options: { emailRedirectTo: window.location.origin, data: { full_name: fullName } },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error("Could not create your account", { description: toUserMessage(error) });
     if (data.session) {
       toast.success("Account created");
       navigate({ to: "/dashboard" });
@@ -68,9 +69,19 @@ function AuthPage() {
 
   async function handleGoogle() {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (result.error) { setLoading(false); toast.error("Google sign-in failed"); return; }
-    if (result.redirected) return;
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+      if (result.error) {
+        setLoading(false);
+        toast.error("Couldn't sign in with Google", { description: toUserMessage(result.error, "Please try again, or use your email and password.") });
+        return;
+      }
+      if (result.redirected) return;
+    } catch (err) {
+      setLoading(false);
+      toast.error("Couldn't sign in with Google", { description: toUserMessage(err, "Please try again, or use your email and password.") });
+      return;
+    }
     setLoading(false);
     navigate({ to: "/dashboard" });
   }
