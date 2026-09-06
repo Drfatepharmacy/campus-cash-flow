@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/logo";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/user-error";
 import { Loader2, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/association-login")({
@@ -34,16 +35,24 @@ function AssociationLoginPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error("Sign in failed", { description: toUserMessage(error) });
     toast.success("Signed in");
     navigate({ to: "/associations" });
   }
 
   async function google() {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (result.error) { setLoading(false); return toast.error("Google sign-in failed"); }
-    if (result.redirected) return;
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+      if (result.error) {
+        setLoading(false);
+        return toast.error("Couldn't sign in with Google", { description: toUserMessage(result.error, "Please try again, or use your email and password.") });
+      }
+      if (result.redirected) return;
+    } catch (err) {
+      setLoading(false);
+      return toast.error("Couldn't sign in with Google", { description: toUserMessage(err, "Please try again, or use your email and password.") });
+    }
     setLoading(false);
     navigate({ to: "/associations" });
   }
