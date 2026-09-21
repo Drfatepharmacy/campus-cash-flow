@@ -85,7 +85,13 @@ export function encodePayload(p: QrPayload): string {
   }
 }
 
+/**
+ * Cryptographically secure token (>=128 bits of entropy).
+ * Never use Math.random() here: these tokens gate public verification pages.
+ */
 export function generateToken(prefix = "QR"): string {
-  const rand = () => Math.random().toString(36).slice(2, 8).toUpperCase();
-  return `${prefix}-${rand()}-${rand()}`;
+  const bytes = new Uint8Array(20);
+  globalThis.crypto.getRandomValues(bytes);
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  return `${prefix}-${hex.slice(0, 20)}-${hex.slice(20)}`;
 }
