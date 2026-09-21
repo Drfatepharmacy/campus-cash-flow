@@ -64,6 +64,7 @@ export const getRepOverview = createServerFn({ method: "GET" })
         faculty: profile.faculty?.name ?? null,
         department: profile.department?.name ?? null,
       },
+      scope_missing: false,
       stats,
       transactions: rows,
     };
