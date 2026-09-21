@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789993513498,
+      "tag": "0000_harden_rls_and_definer_grants",
+      "breakpoints": true
+    }
+  ]
+}

@@ -30,10 +30,22 @@ export const getRepOverview = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(200);
 
+    // Fail closed: a rep without an assigned scope must never see platform-wide data.
     if (isDeptRep && profile.department_id) {
       query = query.eq("payment_request.target_department_id", profile.department_id);
     } else if (isFacultyRep && profile.faculty_id) {
       query = query.eq("payment_request.target_faculty_id", profile.faculty_id);
+    } else {
+      return {
+        scope: {
+          kind: isDeptRep ? "department" : "faculty",
+          faculty: profile.faculty?.name ?? null,
+          department: profile.department?.name ?? null,
+        },
+        scope_missing: true,
+        stats: { revenue: 0, charges: 0, paid_count: 0, pending_count: 0 },
+        transactions: [] as any[],
+      };
     }
 
     const { data: txns } = await query;
@@ -52,6 +64,7 @@ export const getRepOverview = createServerFn({ method: "GET" })
         faculty: profile.faculty?.name ?? null,
         department: profile.department?.name ?? null,
       },
+      scope_missing: false,
       stats,
       transactions: rows,
     };
