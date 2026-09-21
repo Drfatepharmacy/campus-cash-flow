@@ -41,7 +41,7 @@ describe("encodePayload", () => {
 describe("generateToken", () => {
   it("has prefix and two segments", () => {
     const t = generateToken("QR");
-    expect(t).toMatch(/^QR-[A-Z0-9]{6}-[A-Z0-9]{6}$/);
+    expect(t).toMatch(/^QR-[A-F0-9]{20}-[A-F0-9]{20}$/);
   });
   it("is reasonably unique", () => {
     const s = new Set(Array.from({ length: 500 }, () => generateToken()));
