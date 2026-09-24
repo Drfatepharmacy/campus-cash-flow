@@ -8,6 +8,13 @@
       "when": 1789993513498,
       "tag": "0000_harden_rls_and_definer_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790270288026,
+      "tag": "0001_client_error_events",
+      "breakpoints": true
     }
   ]
 }
