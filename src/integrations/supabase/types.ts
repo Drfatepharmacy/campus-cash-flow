@@ -459,6 +459,51 @@ export type Database = {
         }
         Relationships: []
       }
+      client_error_events: {
+        Row: {
+          browser: string | null
+          category: string
+          correlation_id: string
+          created_at: string
+          device: string | null
+          id: string
+          kind: string
+          occurred_at: string
+          online: boolean | null
+          os: string | null
+          route: string
+          user_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          category: string
+          correlation_id: string
+          created_at?: string
+          device?: string | null
+          id?: string
+          kind: string
+          occurred_at?: string
+          online?: boolean | null
+          os?: string | null
+          route: string
+          user_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          category?: string
+          correlation_id?: string
+          created_at?: string
+          device?: string | null
+          id?: string
+          kind?: string
+          occurred_at?: string
+          online?: boolean | null
+          os?: string | null
+          route?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           created_at: string
