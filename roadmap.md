@@ -27,3 +27,7 @@
 - Analytics: no scheduled/exported reporting.
 - Audit log: viewable, no export or retention policy.
 - Tests: only charges and QR encoder are covered; no route/RLS integration tests.
+
+## Oct 3 — added
+- Public payment links (no sign-in), per-class fixed prices, QR + share, masked public ledger with Excel/PDF by class, instant offline records, roster upload, paid/defaulters reports. Online link payments run on Paystack test keys until live mode is enabled.
+- Branded auto-retry loading screen, privacy-safe page error records, admin Page health assistant (AI).
