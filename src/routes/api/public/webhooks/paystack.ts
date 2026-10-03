@@ -53,6 +53,19 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
           return new Response("duplicate", { status: 200 });
         }
 
+        if (reference.startsWith("PL-")) {
+          const { data: out, error: plErr } = await supabaseAdmin.rpc("finalize_link_payment", {
+            _reference: reference,
+            _provider_ref: String(event.data.id ?? ""),
+            _amount_minor: Number(event.data.amount ?? -1),
+            _currency: String(event.data.currency ?? "NGN").toUpperCase(),
+            _paid_at: event.data.paid_at ?? new Date().toISOString(),
+            _event_id: eventId,
+          });
+          await supabaseAdmin.from("webhook_events").update({ outcome: plErr ? "error" : String(out) }).eq("provider", "paystack").eq("event_id", eventId);
+          return new Response(plErr ? "finalize failed" : "ok", { status: plErr ? 500 : 200 });
+        }
+
         const { data: rpc, error: finErr } = await supabaseAdmin.rpc("finalize_payment", {
           _reference: reference,
           _provider: "paystack",

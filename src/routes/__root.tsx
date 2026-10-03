@@ -13,7 +13,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorState } from "@/components/feedback/error-state";
-import { toUserMessage } from "@/lib/user-error";
+import { RecoveryScreen, BrandedPending, useRecoveryReset } from "@/components/feedback/recovery-boundary";
+import { reportClientError } from "@/lib/client-monitor";
 
 function NotFoundComponent() {
   return (
@@ -31,13 +32,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
-  return (
-    <ErrorState
-      title="This page didn't load"
-      description={toUserMessage(error, "Something interrupted this page. Your data is safe — try again in a moment.")}
-      onRetry={() => { router.invalidate(); reset(); }}
-    />
-  );
+  return <RecoveryScreen error={error} onRetry={() => { router.invalidate(); reset(); }} />;
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -70,6 +65,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
+  pendingComponent: BrandedPending,
 });
 
 function RootShell({ children }: { children: ReactNode }) {
@@ -84,6 +80,13 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  useRecoveryReset();
+
+  useEffect(() => {
+    const onRej = (e: PromiseRejectionEvent) => reportClientError(e.reason, "unhandled");
+    window.addEventListener("unhandledrejection", onRej);
+    return () => window.removeEventListener("unhandledrejection", onRej);
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {

@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/logo";
-import { LayoutDashboard, Building2, FileText, Receipt, ArrowLeft, Banknote, FileCheck2, ShieldCheck, Truck, ScrollText, BarChart3, Users, QrCode } from "lucide-react";
+import { LayoutDashboard, Building2, FileText, Receipt, ArrowLeft, Banknote, FileCheck2, ShieldCheck, Truck, ScrollText, BarChart3, Users, QrCode, Activity } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 
-const nav: { to: "/admin" | "/admin/analytics" | "/admin/faculties" | "/admin/payment-requests" | "/admin/transactions" | "/admin/settlements" | "/admin/reconcile" | "/admin/runners" | "/admin/students" | "/admin/users" | "/admin/audit" | "/admin/qr-codes"; label: string; icon: any; exact?: boolean }[] = [
+const nav: { to: "/admin" | "/admin/analytics" | "/admin/faculties" | "/admin/payment-requests" | "/admin/transactions" | "/admin/settlements" | "/admin/reconcile" | "/admin/runners" | "/admin/students" | "/admin/users" | "/admin/audit" | "/admin/qr-codes" | "/admin/page-health"; label: string; icon: any; exact?: boolean }[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/faculties", label: "Faculties & departments", icon: Building2 },
@@ -27,6 +27,7 @@ const nav: { to: "/admin" | "/admin/analytics" | "/admin/faculties" | "/admin/pa
   { to: "/admin/students", label: "Bulk import students", icon: Users },
   { to: "/admin/users", label: "Users & roles", icon: ShieldCheck },
   { to: "/admin/audit", label: "Audit log", icon: ScrollText },
+  { to: "/admin/page-health", label: "Page health", icon: Activity },
 ];
 
 function AdminLayout() {
