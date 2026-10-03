@@ -788,6 +788,176 @@ export type Database = {
           },
         ]
       }
+      payment_link_payments: {
+        Row: {
+          amount_minor: number
+          association_id: string
+          class_label: string
+          created_at: string
+          currency: string
+          id: string
+          link_id: string
+          matric_no: string
+          note: string | null
+          offline_method: string | null
+          paid_at: string | null
+          payer_email: string | null
+          payer_name: string
+          provider_ref: string | null
+          recorded_by: string | null
+          reference: string
+          source: string
+          status: string
+        }
+        Insert: {
+          amount_minor: number
+          association_id: string
+          class_label: string
+          created_at?: string
+          currency?: string
+          id?: string
+          link_id: string
+          matric_no: string
+          note?: string | null
+          offline_method?: string | null
+          paid_at?: string | null
+          payer_email?: string | null
+          payer_name: string
+          provider_ref?: string | null
+          recorded_by?: string | null
+          reference: string
+          source?: string
+          status?: string
+        }
+        Update: {
+          amount_minor?: number
+          association_id?: string
+          class_label?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          link_id?: string
+          matric_no?: string
+          note?: string | null
+          offline_method?: string | null
+          paid_at?: string | null
+          payer_email?: string | null
+          payer_name?: string
+          provider_ref?: string | null
+          recorded_by?: string | null
+          reference?: string
+          source?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_link_payments_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_link_payments_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "payment_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_link_roster: {
+        Row: {
+          association_id: string
+          class_label: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          link_id: string
+          matric_no: string
+        }
+        Insert: {
+          association_id: string
+          class_label?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          link_id: string
+          matric_no: string
+        }
+        Update: {
+          association_id?: string
+          class_label?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          link_id?: string
+          matric_no?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_link_roster_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_link_roster_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "payment_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_links: {
+        Row: {
+          active: boolean
+          association_id: string
+          class_prices: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          title: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          association_id: string
+          class_prices?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          association_id?: string
+          class_prices?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_links_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_requests: {
         Row: {
           active: boolean
@@ -1376,6 +1546,17 @@ export type Database = {
     }
     Functions: {
       expire_role_assignments: { Args: never; Returns: number }
+      finalize_link_payment: {
+        Args: {
+          _amount_minor: number
+          _currency: string
+          _event_id: string
+          _paid_at: string
+          _provider_ref: string
+          _reference: string
+        }
+        Returns: string
+      }
       finalize_payment: {
         Args: {
           _amount_minor: number

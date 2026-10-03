@@ -15,6 +15,13 @@
       "when": 1790270288026,
       "tag": "0001_client_error_events",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791059778817,
+      "tag": "0002_public_payment_links",
+      "breakpoints": true
     }
   ]
 }
