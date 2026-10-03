@@ -19,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as VerifyIndexRouteImport } from './routes/verify.index'
 import { Route as AssociationsIndexRouteImport } from './routes/associations.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
+import { Route as PTokenRouteImport } from './routes/p.$token'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalSecurityRouteImport } from './routes/legal.security'
 import { Route as LegalRefundRouteImport } from './routes/legal.refund'
@@ -112,6 +113,11 @@ const AssociationsIndexRoute = AssociationsIndexRouteImport.update({
 const VerifyTokenRoute = VerifyTokenRouteImport.update({
   id: '/verify/$token',
   path: '/verify/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PTokenRoute = PTokenRouteImport.update({
+  id: '/p/$token',
+  path: '/p/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalTermsRoute = LegalTermsRouteImport.update({
@@ -391,6 +397,7 @@ export interface FileRoutesByFullPath {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/p/$token': typeof PTokenRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/associations/': typeof AssociationsIndexRoute
   '/verify/': typeof VerifyIndexRoute
@@ -443,6 +450,7 @@ export interface FileRoutesByTo {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/p/$token': typeof PTokenRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/associations': typeof AssociationsIndexRoute
   '/verify': typeof VerifyIndexRoute
@@ -500,6 +508,7 @@ export interface FileRoutesById {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/security': typeof LegalSecurityRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/p/$token': typeof PTokenRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/associations/': typeof AssociationsIndexRoute
   '/verify/': typeof VerifyIndexRoute
@@ -558,6 +567,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/security'
     | '/legal/terms'
+    | '/p/$token'
     | '/verify/$token'
     | '/associations/'
     | '/verify/'
@@ -610,6 +620,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/security'
     | '/legal/terms'
+    | '/p/$token'
     | '/verify/$token'
     | '/associations'
     | '/verify'
@@ -666,6 +677,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/security'
     | '/legal/terms'
+    | '/p/$token'
     | '/verify/$token'
     | '/associations/'
     | '/verify/'
@@ -710,6 +722,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  PTokenRoute: typeof PTokenRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
   AssociationsIndexRoute: typeof AssociationsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
@@ -786,6 +799,13 @@ declare module '@tanstack/react-router' {
       path: '/verify/$token'
       fullPath: '/verify/$token'
       preLoaderRoute: typeof VerifyTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$token': {
+      id: '/p/$token'
+      path: '/p/$token'
+      fullPath: '/p/$token'
+      preLoaderRoute: typeof PTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/terms': {
@@ -1294,6 +1314,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  PTokenRoute: PTokenRoute,
   VerifyTokenRoute: VerifyTokenRoute,
   AssociationsIndexRoute: AssociationsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
