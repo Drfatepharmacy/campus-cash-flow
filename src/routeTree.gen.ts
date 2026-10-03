@@ -58,6 +58,7 @@ import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authe
 import { Route as AuthenticatedAssociationSlugRouteRouteImport } from './routes/_authenticated/association/$slug/route'
 import { Route as AuthenticatedAssociationSlugIndexRouteImport } from './routes/_authenticated/association/$slug/index'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
+import { Route as AuthenticatedAssociationSlugPaymentLinksRouteImport } from './routes/_authenticated/association/$slug/payment-links'
 import { Route as AuthenticatedAssociationSlugMembersRouteImport } from './routes/_authenticated/association/$slug/members'
 import { Route as AuthenticatedAssociationSlugFinanceRouteImport } from './routes/_authenticated/association/$slug/finance'
 import { Route as AuthenticatedAssociationSlugExecutivesRouteImport } from './routes/_authenticated/association/$slug/executives'
@@ -333,6 +334,12 @@ const ApiPublicWebhooksPaystackRoute =
     path: '/api/public/webhooks/paystack',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedAssociationSlugPaymentLinksRoute =
+  AuthenticatedAssociationSlugPaymentLinksRouteImport.update({
+    id: '/payment-links',
+    path: '/payment-links',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
 const AuthenticatedAssociationSlugMembersRoute =
   AuthenticatedAssociationSlugMembersRouteImport.update({
     id: '/members',
@@ -430,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
   '/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
+  '/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -482,6 +490,7 @@ export interface FileRoutesByTo {
   '/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
   '/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
+  '/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/association/$slug': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -541,6 +550,7 @@ export interface FileRoutesById {
   '/_authenticated/association/$slug/executives': typeof AuthenticatedAssociationSlugExecutivesRoute
   '/_authenticated/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/_authenticated/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
+  '/_authenticated/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/_authenticated/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -600,6 +610,7 @@ export interface FileRouteTypes {
     | '/association/$slug/executives'
     | '/association/$slug/finance'
     | '/association/$slug/members'
+    | '/association/$slug/payment-links'
     | '/api/public/webhooks/paystack'
     | '/association/$slug/'
   fileRoutesByTo: FileRoutesByTo
@@ -652,6 +663,7 @@ export interface FileRouteTypes {
     | '/association/$slug/executives'
     | '/association/$slug/finance'
     | '/association/$slug/members'
+    | '/association/$slug/payment-links'
     | '/api/public/webhooks/paystack'
     | '/association/$slug'
   id:
@@ -710,6 +722,7 @@ export interface FileRouteTypes {
     | '/_authenticated/association/$slug/executives'
     | '/_authenticated/association/$slug/finance'
     | '/_authenticated/association/$slug/members'
+    | '/_authenticated/association/$slug/payment-links'
     | '/api/public/webhooks/paystack'
     | '/_authenticated/association/$slug/'
   fileRoutesById: FileRoutesById
@@ -1074,6 +1087,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksPaystackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/association/$slug/payment-links': {
+      id: '/_authenticated/association/$slug/payment-links'
+      path: '/payment-links'
+      fullPath: '/association/$slug/payment-links'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugPaymentLinksRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
     '/_authenticated/association/$slug/members': {
       id: '/_authenticated/association/$slug/members'
       path: '/members'
@@ -1221,6 +1241,7 @@ interface AuthenticatedAssociationSlugRouteRouteChildren {
   AuthenticatedAssociationSlugExecutivesRoute: typeof AuthenticatedAssociationSlugExecutivesRoute
   AuthenticatedAssociationSlugFinanceRoute: typeof AuthenticatedAssociationSlugFinanceRoute
   AuthenticatedAssociationSlugMembersRoute: typeof AuthenticatedAssociationSlugMembersRoute
+  AuthenticatedAssociationSlugPaymentLinksRoute: typeof AuthenticatedAssociationSlugPaymentLinksRoute
   AuthenticatedAssociationSlugIndexRoute: typeof AuthenticatedAssociationSlugIndexRoute
 }
 
@@ -1240,6 +1261,8 @@ const AuthenticatedAssociationSlugRouteRouteChildren: AuthenticatedAssociationSl
       AuthenticatedAssociationSlugFinanceRoute,
     AuthenticatedAssociationSlugMembersRoute:
       AuthenticatedAssociationSlugMembersRoute,
+    AuthenticatedAssociationSlugPaymentLinksRoute:
+      AuthenticatedAssociationSlugPaymentLinksRoute,
     AuthenticatedAssociationSlugIndexRoute:
       AuthenticatedAssociationSlugIndexRoute,
   }
