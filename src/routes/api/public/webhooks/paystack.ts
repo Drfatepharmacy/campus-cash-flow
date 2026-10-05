@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, createHash, timingSafeEqual } from "crypto";
-import QRCode from "qrcode";
 
 
 export const Route = createFileRoute("/api/public/webhooks/paystack")({
@@ -111,8 +110,8 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
           const verifyUrl = `${origin}/verify/${receiptToken}`;
           const receiptUrl = `${origin}/receipt/${receiptToken}`;
           try {
-            const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 320, margin: 1, color: { dark: "#1a1230", light: "#ffffff" } });
-            const qrBase64 = qrDataUrl.split(",")[1] ?? "";
+            const { qrPngBase64 } = await import("@/lib/qr-png.server");
+            const qrBase64 = qrPngBase64(verifyUrl, { scale: 8, margin: 2 });
             const res = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
               method: "POST",
               headers: {
