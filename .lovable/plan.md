@@ -1,140 +1,45 @@
-# UniEgo
+# Fix the live site crash + make the project deployable on Vercel
 
-**Secure. Transparent. Verifiable.**
+## What is actually wrong (confirmed)
 
-**Built by EMMTEC Securities**
+Every page on the live site (uniego.lovable.app) returns the "This page didn't load" screen. The preview works, so it looked random, but it is not. A test copy built and run the same way as the live site crashes on every request with the same error:
 
-## Overview
+- The QR-code image library is loaded on the server in its "desktop computer" version, which tries to read files from disk while it starts up. The live hosting has no such disk access, so the whole site fails before any page renders.
+- It is loaded from four places: the payment receipt email (webhook), the receipt page, the payment links page, and the admin QR codes page. Because these are all part of one app, one bad load takes down every page, including the home page.
+- The backend restart did not cause this and did not fix it. The backend is healthy.
 
-UniEgo is a digital payment and financial management platform designed to simplify how organizations, institutions, and communities collect, manage, verify, and monitor payments.
+## Fix 1: stop the crash (main fix)
 
-The platform provides a centralized system for creating payment requests, processing secure online payments, generating digital receipts, verifying transactions, and producing financial insights through an intuitive administrative dashboard.
+- Pages in the browser (receipt, payment links, admin QR codes): switch to the browser-only version of the QR library, which draws onto the screen and never touches the disk.
+- Receipt email (server): add a small server-safe QR helper that builds the QR pattern with the library's core (no disk access) and turns it into a PNG image with a pure-code image encoder that is already installed (it came with the PDF library). The email keeps its inline QR image and PNG attachment.
+- Load that helper only when an email is actually sent, so even if email images ever fail, the website itself keeps working.
+- Add one automated test that builds a QR PNG with the helper and checks it is a valid image, so this does not come back silently.
 
-Built by **EMMTEC Securities**, UniEgo combines modern technology with secure financial infrastructure to deliver a reliable, scalable, and user-friendly payment experience.
+## Fix 2: Vercel deployment
 
-## Core Capabilities
+- The build tool already picks the right target by itself when it runs on Vercel, so no change of framework is needed. Lovable hosting keeps working exactly as now.
+- Add a short `vercel.json` with the build command and output settings, plus a deploy guide in the project (`DEPLOY_VERCEL.md`) listing the settings to enter in Vercel:
+  - the backend address and public key (both safe to share)
+  - server-only keys: payment (Paystack), email, AI, and the backend service key
+- Note in the guide: the Paystack webhook address must be changed in Paystack to the Vercel domain if you take payments there; Google sign-in and email links must have the Vercel domain added as an allowed address.
+- Limitation to be honest about: the backend service key is not visible on Lovable Cloud, so server features that need it (payment confirmation webhook, admin actions) will only work on Vercel if you move to a backend you manage yourself. Public pages, sign-in and normal student pages will work.
 
-- Secure online payment processing
-- Digital receipt generation
-- QR-based payment verification
-- Payment request management
-- Transaction tracking
-- Role-based access control
-- Financial reporting and analytics
-- Audit logging
-- Automated notifications
-- Exportable financial records
+## Fix 3: package updates
 
-## User Experience
+- Update packages to their latest compatible minor/patch versions (UI pieces, data, router, charts, PDF/Excel helpers), keeping the framework build pieces on versions Lovable hosting supports. No big version jumps that would require rewriting pages.
+- Remove the duplicate path plugin warning the build prints.
+- Run the existing tests and a dependency security scan afterwards.
 
-UniEgo provides dedicated experiences for different categories of users while ensuring a consistent and intuitive interface.
+## Verification
 
-Users can:
+- Rebuild the test copy and run it the same way as the live site: home, sign-in, verify, associations and legal pages must return normally (no 500s).
+- All tests pass, preview still loads.
+- Then you publish, and I re-check uniego.lovable.app.
 
-- Register and manage their profiles
-- View available payment requests
-- Complete payments securely
-- Access payment history
-- Download receipts
-- Verify transactions
-- Receive payment confirmations
+## Technical details
 
-Administrators can:
-
-- Manage organizational structure
-- Create and monitor payment requests
-- View financial summaries
-- Track transactions
-- Generate reports
-- Configure platform settings
-- Monitor system activity
-
-## Payment Workflow
-
-The platform streamlines the complete payment lifecycle, from payment creation to successful verification.
-
-Each completed transaction generates a unique receipt that can be verified using a secure QR code or receipt reference, ensuring transparency and reducing the risk of fraud.
-
-## Security
-
-UniEgo prioritizes security and accountability through modern authentication, role-based permissions, secure payment verification, comprehensive audit logs, and encrypted communication across the platform.
-
-## Design Philosophy
-
-The platform is built around three principles:
-
-- Simplicity
-- Reliability
-- Transparency
-
-Every interaction is designed to minimize friction while providing users with confidence throughout the payment process.
-
-## Technology
-
-UniEgo leverages a modern web architecture built with contemporary frontend and backend technologies, enabling high performance, scalability, maintainability, and secure integrations with third-party services.
-
-## Scalability
-
-The platform is designed with modularity in mind, allowing new features, organizations, payment methods, and services to be introduced without disrupting existing functionality.
-
-Its architecture supports future growth while maintaining a consistent user experience.
-
-## Vision
-
-To provide a trusted digital payment infrastructure that enables organizations to manage collections efficiently, improve financial transparency, and deliver a seamless payment experience for every user.
-
----
-
-## Technical section
-
-### Stack
-TanStack Start + Lovable Cloud (Supabase) + Tailwind v4 + shadcn + TanStack Query. Paystack via server functions. Resend via Lovable connector.
-
-### Data model (Supabase, all in `public` with GRANTs + RLS)
-- `campuses` (id, name, slug, active)
-- `faculties` (id, campus_id, name)
-- `departments` (id, faculty_id, name)
-- `profiles` (id=auth.users.id, email, full_name, phone, matric_no, campus_id, faculty_id, department_id, level)
-- `app_role` enum: `admin | student | department_rep | faculty_rep | bank_runner`
-- `user_roles` (id, user_id, role) + `has_role()` SECURITY DEFINER
-- `payment_requests` (id, campus_id, title, description, base_amount, target_faculty_id?, target_department_id?, target_level?, opens_at, closes_at, active, created_by)
-- `service_charge_rules` (id, scope: global|department, department_id?, tiers jsonb)
-- `transactions` (id, reference unique, student_id, payment_request_id, base_amount, service_charge, total_amount, status: pending|paid|failed, paystack_ref, paid_at, created_at)
-- `receipts` (id, transaction_id, qr_token unique, issued_at)
-- `audit_logs` (id, actor_id, action, entity, entity_id, metadata jsonb, ip, created_at) — append-only RLS
-- `settlements`, `deposit_jobs` — schema stubs only, no UI
-
-### RLS sketch
-- Students: read own profile, own transactions, own receipts.
-- Admin: full read/write via `has_role(auth.uid(),'admin')`.
-- `payment_requests` public-read for authenticated students filtered by their faculty/dept/level.
-- `receipts` + `transactions` public-read by `qr_token` via server fn using `supabaseAdmin` (safe-column projection only) for the verify page.
-
-### Server functions / routes
-- `src/lib/payments.functions.ts`
-  - `initiatePayment` (requireSupabaseAuth) → creates pending txn, calls Paystack init, returns auth_url
-  - `getMyTransactions`, `getEligibleRequests`
-- `src/lib/admin.functions.ts` (requireSupabaseAuth + admin role check)
-  - CRUD for campuses/faculties/departments/payment_requests/service_charge_rules
-  - `getAdminDashboardStats`
-- `src/lib/verify.functions.ts` (public, no auth) — `verifyReceipt(qrToken)` returns safe projection
-- `src/routes/api/public/webhooks/paystack.ts` — HMAC verify with `PAYSTACK_SECRET_KEY`, idempotent update, send receipt email via Resend gateway
-
-### Routing
-```
-/                              landing
-/auth                          login/signup
-/verify/$token                 public QR verify
-/receipt/$id                   receipt view (auth: owner or admin)
-/_authenticated/route.tsx      integration-managed gate
-/_authenticated/dashboard      student dashboard
-/_authenticated/pay/$requestId payment flow
-/_authenticated/admin/*        admin shell + pages (gated by admin role)
-```
-
-### Secrets
-- `PAYSTACK_SECRET_KEY` (test mode `sk_test_...`)
-- Resend via connector → `RESEND_API_KEY` + `LOVABLE_API_KEY` auto
-
-### Success check
-Student registers → sees a payment request → pays in Paystack test mode → webhook flips status → receipt page renders with QR → scanning QR opens verify page showing Valid + details → admin sees the transaction in dashboard and CSV export.
+- Root cause: `import QRCode from "qrcode"` resolves to `qrcode/lib/server.js` in SSR; `renderer/png.js` -> `pngjs` requires `node:fs` at module init. It is reached through the router's eager route graph (paystack webhook route and 3 page routes), so the worker throws on init and h3 returns 500 for all paths.
+- Client routes: `import QRCode from "qrcode/lib/browser"` (add a type shim). 
+- Server: `src/lib/qr-png.server.ts` using `qrcode/lib/core/qrcode` `create()` for the module matrix + `fast-png` `encode()`; webhook does `await import("@/lib/qr-png.server")` inside the email block.
+- Vercel: nitro auto-detects the `vercel` preset outside the Lovable sandbox (`defaultPreset: cloudflare-module` is only a fallback). `vercel.json`: `buildCommand: "vite build"`, framework null.
+- Remove `vite-tsconfig-paths` from dependencies only if the shared config does not need it (it bundles its own path handling).
