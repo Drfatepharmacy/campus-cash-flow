@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import QRCode from "qrcode";
+import QRCode from "@/lib/qr-browser";
 import { jsPDF } from "jspdf";
 import { getMyReceipt } from "@/lib/receipts.functions";
 import { Logo } from "@/components/brand/logo";
