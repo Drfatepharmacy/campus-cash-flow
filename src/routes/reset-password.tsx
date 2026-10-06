@@ -62,7 +62,7 @@ function ResetPasswordPage() {
             <AlertDescription>The link is single-use and short-lived. Request a new one if it has expired.</AlertDescription>
           </Alert>
         )}
-        <form onSubmit={submit} className="space-y-4">
+        <form method="post" action="#" onSubmit={submit} className="space-y-4">
           <div className="space-y-2"><Label>New password</Label><Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
           <div className="space-y-2"><Label>Confirm password</Label><Input type="password" required minLength={8} value={confirm} onChange={(e) => setConfirm(e.target.value)} /></div>
           <Button type="submit" disabled={loading || !ready} className="w-full bg-royal text-royal-foreground hover:opacity-90">

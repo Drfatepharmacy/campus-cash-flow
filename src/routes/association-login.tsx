@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useHydrated, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -26,6 +26,7 @@ export const Route = createFileRoute("/association-login")({
 
 function AssociationLoginPage() {
   const navigate = useNavigate();
+  const hydrated = useHydrated();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -77,10 +78,10 @@ function AssociationLoginPage() {
             <h1 className="font-display text-2xl font-bold flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> Association sign in</h1>
             <p className="text-sm text-muted-foreground mt-1">Use your UniEgo account. Your workspace access comes from your approved officer role.</p>
           </div>
-          <form onSubmit={submit} className="space-y-4">
+          <form method="post" action="#" onSubmit={submit} className="space-y-4">
             <div className="space-y-2"><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
             <div className="space-y-2"><Label>Password</Label><Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-            <Button type="submit" disabled={loading} className="w-full bg-royal text-royal-foreground hover:opacity-90">
+            <Button type="submit" disabled={loading || !hydrated} className="w-full bg-royal text-royal-foreground hover:opacity-90">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in to workspace"}
             </Button>
           </form>

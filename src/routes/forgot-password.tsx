@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useHydrated, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/forgot-password")({
 });
 
 function ForgotPasswordPage() {
+  const hydrated = useHydrated();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -48,10 +49,10 @@ function ForgotPasswordPage() {
             <AlertDescription>If an account exists for that address, we have sent a single-use reset link. It expires shortly.</AlertDescription>
           </Alert>
         ) : (
-          <form onSubmit={submit} className="space-y-4">
+          <form method="post" action="#" onSubmit={submit} className="space-y-4">
             <p className="text-sm text-muted-foreground">Enter the email on your account and we will send a secure reset link.</p>
             <div className="space-y-2"><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-            <Button type="submit" disabled={loading} className="w-full bg-royal text-royal-foreground hover:opacity-90">
+            <Button type="submit" disabled={loading || !hydrated} className="w-full bg-royal text-royal-foreground hover:opacity-90">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send reset link"}
             </Button>
           </form>
