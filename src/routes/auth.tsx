@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useHydrated, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +31,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const { mode } = Route.useSearch();
+  const hydrated = useHydrated();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"signin" | "signup">(mode ?? "signin");
   const [email, setEmail] = useState("");
@@ -120,11 +121,11 @@ function AuthPage() {
               </div>
 
               {tab === "signin" ? (
-                <form onSubmit={handleSignin} className="space-y-4">
+                <form method="post" action="#" onSubmit={handleSignin} className="space-y-4">
                   <h1 className="font-display text-2xl font-bold">Welcome back</h1>
                   <div className="space-y-2"><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                   <div className="space-y-2"><Label>Password</Label><Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-                  <Button type="submit" disabled={loading} className="w-full bg-royal text-royal-foreground hover:opacity-90">
+                  <Button type="submit" disabled={loading || !hydrated} className="w-full bg-royal text-royal-foreground hover:opacity-90">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin"/> : "Sign in"}
                   </Button>
                   <div className="flex items-center justify-between text-sm">
@@ -133,12 +134,12 @@ function AuthPage() {
                   </div>
                 </form>
               ) : (
-                <form onSubmit={handleSignup} className="space-y-4">
+                <form method="post" action="#" onSubmit={handleSignup} className="space-y-4">
                   <h1 className="font-display text-2xl font-bold">Create your account</h1>
                   <div className="space-y-2"><Label>Full name</Label><Input required value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
                   <div className="space-y-2"><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                   <div className="space-y-2"><Label>Password</Label><Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-                  <Button type="submit" disabled={loading} className="w-full bg-royal text-royal-foreground hover:opacity-90">
+                  <Button type="submit" disabled={loading || !hydrated} className="w-full bg-royal text-royal-foreground hover:opacity-90">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin"/> : "Create account"}
                   </Button>
                 </form>
