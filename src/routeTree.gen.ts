@@ -9,85 +9,71 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AssociationLoginRouteImport } from './routes/association-login'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as LegalRouteRouteImport } from './routes/legal.route'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
-import { Route as AuthenticatedRepRouteRouteImport } from './routes/_authenticated/rep/route'
-import { Route as AuthenticatedRunnerRouteRouteImport } from './routes/_authenticated/runner/route'
-import { Route as AuthenticatedSuperadminRouteRouteImport } from './routes/_authenticated/superadmin/route'
-import { Route as AssociationsIndexRouteImport } from './routes/associations.index'
-import { Route as LegalAssociationVerificationRouteImport } from './routes/legal.association-verification'
-import { Route as LegalComplianceRouteImport } from './routes/legal.compliance'
-import { Route as LegalPaymentRouteImport } from './routes/legal.payment'
-import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
-import { Route as LegalQrVerificationRouteImport } from './routes/legal.qr-verification'
-import { Route as LegalRefundRouteImport } from './routes/legal.refund'
-import { Route as LegalSecurityRouteImport } from './routes/legal.security'
-import { Route as LegalTermsRouteImport } from './routes/legal.terms'
-import { Route as PTokenRouteImport } from './routes/p.$token'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AssociationLoginRouteImport } from './routes/association-login'
+import { Route as LegalRouteRouteImport } from './routes/legal.route'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as VerifyIndexRouteImport } from './routes/verify.index'
+import { Route as AssociationsIndexRouteImport } from './routes/associations.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
-import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
-import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
-import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
-import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin/faculties'
-import { Route as AuthenticatedAdminPageHealthRouteImport } from './routes/_authenticated/admin/page-health'
-import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/_authenticated/admin/payment-requests'
-import { Route as AuthenticatedAdminQrCodesRouteImport } from './routes/_authenticated/admin/qr-codes'
-import { Route as AuthenticatedAdminReconcileRouteImport } from './routes/_authenticated/admin/reconcile'
-import { Route as AuthenticatedAdminRunnersRouteImport } from './routes/_authenticated/admin/runners'
-import { Route as AuthenticatedAdminSettlementsRouteImport } from './routes/_authenticated/admin/settlements'
-import { Route as AuthenticatedAdminStudentsRouteImport } from './routes/_authenticated/admin/students'
-import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin/transactions'
-import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
-import { Route as AuthenticatedAssociationSlugRouteRouteImport } from './routes/_authenticated/association/$slug/route'
-import { Route as AuthenticatedAssociationsNewRouteImport } from './routes/_authenticated/associations/new'
-import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
-import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
-import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticated/rep/index'
-import { Route as AuthenticatedRunnerIndexRouteImport } from './routes/_authenticated/runner/index'
+import { Route as PTokenRouteImport } from './routes/p.$token'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalSecurityRouteImport } from './routes/legal.security'
+import { Route as LegalRefundRouteImport } from './routes/legal.refund'
+import { Route as LegalQrVerificationRouteImport } from './routes/legal.qr-verification'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalPaymentRouteImport } from './routes/legal.payment'
+import { Route as LegalComplianceRouteImport } from './routes/legal.compliance'
+import { Route as LegalAssociationVerificationRouteImport } from './routes/legal.association-verification'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedSuperadminRouteRouteImport } from './routes/_authenticated/superadmin/route'
+import { Route as AuthenticatedRunnerRouteRouteImport } from './routes/_authenticated/runner/route'
+import { Route as AuthenticatedRepRouteRouteImport } from './routes/_authenticated/rep/route'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedSuperadminIndexRouteImport } from './routes/_authenticated/superadmin/index'
-import { Route as AuthenticatedSuperadminActivityRouteImport } from './routes/_authenticated/superadmin/activity'
-import { Route as AuthenticatedSuperadminAssociationsRouteImport } from './routes/_authenticated/superadmin/associations'
-import { Route as AuthenticatedSuperadminBankVerificationsRouteImport } from './routes/_authenticated/superadmin/bank-verifications'
-import { Route as AuthenticatedSuperadminNominationsRouteImport } from './routes/_authenticated/superadmin/nominations'
+import { Route as AuthenticatedRunnerIndexRouteImport } from './routes/_authenticated/runner/index'
+import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticated/rep/index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedSuperadminUsersRouteImport } from './routes/_authenticated/superadmin/users'
+import { Route as AuthenticatedSuperadminNominationsRouteImport } from './routes/_authenticated/superadmin/nominations'
+import { Route as AuthenticatedSuperadminBankVerificationsRouteImport } from './routes/_authenticated/superadmin/bank-verifications'
+import { Route as AuthenticatedSuperadminAssociationsRouteImport } from './routes/_authenticated/superadmin/associations'
+import { Route as AuthenticatedSuperadminActivityRouteImport } from './routes/_authenticated/superadmin/activity'
+import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
+import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
+import { Route as AuthenticatedAssociationsNewRouteImport } from './routes/_authenticated/associations/new'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedAdminTransactionsRouteImport } from './routes/_authenticated/admin/transactions'
+import { Route as AuthenticatedAdminStudentsRouteImport } from './routes/_authenticated/admin/students'
+import { Route as AuthenticatedAdminSettlementsRouteImport } from './routes/_authenticated/admin/settlements'
+import { Route as AuthenticatedAdminRunnersRouteImport } from './routes/_authenticated/admin/runners'
+import { Route as AuthenticatedAdminReconcileRouteImport } from './routes/_authenticated/admin/reconcile'
+import { Route as AuthenticatedAdminQrCodesRouteImport } from './routes/_authenticated/admin/qr-codes'
+import { Route as AuthenticatedAdminPaymentRequestsRouteImport } from './routes/_authenticated/admin/payment-requests'
+import { Route as AuthenticatedAdminPageHealthRouteImport } from './routes/_authenticated/admin/page-health'
+import { Route as AuthenticatedAdminFacultiesRouteImport } from './routes/_authenticated/admin/faculties'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
+import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
+import { Route as AuthenticatedAssociationSlugRouteRouteImport } from './routes/_authenticated/association/$slug/route'
 import { Route as AuthenticatedAssociationSlugIndexRouteImport } from './routes/_authenticated/association/$slug/index'
-import { Route as AuthenticatedAssociationSlugApprovalsRouteImport } from './routes/_authenticated/association/$slug/approvals'
-import { Route as AuthenticatedAssociationSlugAuditRouteImport } from './routes/_authenticated/association/$slug/audit'
-import { Route as AuthenticatedAssociationSlugBankRouteImport } from './routes/_authenticated/association/$slug/bank'
-import { Route as AuthenticatedAssociationSlugDuesRouteImport } from './routes/_authenticated/association/$slug/dues'
-import { Route as AuthenticatedAssociationSlugExecutivesRouteImport } from './routes/_authenticated/association/$slug/executives'
-import { Route as AuthenticatedAssociationSlugFinanceRouteImport } from './routes/_authenticated/association/$slug/finance'
-import { Route as AuthenticatedAssociationSlugMembersRouteImport } from './routes/_authenticated/association/$slug/members'
-import { Route as AuthenticatedAssociationSlugPaymentLinksRouteImport } from './routes/_authenticated/association/$slug/payment-links'
-import { Route as AuthenticatedSuperadminAssociationIdRouteImport } from './routes/_authenticated/superadmin/association.$id'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
+import { Route as AuthenticatedSuperadminAssociationIdRouteImport } from './routes/_authenticated/superadmin/association.$id'
+import { Route as AuthenticatedAssociationSlugPaymentLinksRouteImport } from './routes/_authenticated/association/$slug/payment-links'
+import { Route as AuthenticatedAssociationSlugMembersRouteImport } from './routes/_authenticated/association/$slug/members'
+import { Route as AuthenticatedAssociationSlugFinanceRouteImport } from './routes/_authenticated/association/$slug/finance'
+import { Route as AuthenticatedAssociationSlugExecutivesRouteImport } from './routes/_authenticated/association/$slug/executives'
+import { Route as AuthenticatedAssociationSlugDuesRouteImport } from './routes/_authenticated/association/$slug/dues'
+import { Route as AuthenticatedAssociationSlugBankRouteImport } from './routes/_authenticated/association/$slug/bank'
+import { Route as AuthenticatedAssociationSlugAuditRouteImport } from './routes/_authenticated/association/$slug/audit'
+import { Route as AuthenticatedAssociationSlugApprovalsRouteImport } from './routes/_authenticated/association/$slug/approvals'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AssociationLoginRoute = AssociationLoginRouteImport.update({
-  id: '/association-login',
-  path: '/association-login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -95,97 +81,28 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssociationLoginRoute = AssociationLoginRouteImport.update({
+  id: '/association-login',
+  path: '/association-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalRouteRoute = LegalRouteRouteImport.update({
   id: '/legal',
   path: '/legal',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedRepRouteRoute = AuthenticatedRepRouteRouteImport.update({
-  id: '/rep',
-  path: '/rep',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedRunnerRouteRoute =
-  AuthenticatedRunnerRouteRouteImport.update({
-    id: '/runner',
-    path: '/runner',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSuperadminRouteRoute =
-  AuthenticatedSuperadminRouteRouteImport.update({
-    id: '/superadmin',
-    path: '/superadmin',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AssociationsIndexRoute = AssociationsIndexRouteImport.update({
-  id: '/associations/',
-  path: '/associations/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LegalAssociationVerificationRoute =
-  LegalAssociationVerificationRouteImport.update({
-    id: '/association-verification',
-    path: '/association-verification',
-    getParentRoute: () => LegalRouteRoute,
-  } as any)
-const LegalComplianceRoute = LegalComplianceRouteImport.update({
-  id: '/compliance',
-  path: '/compliance',
-  getParentRoute: () => LegalRouteRoute,
-} as any)
-const LegalPaymentRoute = LegalPaymentRouteImport.update({
-  id: '/payment',
-  path: '/payment',
-  getParentRoute: () => LegalRouteRoute,
-} as any)
-const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => LegalRouteRoute,
-} as any)
-const LegalQrVerificationRoute = LegalQrVerificationRouteImport.update({
-  id: '/qr-verification',
-  path: '/qr-verification',
-  getParentRoute: () => LegalRouteRoute,
-} as any)
-const LegalRefundRoute = LegalRefundRouteImport.update({
-  id: '/refund',
-  path: '/refund',
-  getParentRoute: () => LegalRouteRoute,
-} as any)
-const LegalSecurityRoute = LegalSecurityRouteImport.update({
-  id: '/security',
-  path: '/security',
-  getParentRoute: () => LegalRouteRoute,
-} as any)
-const LegalTermsRoute = LegalTermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => LegalRouteRoute,
-} as any)
-const PTokenRoute = PTokenRouteImport.update({
-  id: '/p/$token',
-  path: '/p/$token',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyIndexRoute = VerifyIndexRouteImport.update({
@@ -193,143 +110,120 @@ const VerifyIndexRoute = VerifyIndexRouteImport.update({
   path: '/verify/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssociationsIndexRoute = AssociationsIndexRouteImport.update({
+  id: '/associations/',
+  path: '/associations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerifyTokenRoute = VerifyTokenRouteImport.update({
   id: '/verify/$token',
   path: '/verify/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
+const PTokenRoute = PTokenRouteImport.update({
+  id: '/p/$token',
+  path: '/p/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminAnalyticsRoute =
-  AuthenticatedAdminAnalyticsRouteImport.update({
-    id: '/analytics',
-    path: '/analytics',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
-  id: '/audit',
-  path: '/audit',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => LegalRouteRoute,
 } as any)
-const AuthenticatedAdminFacultiesRoute =
-  AuthenticatedAdminFacultiesRouteImport.update({
-    id: '/faculties',
-    path: '/faculties',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminPageHealthRoute =
-  AuthenticatedAdminPageHealthRouteImport.update({
-    id: '/page-health',
-    path: '/page-health',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminPaymentRequestsRoute =
-  AuthenticatedAdminPaymentRequestsRouteImport.update({
-    id: '/payment-requests',
-    path: '/payment-requests',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminQrCodesRoute =
-  AuthenticatedAdminQrCodesRouteImport.update({
-    id: '/qr-codes',
-    path: '/qr-codes',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminReconcileRoute =
-  AuthenticatedAdminReconcileRouteImport.update({
-    id: '/reconcile',
-    path: '/reconcile',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminRunnersRoute =
-  AuthenticatedAdminRunnersRouteImport.update({
-    id: '/runners',
-    path: '/runners',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminSettlementsRoute =
-  AuthenticatedAdminSettlementsRouteImport.update({
-    id: '/settlements',
-    path: '/settlements',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminStudentsRoute =
-  AuthenticatedAdminStudentsRouteImport.update({
-    id: '/students',
-    path: '/students',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminTransactionsRoute =
-  AuthenticatedAdminTransactionsRouteImport.update({
-    id: '/transactions',
-    path: '/transactions',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
+const LegalSecurityRoute = LegalSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => LegalRouteRoute,
 } as any)
-const AuthenticatedAssociationSlugRouteRoute =
-  AuthenticatedAssociationSlugRouteRouteImport.update({
-    id: '/association/$slug',
-    path: '/association/$slug',
+const LegalRefundRoute = LegalRefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalQrVerificationRoute = LegalQrVerificationRouteImport.update({
+  id: '/qr-verification',
+  path: '/qr-verification',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalPaymentRoute = LegalPaymentRouteImport.update({
+  id: '/payment',
+  path: '/payment',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalComplianceRoute = LegalComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => LegalRouteRoute,
+} as any)
+const LegalAssociationVerificationRoute =
+  LegalAssociationVerificationRouteImport.update({
+    id: '/association-verification',
+    path: '/association-verification',
+    getParentRoute: () => LegalRouteRoute,
+  } as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSuperadminRouteRoute =
+  AuthenticatedSuperadminRouteRouteImport.update({
+    id: '/superadmin',
+    path: '/superadmin',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAssociationsNewRoute =
-  AuthenticatedAssociationsNewRouteImport.update({
-    id: '/associations/new',
-    path: '/associations/new',
+const AuthenticatedRunnerRouteRoute =
+  AuthenticatedRunnerRouteRouteImport.update({
+    id: '/runner',
+    path: '/runner',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPayRequestIdRoute =
-  AuthenticatedPayRequestIdRouteImport.update({
-    id: '/pay/$requestId',
-    path: '/pay/$requestId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedReceiptTokenRoute =
-  AuthenticatedReceiptTokenRouteImport.update({
-    id: '/receipt/$token',
-    path: '/receipt/$token',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedRepIndexRoute = AuthenticatedRepIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedRepRouteRoute,
+const AuthenticatedRepRouteRoute = AuthenticatedRepRouteRouteImport.update({
+  id: '/rep',
+  path: '/rep',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedRunnerIndexRoute =
-  AuthenticatedRunnerIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedRunnerRouteRoute,
-  } as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSuperadminIndexRoute =
   AuthenticatedSuperadminIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSuperadminRouteRoute,
   } as any)
-const AuthenticatedSuperadminActivityRoute =
-  AuthenticatedSuperadminActivityRouteImport.update({
-    id: '/activity',
-    path: '/activity',
-    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+const AuthenticatedRunnerIndexRoute =
+  AuthenticatedRunnerIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedRunnerRouteRoute,
   } as any)
-const AuthenticatedSuperadminAssociationsRoute =
-  AuthenticatedSuperadminAssociationsRouteImport.update({
-    id: '/associations',
-    path: '/associations',
-    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
-  } as any)
-const AuthenticatedSuperadminBankVerificationsRoute =
-  AuthenticatedSuperadminBankVerificationsRouteImport.update({
-    id: '/bank-verifications',
-    path: '/bank-verifications',
+const AuthenticatedRepIndexRoute = AuthenticatedRepIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRepRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedSuperadminUsersRoute =
+  AuthenticatedSuperadminUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
     getParentRoute: () => AuthenticatedSuperadminRouteRoute,
   } as any)
 const AuthenticatedSuperadminNominationsRoute =
@@ -338,11 +232,117 @@ const AuthenticatedSuperadminNominationsRoute =
     path: '/nominations',
     getParentRoute: () => AuthenticatedSuperadminRouteRoute,
   } as any)
-const AuthenticatedSuperadminUsersRoute =
-  AuthenticatedSuperadminUsersRouteImport.update({
-    id: '/users',
-    path: '/users',
+const AuthenticatedSuperadminBankVerificationsRoute =
+  AuthenticatedSuperadminBankVerificationsRouteImport.update({
+    id: '/bank-verifications',
+    path: '/bank-verifications',
     getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
+const AuthenticatedSuperadminAssociationsRoute =
+  AuthenticatedSuperadminAssociationsRouteImport.update({
+    id: '/associations',
+    path: '/associations',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
+const AuthenticatedSuperadminActivityRoute =
+  AuthenticatedSuperadminActivityRouteImport.update({
+    id: '/activity',
+    path: '/activity',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
+const AuthenticatedReceiptTokenRoute =
+  AuthenticatedReceiptTokenRouteImport.update({
+    id: '/receipt/$token',
+    path: '/receipt/$token',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPayRequestIdRoute =
+  AuthenticatedPayRequestIdRouteImport.update({
+    id: '/pay/$requestId',
+    path: '/pay/$requestId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAssociationsNewRoute =
+  AuthenticatedAssociationsNewRouteImport.update({
+    id: '/associations/new',
+    path: '/associations/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminTransactionsRoute =
+  AuthenticatedAdminTransactionsRouteImport.update({
+    id: '/transactions',
+    path: '/transactions',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminStudentsRoute =
+  AuthenticatedAdminStudentsRouteImport.update({
+    id: '/students',
+    path: '/students',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminSettlementsRoute =
+  AuthenticatedAdminSettlementsRouteImport.update({
+    id: '/settlements',
+    path: '/settlements',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminRunnersRoute =
+  AuthenticatedAdminRunnersRouteImport.update({
+    id: '/runners',
+    path: '/runners',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminReconcileRoute =
+  AuthenticatedAdminReconcileRouteImport.update({
+    id: '/reconcile',
+    path: '/reconcile',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminQrCodesRoute =
+  AuthenticatedAdminQrCodesRouteImport.update({
+    id: '/qr-codes',
+    path: '/qr-codes',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPaymentRequestsRoute =
+  AuthenticatedAdminPaymentRequestsRouteImport.update({
+    id: '/payment-requests',
+    path: '/payment-requests',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPageHealthRoute =
+  AuthenticatedAdminPageHealthRouteImport.update({
+    id: '/page-health',
+    path: '/page-health',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminFacultiesRoute =
+  AuthenticatedAdminFacultiesRouteImport.update({
+    id: '/faculties',
+    path: '/faculties',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminAnalyticsRoute =
+  AuthenticatedAdminAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugRouteRoute =
+  AuthenticatedAssociationSlugRouteRouteImport.update({
+    id: '/association/$slug',
+    path: '/association/$slug',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAssociationSlugIndexRoute =
   AuthenticatedAssociationSlugIndexRouteImport.update({
@@ -350,40 +350,22 @@ const AuthenticatedAssociationSlugIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
   } as any)
-const AuthenticatedAssociationSlugApprovalsRoute =
-  AuthenticatedAssociationSlugApprovalsRouteImport.update({
-    id: '/approvals',
-    path: '/approvals',
-    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+const ApiPublicWebhooksPaystackRoute =
+  ApiPublicWebhooksPaystackRouteImport.update({
+    id: '/api/public/webhooks/paystack',
+    path: '/api/public/webhooks/paystack',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedAssociationSlugAuditRoute =
-  AuthenticatedAssociationSlugAuditRouteImport.update({
-    id: '/audit',
-    path: '/audit',
-    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+const AuthenticatedSuperadminAssociationIdRoute =
+  AuthenticatedSuperadminAssociationIdRouteImport.update({
+    id: '/association/$id',
+    path: '/association/$id',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
   } as any)
-const AuthenticatedAssociationSlugBankRoute =
-  AuthenticatedAssociationSlugBankRouteImport.update({
-    id: '/bank',
-    path: '/bank',
-    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
-  } as any)
-const AuthenticatedAssociationSlugDuesRoute =
-  AuthenticatedAssociationSlugDuesRouteImport.update({
-    id: '/dues',
-    path: '/dues',
-    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
-  } as any)
-const AuthenticatedAssociationSlugExecutivesRoute =
-  AuthenticatedAssociationSlugExecutivesRouteImport.update({
-    id: '/executives',
-    path: '/executives',
-    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
-  } as any)
-const AuthenticatedAssociationSlugFinanceRoute =
-  AuthenticatedAssociationSlugFinanceRouteImport.update({
-    id: '/finance',
-    path: '/finance',
+const AuthenticatedAssociationSlugPaymentLinksRoute =
+  AuthenticatedAssociationSlugPaymentLinksRouteImport.update({
+    id: '/payment-links',
+    path: '/payment-links',
     getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
   } as any)
 const AuthenticatedAssociationSlugMembersRoute =
@@ -392,23 +374,41 @@ const AuthenticatedAssociationSlugMembersRoute =
     path: '/members',
     getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
   } as any)
-const AuthenticatedAssociationSlugPaymentLinksRoute =
-  AuthenticatedAssociationSlugPaymentLinksRouteImport.update({
-    id: '/payment-links',
-    path: '/payment-links',
+const AuthenticatedAssociationSlugFinanceRoute =
+  AuthenticatedAssociationSlugFinanceRouteImport.update({
+    id: '/finance',
+    path: '/finance',
     getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
   } as any)
-const AuthenticatedSuperadminAssociationIdRoute =
-  AuthenticatedSuperadminAssociationIdRouteImport.update({
-    id: '/association/$id',
-    path: '/association/$id',
-    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+const AuthenticatedAssociationSlugExecutivesRoute =
+  AuthenticatedAssociationSlugExecutivesRouteImport.update({
+    id: '/executives',
+    path: '/executives',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
   } as any)
-const ApiPublicWebhooksPaystackRoute =
-  ApiPublicWebhooksPaystackRouteImport.update({
-    id: '/api/public/webhooks/paystack',
-    path: '/api/public/webhooks/paystack',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedAssociationSlugDuesRoute =
+  AuthenticatedAssociationSlugDuesRouteImport.update({
+    id: '/dues',
+    path: '/dues',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugBankRoute =
+  AuthenticatedAssociationSlugBankRouteImport.update({
+    id: '/bank',
+    path: '/bank',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugAuditRoute =
+  AuthenticatedAssociationSlugAuditRouteImport.update({
+    id: '/audit',
+    path: '/audit',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
+  } as any)
+const AuthenticatedAssociationSlugApprovalsRoute =
+  AuthenticatedAssociationSlugApprovalsRouteImport.update({
+    id: '/approvals',
+    path: '/approvals',
+    getParentRoute: () => AuthenticatedAssociationSlugRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -796,32 +796,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/association-login': {
-      id: '/association-login'
-      path: '/association-login'
-      fullPath: '/association-login'
-      preLoaderRoute: typeof AssociationLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -831,6 +810,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/association-login': {
+      id: '/association-login'
+      path: '/association-login'
+      fullPath: '/association-login'
+      preLoaderRoute: typeof AssociationLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal': {
       id: '/legal'
       path: '/legal'
@@ -838,123 +831,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/onboarding': {
-      id: '/_authenticated/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/rep': {
-      id: '/_authenticated/rep'
-      path: '/rep'
-      fullPath: '/rep'
-      preLoaderRoute: typeof AuthenticatedRepRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/runner': {
-      id: '/_authenticated/runner'
-      path: '/runner'
-      fullPath: '/runner'
-      preLoaderRoute: typeof AuthenticatedRunnerRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/superadmin': {
-      id: '/_authenticated/superadmin'
-      path: '/superadmin'
-      fullPath: '/superadmin'
-      preLoaderRoute: typeof AuthenticatedSuperadminRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/associations/': {
-      id: '/associations/'
-      path: '/associations'
-      fullPath: '/associations/'
-      preLoaderRoute: typeof AssociationsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legal/association-verification': {
-      id: '/legal/association-verification'
-      path: '/association-verification'
-      fullPath: '/legal/association-verification'
-      preLoaderRoute: typeof LegalAssociationVerificationRouteImport
-      parentRoute: typeof LegalRouteRoute
-    }
-    '/legal/compliance': {
-      id: '/legal/compliance'
-      path: '/compliance'
-      fullPath: '/legal/compliance'
-      preLoaderRoute: typeof LegalComplianceRouteImport
-      parentRoute: typeof LegalRouteRoute
-    }
-    '/legal/payment': {
-      id: '/legal/payment'
-      path: '/payment'
-      fullPath: '/legal/payment'
-      preLoaderRoute: typeof LegalPaymentRouteImport
-      parentRoute: typeof LegalRouteRoute
-    }
-    '/legal/privacy': {
-      id: '/legal/privacy'
-      path: '/privacy'
-      fullPath: '/legal/privacy'
-      preLoaderRoute: typeof LegalPrivacyRouteImport
-      parentRoute: typeof LegalRouteRoute
-    }
-    '/legal/qr-verification': {
-      id: '/legal/qr-verification'
-      path: '/qr-verification'
-      fullPath: '/legal/qr-verification'
-      preLoaderRoute: typeof LegalQrVerificationRouteImport
-      parentRoute: typeof LegalRouteRoute
-    }
-    '/legal/refund': {
-      id: '/legal/refund'
-      path: '/refund'
-      fullPath: '/legal/refund'
-      preLoaderRoute: typeof LegalRefundRouteImport
-      parentRoute: typeof LegalRouteRoute
-    }
-    '/legal/security': {
-      id: '/legal/security'
-      path: '/security'
-      fullPath: '/legal/security'
-      preLoaderRoute: typeof LegalSecurityRouteImport
-      parentRoute: typeof LegalRouteRoute
-    }
-    '/legal/terms': {
-      id: '/legal/terms'
-      path: '/terms'
-      fullPath: '/legal/terms'
-      preLoaderRoute: typeof LegalTermsRouteImport
-      parentRoute: typeof LegalRouteRoute
-    }
-    '/p/$token': {
-      id: '/p/$token'
-      path: '/p/$token'
-      fullPath: '/p/$token'
-      preLoaderRoute: typeof PTokenRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify/': {
@@ -964,6 +852,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/associations/': {
+      id: '/associations/'
+      path: '/associations'
+      fullPath: '/associations/'
+      preLoaderRoute: typeof AssociationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verify/$token': {
       id: '/verify/$token'
       path: '/verify/$token'
@@ -971,138 +866,110 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin/': {
-      id: '/_authenticated/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/p/$token': {
+      id: '/p/$token'
+      path: '/p/$token'
+      fullPath: '/p/$token'
+      preLoaderRoute: typeof PTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin/analytics': {
-      id: '/_authenticated/admin/analytics'
-      path: '/analytics'
-      fullPath: '/admin/analytics'
-      preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
-    '/_authenticated/admin/audit': {
-      id: '/_authenticated/admin/audit'
-      path: '/audit'
-      fullPath: '/admin/audit'
-      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/legal/security': {
+      id: '/legal/security'
+      path: '/security'
+      fullPath: '/legal/security'
+      preLoaderRoute: typeof LegalSecurityRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
-    '/_authenticated/admin/faculties': {
-      id: '/_authenticated/admin/faculties'
-      path: '/faculties'
-      fullPath: '/admin/faculties'
-      preLoaderRoute: typeof AuthenticatedAdminFacultiesRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/legal/refund': {
+      id: '/legal/refund'
+      path: '/refund'
+      fullPath: '/legal/refund'
+      preLoaderRoute: typeof LegalRefundRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
-    '/_authenticated/admin/page-health': {
-      id: '/_authenticated/admin/page-health'
-      path: '/page-health'
-      fullPath: '/admin/page-health'
-      preLoaderRoute: typeof AuthenticatedAdminPageHealthRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/legal/qr-verification': {
+      id: '/legal/qr-verification'
+      path: '/qr-verification'
+      fullPath: '/legal/qr-verification'
+      preLoaderRoute: typeof LegalQrVerificationRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
-    '/_authenticated/admin/payment-requests': {
-      id: '/_authenticated/admin/payment-requests'
-      path: '/payment-requests'
-      fullPath: '/admin/payment-requests'
-      preLoaderRoute: typeof AuthenticatedAdminPaymentRequestsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
-    '/_authenticated/admin/qr-codes': {
-      id: '/_authenticated/admin/qr-codes'
-      path: '/qr-codes'
-      fullPath: '/admin/qr-codes'
-      preLoaderRoute: typeof AuthenticatedAdminQrCodesRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/legal/payment': {
+      id: '/legal/payment'
+      path: '/payment'
+      fullPath: '/legal/payment'
+      preLoaderRoute: typeof LegalPaymentRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
-    '/_authenticated/admin/reconcile': {
-      id: '/_authenticated/admin/reconcile'
-      path: '/reconcile'
-      fullPath: '/admin/reconcile'
-      preLoaderRoute: typeof AuthenticatedAdminReconcileRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/legal/compliance': {
+      id: '/legal/compliance'
+      path: '/compliance'
+      fullPath: '/legal/compliance'
+      preLoaderRoute: typeof LegalComplianceRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
-    '/_authenticated/admin/runners': {
-      id: '/_authenticated/admin/runners'
-      path: '/runners'
-      fullPath: '/admin/runners'
-      preLoaderRoute: typeof AuthenticatedAdminRunnersRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/legal/association-verification': {
+      id: '/legal/association-verification'
+      path: '/association-verification'
+      fullPath: '/legal/association-verification'
+      preLoaderRoute: typeof LegalAssociationVerificationRouteImport
+      parentRoute: typeof LegalRouteRoute
     }
-    '/_authenticated/admin/settlements': {
-      id: '/_authenticated/admin/settlements'
-      path: '/settlements'
-      fullPath: '/admin/settlements'
-      preLoaderRoute: typeof AuthenticatedAdminSettlementsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/students': {
-      id: '/_authenticated/admin/students'
-      path: '/students'
-      fullPath: '/admin/students'
-      preLoaderRoute: typeof AuthenticatedAdminStudentsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/transactions': {
-      id: '/_authenticated/admin/transactions'
-      path: '/transactions'
-      fullPath: '/admin/transactions'
-      preLoaderRoute: typeof AuthenticatedAdminTransactionsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/users': {
-      id: '/_authenticated/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/association/$slug': {
-      id: '/_authenticated/association/$slug'
-      path: '/association/$slug'
-      fullPath: '/association/$slug'
-      preLoaderRoute: typeof AuthenticatedAssociationSlugRouteRouteImport
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/associations/new': {
-      id: '/_authenticated/associations/new'
-      path: '/associations/new'
-      fullPath: '/associations/new'
-      preLoaderRoute: typeof AuthenticatedAssociationsNewRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/pay/$requestId': {
-      id: '/_authenticated/pay/$requestId'
-      path: '/pay/$requestId'
-      fullPath: '/pay/$requestId'
-      preLoaderRoute: typeof AuthenticatedPayRequestIdRouteImport
+    '/_authenticated/superadmin': {
+      id: '/_authenticated/superadmin'
+      path: '/superadmin'
+      fullPath: '/superadmin'
+      preLoaderRoute: typeof AuthenticatedSuperadminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/receipt/$token': {
-      id: '/_authenticated/receipt/$token'
-      path: '/receipt/$token'
-      fullPath: '/receipt/$token'
-      preLoaderRoute: typeof AuthenticatedReceiptTokenRouteImport
+    '/_authenticated/runner': {
+      id: '/_authenticated/runner'
+      path: '/runner'
+      fullPath: '/runner'
+      preLoaderRoute: typeof AuthenticatedRunnerRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/rep/': {
-      id: '/_authenticated/rep/'
-      path: '/'
-      fullPath: '/rep/'
-      preLoaderRoute: typeof AuthenticatedRepIndexRouteImport
-      parentRoute: typeof AuthenticatedRepRouteRoute
+    '/_authenticated/rep': {
+      id: '/_authenticated/rep'
+      path: '/rep'
+      fullPath: '/rep'
+      preLoaderRoute: typeof AuthenticatedRepRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/runner/': {
-      id: '/_authenticated/runner/'
-      path: '/'
-      fullPath: '/runner/'
-      preLoaderRoute: typeof AuthenticatedRunnerIndexRouteImport
-      parentRoute: typeof AuthenticatedRunnerRouteRoute
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/superadmin/': {
       id: '/_authenticated/superadmin/'
@@ -1111,25 +978,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuperadminIndexRouteImport
       parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
-    '/_authenticated/superadmin/activity': {
-      id: '/_authenticated/superadmin/activity'
-      path: '/activity'
-      fullPath: '/superadmin/activity'
-      preLoaderRoute: typeof AuthenticatedSuperadminActivityRouteImport
-      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    '/_authenticated/runner/': {
+      id: '/_authenticated/runner/'
+      path: '/'
+      fullPath: '/runner/'
+      preLoaderRoute: typeof AuthenticatedRunnerIndexRouteImport
+      parentRoute: typeof AuthenticatedRunnerRouteRoute
     }
-    '/_authenticated/superadmin/associations': {
-      id: '/_authenticated/superadmin/associations'
-      path: '/associations'
-      fullPath: '/superadmin/associations'
-      preLoaderRoute: typeof AuthenticatedSuperadminAssociationsRouteImport
-      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    '/_authenticated/rep/': {
+      id: '/_authenticated/rep/'
+      path: '/'
+      fullPath: '/rep/'
+      preLoaderRoute: typeof AuthenticatedRepIndexRouteImport
+      parentRoute: typeof AuthenticatedRepRouteRoute
     }
-    '/_authenticated/superadmin/bank-verifications': {
-      id: '/_authenticated/superadmin/bank-verifications'
-      path: '/bank-verifications'
-      fullPath: '/superadmin/bank-verifications'
-      preLoaderRoute: typeof AuthenticatedSuperadminBankVerificationsRouteImport
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/superadmin/users': {
+      id: '/_authenticated/superadmin/users'
+      path: '/users'
+      fullPath: '/superadmin/users'
+      preLoaderRoute: typeof AuthenticatedSuperadminUsersRouteImport
       parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
     '/_authenticated/superadmin/nominations': {
@@ -1139,12 +1013,138 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuperadminNominationsRouteImport
       parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
-    '/_authenticated/superadmin/users': {
-      id: '/_authenticated/superadmin/users'
-      path: '/users'
-      fullPath: '/superadmin/users'
-      preLoaderRoute: typeof AuthenticatedSuperadminUsersRouteImport
+    '/_authenticated/superadmin/bank-verifications': {
+      id: '/_authenticated/superadmin/bank-verifications'
+      path: '/bank-verifications'
+      fullPath: '/superadmin/bank-verifications'
+      preLoaderRoute: typeof AuthenticatedSuperadminBankVerificationsRouteImport
       parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    }
+    '/_authenticated/superadmin/associations': {
+      id: '/_authenticated/superadmin/associations'
+      path: '/associations'
+      fullPath: '/superadmin/associations'
+      preLoaderRoute: typeof AuthenticatedSuperadminAssociationsRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    }
+    '/_authenticated/superadmin/activity': {
+      id: '/_authenticated/superadmin/activity'
+      path: '/activity'
+      fullPath: '/superadmin/activity'
+      preLoaderRoute: typeof AuthenticatedSuperadminActivityRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    }
+    '/_authenticated/receipt/$token': {
+      id: '/_authenticated/receipt/$token'
+      path: '/receipt/$token'
+      fullPath: '/receipt/$token'
+      preLoaderRoute: typeof AuthenticatedReceiptTokenRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pay/$requestId': {
+      id: '/_authenticated/pay/$requestId'
+      path: '/pay/$requestId'
+      fullPath: '/pay/$requestId'
+      preLoaderRoute: typeof AuthenticatedPayRequestIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/associations/new': {
+      id: '/_authenticated/associations/new'
+      path: '/associations/new'
+      fullPath: '/associations/new'
+      preLoaderRoute: typeof AuthenticatedAssociationsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/transactions': {
+      id: '/_authenticated/admin/transactions'
+      path: '/transactions'
+      fullPath: '/admin/transactions'
+      preLoaderRoute: typeof AuthenticatedAdminTransactionsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/students': {
+      id: '/_authenticated/admin/students'
+      path: '/students'
+      fullPath: '/admin/students'
+      preLoaderRoute: typeof AuthenticatedAdminStudentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/settlements': {
+      id: '/_authenticated/admin/settlements'
+      path: '/settlements'
+      fullPath: '/admin/settlements'
+      preLoaderRoute: typeof AuthenticatedAdminSettlementsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/runners': {
+      id: '/_authenticated/admin/runners'
+      path: '/runners'
+      fullPath: '/admin/runners'
+      preLoaderRoute: typeof AuthenticatedAdminRunnersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/reconcile': {
+      id: '/_authenticated/admin/reconcile'
+      path: '/reconcile'
+      fullPath: '/admin/reconcile'
+      preLoaderRoute: typeof AuthenticatedAdminReconcileRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/qr-codes': {
+      id: '/_authenticated/admin/qr-codes'
+      path: '/qr-codes'
+      fullPath: '/admin/qr-codes'
+      preLoaderRoute: typeof AuthenticatedAdminQrCodesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/payment-requests': {
+      id: '/_authenticated/admin/payment-requests'
+      path: '/payment-requests'
+      fullPath: '/admin/payment-requests'
+      preLoaderRoute: typeof AuthenticatedAdminPaymentRequestsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/page-health': {
+      id: '/_authenticated/admin/page-health'
+      path: '/page-health'
+      fullPath: '/admin/page-health'
+      preLoaderRoute: typeof AuthenticatedAdminPageHealthRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/faculties': {
+      id: '/_authenticated/admin/faculties'
+      path: '/faculties'
+      fullPath: '/admin/faculties'
+      preLoaderRoute: typeof AuthenticatedAdminFacultiesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/analytics': {
+      id: '/_authenticated/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/association/$slug': {
+      id: '/_authenticated/association/$slug'
+      path: '/association/$slug'
+      fullPath: '/association/$slug'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/association/$slug/': {
       id: '/_authenticated/association/$slug/'
@@ -1153,46 +1153,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssociationSlugIndexRouteImport
       parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
     }
-    '/_authenticated/association/$slug/approvals': {
-      id: '/_authenticated/association/$slug/approvals'
-      path: '/approvals'
-      fullPath: '/association/$slug/approvals'
-      preLoaderRoute: typeof AuthenticatedAssociationSlugApprovalsRouteImport
-      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    '/api/public/webhooks/paystack': {
+      id: '/api/public/webhooks/paystack'
+      path: '/api/public/webhooks/paystack'
+      fullPath: '/api/public/webhooks/paystack'
+      preLoaderRoute: typeof ApiPublicWebhooksPaystackRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/association/$slug/audit': {
-      id: '/_authenticated/association/$slug/audit'
-      path: '/audit'
-      fullPath: '/association/$slug/audit'
-      preLoaderRoute: typeof AuthenticatedAssociationSlugAuditRouteImport
-      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    '/_authenticated/superadmin/association/$id': {
+      id: '/_authenticated/superadmin/association/$id'
+      path: '/association/$id'
+      fullPath: '/superadmin/association/$id'
+      preLoaderRoute: typeof AuthenticatedSuperadminAssociationIdRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
-    '/_authenticated/association/$slug/bank': {
-      id: '/_authenticated/association/$slug/bank'
-      path: '/bank'
-      fullPath: '/association/$slug/bank'
-      preLoaderRoute: typeof AuthenticatedAssociationSlugBankRouteImport
-      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
-    }
-    '/_authenticated/association/$slug/dues': {
-      id: '/_authenticated/association/$slug/dues'
-      path: '/dues'
-      fullPath: '/association/$slug/dues'
-      preLoaderRoute: typeof AuthenticatedAssociationSlugDuesRouteImport
-      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
-    }
-    '/_authenticated/association/$slug/executives': {
-      id: '/_authenticated/association/$slug/executives'
-      path: '/executives'
-      fullPath: '/association/$slug/executives'
-      preLoaderRoute: typeof AuthenticatedAssociationSlugExecutivesRouteImport
-      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
-    }
-    '/_authenticated/association/$slug/finance': {
-      id: '/_authenticated/association/$slug/finance'
-      path: '/finance'
-      fullPath: '/association/$slug/finance'
-      preLoaderRoute: typeof AuthenticatedAssociationSlugFinanceRouteImport
+    '/_authenticated/association/$slug/payment-links': {
+      id: '/_authenticated/association/$slug/payment-links'
+      path: '/payment-links'
+      fullPath: '/association/$slug/payment-links'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugPaymentLinksRouteImport
       parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
     }
     '/_authenticated/association/$slug/members': {
@@ -1202,26 +1181,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssociationSlugMembersRouteImport
       parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
     }
-    '/_authenticated/association/$slug/payment-links': {
-      id: '/_authenticated/association/$slug/payment-links'
-      path: '/payment-links'
-      fullPath: '/association/$slug/payment-links'
-      preLoaderRoute: typeof AuthenticatedAssociationSlugPaymentLinksRouteImport
+    '/_authenticated/association/$slug/finance': {
+      id: '/_authenticated/association/$slug/finance'
+      path: '/finance'
+      fullPath: '/association/$slug/finance'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugFinanceRouteImport
       parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
     }
-    '/_authenticated/superadmin/association/$id': {
-      id: '/_authenticated/superadmin/association/$id'
-      path: '/association/$id'
-      fullPath: '/superadmin/association/$id'
-      preLoaderRoute: typeof AuthenticatedSuperadminAssociationIdRouteImport
-      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    '/_authenticated/association/$slug/executives': {
+      id: '/_authenticated/association/$slug/executives'
+      path: '/executives'
+      fullPath: '/association/$slug/executives'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugExecutivesRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
     }
-    '/api/public/webhooks/paystack': {
-      id: '/api/public/webhooks/paystack'
-      path: '/api/public/webhooks/paystack'
-      fullPath: '/api/public/webhooks/paystack'
-      preLoaderRoute: typeof ApiPublicWebhooksPaystackRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/association/$slug/dues': {
+      id: '/_authenticated/association/$slug/dues'
+      path: '/dues'
+      fullPath: '/association/$slug/dues'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugDuesRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
+    '/_authenticated/association/$slug/bank': {
+      id: '/_authenticated/association/$slug/bank'
+      path: '/bank'
+      fullPath: '/association/$slug/bank'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugBankRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
+    '/_authenticated/association/$slug/audit': {
+      id: '/_authenticated/association/$slug/audit'
+      path: '/audit'
+      fullPath: '/association/$slug/audit'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugAuditRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
+    }
+    '/_authenticated/association/$slug/approvals': {
+      id: '/_authenticated/association/$slug/approvals'
+      path: '/approvals'
+      fullPath: '/association/$slug/approvals'
+      preLoaderRoute: typeof AuthenticatedAssociationSlugApprovalsRouteImport
+      parentRoute: typeof AuthenticatedAssociationSlugRouteRoute
     }
   }
 }
