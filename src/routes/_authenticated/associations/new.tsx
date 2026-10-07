@@ -15,7 +15,7 @@ import { Loader2, ArrowLeft, ShieldCheck, Check } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 
 export const Route = createFileRoute("/_authenticated/associations/new")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { resume?: string; slug?: string } => ({
     resume: typeof s.resume === "string" ? s.resume : undefined,
     slug: typeof s.slug === "string" ? s.slug : undefined,
   }),
