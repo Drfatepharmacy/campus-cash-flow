@@ -38,9 +38,11 @@ import { Route as AuthenticatedSuperadminIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedRunnerIndexRouteImport } from './routes/_authenticated/runner/index'
 import { Route as AuthenticatedRepIndexRouteImport } from './routes/_authenticated/rep/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedSuperadminUsersRouteImport } from './routes/_authenticated/superadmin/users'
 import { Route as AuthenticatedSuperadminNominationsRouteImport } from './routes/_authenticated/superadmin/nominations'
 import { Route as AuthenticatedSuperadminBankVerificationsRouteImport } from './routes/_authenticated/superadmin/bank-verifications'
 import { Route as AuthenticatedSuperadminAssociationsRouteImport } from './routes/_authenticated/superadmin/associations'
+import { Route as AuthenticatedSuperadminActivityRouteImport } from './routes/_authenticated/superadmin/activity'
 import { Route as AuthenticatedReceiptTokenRouteImport } from './routes/_authenticated/receipt.$token'
 import { Route as AuthenticatedPayRequestIdRouteImport } from './routes/_authenticated/pay.$requestId'
 import { Route as AuthenticatedAssociationsNewRouteImport } from './routes/_authenticated/associations/new'
@@ -59,6 +61,7 @@ import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authe
 import { Route as AuthenticatedAssociationSlugRouteRouteImport } from './routes/_authenticated/association/$slug/route'
 import { Route as AuthenticatedAssociationSlugIndexRouteImport } from './routes/_authenticated/association/$slug/index'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
+import { Route as AuthenticatedSuperadminAssociationIdRouteImport } from './routes/_authenticated/superadmin/association.$id'
 import { Route as AuthenticatedAssociationSlugPaymentLinksRouteImport } from './routes/_authenticated/association/$slug/payment-links'
 import { Route as AuthenticatedAssociationSlugMembersRouteImport } from './routes/_authenticated/association/$slug/members'
 import { Route as AuthenticatedAssociationSlugFinanceRouteImport } from './routes/_authenticated/association/$slug/finance'
@@ -217,6 +220,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedSuperadminUsersRoute =
+  AuthenticatedSuperadminUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
 const AuthenticatedSuperadminNominationsRoute =
   AuthenticatedSuperadminNominationsRouteImport.update({
     id: '/nominations',
@@ -233,6 +242,12 @@ const AuthenticatedSuperadminAssociationsRoute =
   AuthenticatedSuperadminAssociationsRouteImport.update({
     id: '/associations',
     path: '/associations',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
+const AuthenticatedSuperadminActivityRoute =
+  AuthenticatedSuperadminActivityRouteImport.update({
+    id: '/activity',
+    path: '/activity',
     getParentRoute: () => AuthenticatedSuperadminRouteRoute,
   } as any)
 const AuthenticatedReceiptTokenRoute =
@@ -341,6 +356,12 @@ const ApiPublicWebhooksPaystackRoute =
     path: '/api/public/webhooks/paystack',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedSuperadminAssociationIdRoute =
+  AuthenticatedSuperadminAssociationIdRouteImport.update({
+    id: '/association/$id',
+    path: '/association/$id',
+    getParentRoute: () => AuthenticatedSuperadminRouteRoute,
+  } as any)
 const AuthenticatedAssociationSlugPaymentLinksRoute =
   AuthenticatedAssociationSlugPaymentLinksRouteImport.update({
     id: '/payment-links',
@@ -431,9 +452,11 @@ export interface FileRoutesByFullPath {
   '/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
+  '/superadmin/activity': typeof AuthenticatedSuperadminActivityRoute
   '/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
   '/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
+  '/superadmin/users': typeof AuthenticatedSuperadminUsersRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/rep/': typeof AuthenticatedRepIndexRoute
   '/runner/': typeof AuthenticatedRunnerIndexRoute
@@ -446,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
+  '/superadmin/association/$id': typeof AuthenticatedSuperadminAssociationIdRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -485,9 +509,11 @@ export interface FileRoutesByTo {
   '/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/receipt/$token': typeof AuthenticatedReceiptTokenRoute
+  '/superadmin/activity': typeof AuthenticatedSuperadminActivityRoute
   '/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
   '/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
+  '/superadmin/users': typeof AuthenticatedSuperadminUsersRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/rep': typeof AuthenticatedRepIndexRoute
   '/runner': typeof AuthenticatedRunnerIndexRoute
@@ -500,6 +526,7 @@ export interface FileRoutesByTo {
   '/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
+  '/superadmin/association/$id': typeof AuthenticatedSuperadminAssociationIdRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/association/$slug': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -546,9 +573,11 @@ export interface FileRoutesById {
   '/_authenticated/associations/new': typeof AuthenticatedAssociationsNewRoute
   '/_authenticated/pay/$requestId': typeof AuthenticatedPayRequestIdRoute
   '/_authenticated/receipt/$token': typeof AuthenticatedReceiptTokenRoute
+  '/_authenticated/superadmin/activity': typeof AuthenticatedSuperadminActivityRoute
   '/_authenticated/superadmin/associations': typeof AuthenticatedSuperadminAssociationsRoute
   '/_authenticated/superadmin/bank-verifications': typeof AuthenticatedSuperadminBankVerificationsRoute
   '/_authenticated/superadmin/nominations': typeof AuthenticatedSuperadminNominationsRoute
+  '/_authenticated/superadmin/users': typeof AuthenticatedSuperadminUsersRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/rep/': typeof AuthenticatedRepIndexRoute
   '/_authenticated/runner/': typeof AuthenticatedRunnerIndexRoute
@@ -561,6 +590,7 @@ export interface FileRoutesById {
   '/_authenticated/association/$slug/finance': typeof AuthenticatedAssociationSlugFinanceRoute
   '/_authenticated/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/_authenticated/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
+  '/_authenticated/superadmin/association/$id': typeof AuthenticatedSuperadminAssociationIdRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/_authenticated/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -607,9 +637,11 @@ export interface FileRouteTypes {
     | '/associations/new'
     | '/pay/$requestId'
     | '/receipt/$token'
+    | '/superadmin/activity'
     | '/superadmin/associations'
     | '/superadmin/bank-verifications'
     | '/superadmin/nominations'
+    | '/superadmin/users'
     | '/admin/'
     | '/rep/'
     | '/runner/'
@@ -622,6 +654,7 @@ export interface FileRouteTypes {
     | '/association/$slug/finance'
     | '/association/$slug/members'
     | '/association/$slug/payment-links'
+    | '/superadmin/association/$id'
     | '/api/public/webhooks/paystack'
     | '/association/$slug/'
   fileRoutesByTo: FileRoutesByTo
@@ -661,9 +694,11 @@ export interface FileRouteTypes {
     | '/associations/new'
     | '/pay/$requestId'
     | '/receipt/$token'
+    | '/superadmin/activity'
     | '/superadmin/associations'
     | '/superadmin/bank-verifications'
     | '/superadmin/nominations'
+    | '/superadmin/users'
     | '/admin'
     | '/rep'
     | '/runner'
@@ -676,6 +711,7 @@ export interface FileRouteTypes {
     | '/association/$slug/finance'
     | '/association/$slug/members'
     | '/association/$slug/payment-links'
+    | '/superadmin/association/$id'
     | '/api/public/webhooks/paystack'
     | '/association/$slug'
   id:
@@ -721,9 +757,11 @@ export interface FileRouteTypes {
     | '/_authenticated/associations/new'
     | '/_authenticated/pay/$requestId'
     | '/_authenticated/receipt/$token'
+    | '/_authenticated/superadmin/activity'
     | '/_authenticated/superadmin/associations'
     | '/_authenticated/superadmin/bank-verifications'
     | '/_authenticated/superadmin/nominations'
+    | '/_authenticated/superadmin/users'
     | '/_authenticated/admin/'
     | '/_authenticated/rep/'
     | '/_authenticated/runner/'
@@ -736,6 +774,7 @@ export interface FileRouteTypes {
     | '/_authenticated/association/$slug/finance'
     | '/_authenticated/association/$slug/members'
     | '/_authenticated/association/$slug/payment-links'
+    | '/_authenticated/superadmin/association/$id'
     | '/api/public/webhooks/paystack'
     | '/_authenticated/association/$slug/'
   fileRoutesById: FileRoutesById
@@ -960,6 +999,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/superadmin/users': {
+      id: '/_authenticated/superadmin/users'
+      path: '/users'
+      fullPath: '/superadmin/users'
+      preLoaderRoute: typeof AuthenticatedSuperadminUsersRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    }
     '/_authenticated/superadmin/nominations': {
       id: '/_authenticated/superadmin/nominations'
       path: '/nominations'
@@ -979,6 +1025,13 @@ declare module '@tanstack/react-router' {
       path: '/associations'
       fullPath: '/superadmin/associations'
       preLoaderRoute: typeof AuthenticatedSuperadminAssociationsRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    }
+    '/_authenticated/superadmin/activity': {
+      id: '/_authenticated/superadmin/activity'
+      path: '/activity'
+      fullPath: '/superadmin/activity'
+      preLoaderRoute: typeof AuthenticatedSuperadminActivityRouteImport
       parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
     '/_authenticated/receipt/$token': {
@@ -1107,6 +1160,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksPaystackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/superadmin/association/$id': {
+      id: '/_authenticated/superadmin/association/$id'
+      path: '/association/$id'
+      fullPath: '/superadmin/association/$id'
+      preLoaderRoute: typeof AuthenticatedSuperadminAssociationIdRouteImport
+      parentRoute: typeof AuthenticatedSuperadminRouteRoute
+    }
     '/_authenticated/association/$slug/payment-links': {
       id: '/_authenticated/association/$slug/payment-links'
       path: '/payment-links'
@@ -1233,21 +1293,28 @@ const AuthenticatedRunnerRouteRouteWithChildren =
   )
 
 interface AuthenticatedSuperadminRouteRouteChildren {
+  AuthenticatedSuperadminActivityRoute: typeof AuthenticatedSuperadminActivityRoute
   AuthenticatedSuperadminAssociationsRoute: typeof AuthenticatedSuperadminAssociationsRoute
   AuthenticatedSuperadminBankVerificationsRoute: typeof AuthenticatedSuperadminBankVerificationsRoute
   AuthenticatedSuperadminNominationsRoute: typeof AuthenticatedSuperadminNominationsRoute
+  AuthenticatedSuperadminUsersRoute: typeof AuthenticatedSuperadminUsersRoute
   AuthenticatedSuperadminIndexRoute: typeof AuthenticatedSuperadminIndexRoute
+  AuthenticatedSuperadminAssociationIdRoute: typeof AuthenticatedSuperadminAssociationIdRoute
 }
 
 const AuthenticatedSuperadminRouteRouteChildren: AuthenticatedSuperadminRouteRouteChildren =
   {
+    AuthenticatedSuperadminActivityRoute: AuthenticatedSuperadminActivityRoute,
     AuthenticatedSuperadminAssociationsRoute:
       AuthenticatedSuperadminAssociationsRoute,
     AuthenticatedSuperadminBankVerificationsRoute:
       AuthenticatedSuperadminBankVerificationsRoute,
     AuthenticatedSuperadminNominationsRoute:
       AuthenticatedSuperadminNominationsRoute,
+    AuthenticatedSuperadminUsersRoute: AuthenticatedSuperadminUsersRoute,
     AuthenticatedSuperadminIndexRoute: AuthenticatedSuperadminIndexRoute,
+    AuthenticatedSuperadminAssociationIdRoute:
+      AuthenticatedSuperadminAssociationIdRoute,
   }
 
 const AuthenticatedSuperadminRouteRouteWithChildren =

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -105,7 +105,7 @@ function AdminAssociationsPage() {
                 <li key={a.id} className="border rounded-xl p-4 space-y-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{a.name}</p>
+                      <Link to="/superadmin/association/$id" params={{ id: a.id }} className="font-medium truncate block hover:underline">{a.name}</Link>
                       <p className="text-sm text-muted-foreground">
                         {a.institution} · <span className="capitalize">{a.type}</span>
                         {a.campus?.name ? ` · ${a.campus.name}` : ""}{a.faculty?.name ? ` · ${a.faculty.name}` : ""}{a.department?.name ? ` · ${a.department.name}` : ""}
