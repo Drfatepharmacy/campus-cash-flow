@@ -14,6 +14,7 @@ import { ArrowRight, LogOut, ShieldAlert, QrCode, Receipt as ReceiptIcon, Loader
 import { grantAdminToMe } from "@/lib/admin.functions";
 import { getMyRoles } from "@/lib/payments.functions";
 import { myAssociations } from "@/lib/associations.functions";
+import { SuperAdminCard, ApplicationTimeline } from "@/components/association/dashboard-widgets";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — UniEgo" }] }),
@@ -129,6 +130,8 @@ function Dashboard() {
           </Card>
         )}
 
+        {isSuperAdmin && <SuperAdminCard />}
+
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-lg font-semibold">My associations</h2>
@@ -158,6 +161,7 @@ function Dashboard() {
                         </div>
                         <Badge variant={tone as any} className="capitalize shrink-0">{label}</Badge>
                       </div>
+                      <ApplicationTimeline association={a} />
                       {status === "rejected" && a.status_reason && (
                         <p className="text-xs text-destructive">Reason: {a.status_reason}</p>
                       )}

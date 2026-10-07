@@ -15,6 +15,10 @@ import { Loader2, ArrowLeft, ShieldCheck, Check } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 
 export const Route = createFileRoute("/_authenticated/associations/new")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    resume: typeof s.resume === "string" ? s.resume : undefined,
+    slug: typeof s.slug === "string" ? s.slug : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Register an association — UniEgo" },
@@ -46,8 +50,10 @@ function NewAssociation() {
   const fetchRoles = useServerFn(listAssociationRoles);
   const roles = useQuery({ queryKey: ["association-roles"], queryFn: () => fetchRoles() });
 
-  const [step, setStep] = useState(1);
-  const [created, setCreated] = useState<{ id: string; slug: string } | null>(null);
+  const search = Route.useSearch();
+  const resumed = Boolean(search.resume && search.slug);
+  const [step, setStep] = useState(resumed ? 2 : 1);
+  const [created, setCreated] = useState<{ id: string; slug: string } | null>(resumed ? { id: search.resume!, slug: search.slug! } : null);
   const [form, setForm] = useState({
     name: "", short_name: "", type: "departmental", institution: "",
     official_email: "", official_phone: "", description: "", session_year: String(new Date().getFullYear()),
@@ -238,6 +244,11 @@ function NewAssociation() {
                 <Button type="submit" disabled={mNominate.isPending}>
                   {mNominate.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Submit nominations
                 </Button>
+                {resumed && (
+                  <Button type="button" variant="ghost" className="ml-2" onClick={() => setStep(3)}>
+                    Leaders already proposed — go to submit
+                  </Button>
+                )}
               </form>
             </CardContent>
           </Card>
