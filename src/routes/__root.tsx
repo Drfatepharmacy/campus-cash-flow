@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ErrorState } from "@/components/feedback/error-state";
 import { RecoveryScreen, BrandedPending, useRecoveryReset } from "@/components/feedback/recovery-boundary";
 import { reportClientError } from "@/lib/client-monitor";
+import { initGA, trackPageView } from "@/lib/analytics-ga";
 
 function NotFoundComponent() {
   return (
@@ -88,6 +89,12 @@ function RootComponent() {
     window.addEventListener("unhandledrejection", onRej);
     return () => window.removeEventListener("unhandledrejection", onRej);
   }, []);
+
+  useEffect(() => {
+    initGA();
+    trackPageView(router.state.location.pathname);
+    return router.subscribe("onResolved", (e) => trackPageView(e.toLocation.pathname));
+  }, [router]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
