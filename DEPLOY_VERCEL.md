@@ -22,3 +22,7 @@ Note: on Lovable Cloud the service key is not viewable, so the features that nee
 ## 3. After the first deploy
 - Paystack dashboard: set the webhook URL to `https://<your-vercel-domain>/api/public/webhooks/paystack` (only if payments should be confirmed there).
 - Add the Vercel domain to the allowed sign-in/redirect addresses so Google sign-in and email links work.
+
+## 4. Optional analytics
+- `VITE_GA_MEASUREMENT_ID` (e.g. `G-XXXXXXX`) turns on Google Analytics page views. Leave empty to disable.
+- Node version: set Vercel → Settings → Node.js to 22.x.

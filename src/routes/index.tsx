@@ -21,7 +21,19 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
       { property: "og:title", content: "UniEgo — Premium Campus Payment Infrastructure" },
       { property: "og:description", content: "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
+      { property: "og:url", content: "https://uniego.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://uniego.lovable.app/" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": [
+          { "@type": "Organization", name: "UniEgo", url: "https://uniego.lovable.app/", description: "Campus payment infrastructure for Nigerian universities, faculties, departments and student associations." },
+          { "@type": "WebSite", name: "UniEgo", url: "https://uniego.lovable.app/" },
+        ],
+      }),
+    }],
   }),
   component: Landing,
 });
