@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://uniego.lovable.app/</loc><priority>1.0</priority></url>
-  <url><loc>https://uniego.lovable.app/associations</loc></url>
-  <url><loc>https://uniego.lovable.app/verify</loc></url>
-  <url><loc>https://uniego.lovable.app/auth</loc></url>
-  <url><loc>https://uniego.lovable.app/association-login</loc></url>
-  <url><loc>https://uniego.lovable.app/legal/privacy</loc></url>
-  <url><loc>https://uniego.lovable.app/legal/terms</loc></url>
-  <url><loc>https://uniego.lovable.app/legal/refund</loc></url>
-  <url><loc>https://uniego.lovable.app/legal/payment</loc></url>
-  <url><loc>https://uniego.lovable.app/legal/security</loc></url>
-  <url><loc>https://uniego.lovable.app/legal/compliance</loc></url>
-  <url><loc>https://uniego.lovable.app/legal/qr-verification</loc></url>
-  <url><loc>https://uniego.lovable.app/legal/association-verification</loc></url>
+  <url><loc>https://uniego.app/</loc><priority>1.0</priority></url>
+  <url><loc>https://uniego.app/associations</loc></url>
+  <url><loc>https://uniego.app/verify</loc></url>
+  <url><loc>https://uniego.app/auth</loc></url>
+  <url><loc>https://uniego.app/association-login</loc></url>
+  <url><loc>https://uniego.app/legal/privacy</loc></url>
+  <url><loc>https://uniego.app/legal/terms</loc></url>
+  <url><loc>https://uniego.app/legal/refund</loc></url>
+  <url><loc>https://uniego.app/legal/payment</loc></url>
+  <url><loc>https://uniego.app/legal/security</loc></url>
+  <url><loc>https://uniego.app/legal/compliance</loc></url>
+  <url><loc>https://uniego.app/legal/qr-verification</loc></url>
+  <url><loc>https://uniego.app/legal/association-verification</loc></url>
 </urlset>
