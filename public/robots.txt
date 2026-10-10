@@ -11,4 +11,4 @@ Disallow: /runner
 Disallow: /receipt/
 Disallow: /pay/
 
-Sitemap: https://uniego.lovable.app/sitemap.xml
+Sitemap: https://uniego.app/sitemap.xml
