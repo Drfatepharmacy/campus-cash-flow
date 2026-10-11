@@ -74,30 +74,10 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head><{
-  "id": "/",
-  "name": "UniEgo",
-  "short_name": "UniEgo",
-  "description": "UniEgo campus finance and payment management",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "background_color": "#0B0B0F",
-  "theme_color": "#171329",
-  "icons": [
-    {
-      "src": "/android-chrome-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
-  ]
-} /></head>
+  { rel: "manifest", href: "/site.webmanifest" },
+{ rel: "icon", href: "/favicon.ico" },
+{ rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+    /></head>
       <body>{children}<Scripts /></body>
     </html>
   );
