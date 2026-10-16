@@ -14,27 +14,51 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-export const Route = createFileRoute("/")({
+
   head: () => ({
     meta: [
-      { title: "UniEgo — Premium Campus Payment Infrastructure" },
-      { name: "description", content: "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
-      { property: "og:title", content: "UniEgo — Premium Campus Payment Infrastructure" },
-      { property: "og:description", content: "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities." },
-      { property: "og:url", content: "https://uniego.lovable.app/" },
+      {
+        title: "UniEgo — Premium Campus Payment Infrastructure",
+      },
+      {
+        name: "description",
+        content:
+          "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities.",
+      },
+      {
+        property: "og:title",
+        content: "UniEgo — Premium Campus Payment Infrastructure",
+      },
+      {
+        property: "og:description",
+        content:
+          "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities.",
+      },
     ],
-    links: [{ rel: "canonical", href: "https://uniego.lovable.app/" }],
-    scripts: [{
-      type: "application/ld+json",
-      children: JSON.stringify({
-        "@context": "https://schema.org",
-        "@graph": [
-          { "@type": "Organization", name: "UniEgo", url: "https://uniego.lovable.app/", description: "Campus payment infrastructure for Nigerian universities, faculties, departments and student associations." },
-          { "@type": "WebSite", name: "UniEgo", url: "https://uniego.lovable.app/" },
-        ],
-      }),
-    }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "UniEgo",
+              url: "https://uniego.app/",
+              description:
+                "Campus payment infrastructure for Nigerian universities, faculties, departments and student associations.",
+            },
+            {
+              "@type": "WebSite",
+              name: "UniEgo",
+              url: "https://uniego.app/",
+            },
+          ],
+        }),
+      },
+    ],
   }),
+
   component: Landing,
 });
 
@@ -147,7 +171,8 @@ function HeroCard() {
             <QrCode className="h-8 w-8 text-background"/>
           </div>
           <div className="text-xs text-muted-foreground">
-            Scan to verify on <span className="text-foreground font-semibold">verify.uniego.lovable.app</span>
+            Scan to verify on <span className="text-foreground font-semibold">uniego.app/verify
+            </span>
           </div>
         </div>
       </div>
