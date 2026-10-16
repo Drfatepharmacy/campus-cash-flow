@@ -100,32 +100,39 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
         const paidAt = event.data.paid_at ?? new Date().toISOString();
 
 
-        // Send receipt email via Resend connector gateway.
-        const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
+        
+        // Send receipt email directly through Resend.
         const RESEND_API_KEY = process.env.RESEND_API_KEY;
         const student = (txn as any).student;
         const pr = (txn as any).payment_request;
-        if (LOVABLE_API_KEY && RESEND_API_KEY && student?.email) {
+
+        if (RESEND_API_KEY && student?.email) {
           const origin = new URL(request.url).origin;
           const verifyUrl = `${origin}/verify/${receiptToken}`;
           const receiptUrl = `${origin}/receipt/${receiptToken}`;
+
           try {
             const { qrPngBase64 } = await import("@/lib/qr-png.server");
-            const qrBase64 = qrPngBase64(verifyUrl, { scale: 8, margin: 2 });
-            const res = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+            const qrBase64 = qrPngBase64(verifyUrl, {
+              scale: 8,
+              margin: 2,
+            });
+
+            const res = await fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: {
+                Authorization: `Bearer ${RESEND_API_KEY}`,
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                "X-Connection-Api-Key": RESEND_API_KEY,
               },
               body: JSON.stringify({
-                from: "UniEgo <onboarding@resend.dev>",
+                from:
+                  process.env.RESEND_FROM_EMAIL ||
+                  "UniEgo <support@uniego.app>",
                 to: [student.email],
                 subject: `Receipt: ${pr?.title ?? "Payment"} — ${reference}`,
                 html: `<div style="font-family:Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1230">
                   <h1 style="font-size:22px;color:#3d2169">UniEgo receipt</h1>
-                  <p>Hi ${student.full_name ?? "there"}, your payment for <strong>${pr?.title ?? "Payment"}</strong> was successful.</p>
+                  <p>Hi ${String(student.full_name ?? "there")}, your payment for <strong>${String(pr?.title ?? "Payment")}</strong> was successful.</p>
                   <p><strong>Amount:</strong> ₦${Number(txn.total_amount).toLocaleString()}<br/>
                      <strong>Reference:</strong> ${reference}<br/>
                      <strong>Paid at:</strong> ${new Date(paidAt).toLocaleString()}</p>
@@ -148,13 +155,15 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
                 ],
               }),
             });
-            if (!res.ok) console.error("Resend send failed", res.status, await res.text());
-          } catch (e) { console.error("Resend send error", e); }
 
+            if (!res.ok) {
+              console.error(
+                "Resend receipt failed",
+                res.status,
+                await res.text(),
+              );
+            }
+          } catch (error) {
+            console.error("Resend receipt error", error);
+          }
         }
-
-        return new Response("ok", { status: 200 });
-      },
-    },
-  },
-});
