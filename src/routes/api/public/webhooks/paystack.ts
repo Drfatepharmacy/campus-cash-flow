@@ -167,3 +167,9 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
             console.error("Resend receipt error", error);
           }
         }
+
+        return new Response("ok", { status: 200 });
+      },
+    },
+  },
+});
