@@ -3,6 +3,12 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { randomUUID } from "node:crypto";
 import { calcServiceChargeMinor, toMinor, fromMinor, type Tier } from "@/lib/charges";
+import { PaystackInitError, initializePaystackCheckout } from "@/lib/paystack-init.server";
+import {
+  isPaidFinalizeOutcome,
+  parsePaystackChargeData,
+  PaystackPayloadError,
+} from "@/lib/paystack-provider.server";
 
 export const getMyProfile = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -134,28 +140,51 @@ export const initiatePayment = createServerFn({ method: "POST" })
     });
     if (insErr) throw new Error(insErr.message);
 
-    const res = await fetch("https://api.paystack.co/transaction/initialize", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: profile.email,
-        amount: totalMinor,
-        currency: "NGN",
-        reference,
-        callback_url: data.callback_url,
-        metadata: {
-          payment_request_id: pr.id,
-          student_id: context.userId,
-          campus_id: pr.campus_id,
-          department_id: pr.target_department_id,
-          full_name: profile.full_name,
-        },
-      }),
-    });
-    const json = await res.json() as { status: boolean; message: string; data?: { authorization_url: string; reference: string } };
-    if (!res.ok || !json.status || !json.data) throw new Error(json.message || "Paystack init failed");
+    const markInitFailed = async (reason: string) => {
+      const { error } = await context.supabase
+        .from("transactions")
+        .update({
+          status: "failed",
+          paystack_response: { phase: "initialize", reason },
+        })
+        .eq("reference", reference)
+        .eq("status", "pending");
+      if (error) {
+        console.error("Could not mark transaction initialization failure", {
+          reference,
+          reason,
+          error,
+        });
+      }
+    };
 
-    return { authorization_url: json.data.authorization_url, reference };
+    try {
+      const init = await initializePaystackCheckout({
+        secret: PAYSTACK_SECRET_KEY,
+        payload: {
+          email: profile.email,
+          amount: totalMinor,
+          currency: "NGN",
+          reference,
+          callback_url: data.callback_url,
+          metadata: {
+            payment_request_id: pr.id,
+            student_id: context.userId,
+            campus_id: pr.campus_id,
+            department_id: pr.target_department_id,
+            full_name: profile.full_name,
+          },
+        },
+      });
+      return { authorization_url: init.authorization_url, reference };
+    } catch (error) {
+      if (error instanceof PaystackInitError) {
+        await markInitFailed(error.reason);
+        throw new Error(error.message || "Paystack init failed");
+      }
+      throw error;
+    }
+
   });
 
 export const verifyPayment = createServerFn({ method: "POST" })
@@ -175,37 +204,43 @@ export const verifyPayment = createServerFn({ method: "POST" })
     if (txn.status === "paid") return { status: "paid" as const };
 
     const res = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(data.reference)}`, {
-      headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
+      headers: { Authorization: "Bearer " + PAYSTACK_SECRET_KEY },
     });
     const json = await res.json() as {
       status: boolean;
       data?: { status: string; paid_at?: string; id?: number; amount?: number; currency?: string; reference?: string; customer?: { email?: string }; metadata?: Record<string, unknown> };
     };
     if (!res.ok || !json.status || !json.data) throw new Error("Verification failed");
-    const p = json.data;
-    if (p.status !== "success") return { status: "pending" as const };
+    if (json.data.status !== "success") return { status: "pending" as const };
     // Reference echoed back by the provider must match what we asked about.
-    if (p.reference && p.reference !== data.reference) throw new Error("Verification failed");
+    if (json.data.reference && json.data.reference !== data.reference) throw new Error("Verification failed");
+
+    let p;
+    try {
+      p = parsePaystackChargeData(json.data, { expectedReference: data.reference });
+    } catch (error) {
+      if (error instanceof PaystackPayloadError) throw new Error("Verification failed");
+      throw error;
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: result, error } = await supabaseAdmin.rpc("finalize_payment", {
       _reference: data.reference,
       _provider: "paystack",
-      _provider_ref: String(p.id ?? ""),
+      _provider_ref: p.providerRef,
       _provider_event_id: `verify:${data.reference}`,
-      _amount_minor: Number(p.amount ?? -1),
-      _currency: String(p.currency ?? "NGN").toUpperCase(),
-      _customer_email: p.customer?.email ?? "",
-      _paid_at: p.paid_at ?? new Date().toISOString(),
-      _raw: p as never,
+      _amount_minor: p.amountMinor,
+      _currency: p.currency,
+      _customer_email: p.customerEmail,
+      _paid_at: p.paidAt,
+      _raw: json.data as never,
     });
     if (error) throw new Error(error.message);
 
     const outcome = (Array.isArray(result) ? result[0]?.outcome : (result as any)?.outcome) as string | undefined;
-    if (outcome === "captured" || outcome === "already_paid") return { status: "paid" as const };
+    if (isPaidFinalizeOutcome(outcome)) return { status: "paid" as const };
     if (outcome === "amount_mismatch" || outcome === "currency_mismatch") {
       throw new Error("Payment could not be confirmed — the amount received does not match this invoice. Support has been notified.");
     }
     return { status: "pending" as const };
   });
-

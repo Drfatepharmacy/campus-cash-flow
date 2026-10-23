@@ -2,7 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { loadAssociationContext, requirePermission } from "@/lib/association-access";
+import { PaystackInitError, initializePaystackCheckout } from "@/lib/paystack-init.server";
 import { maskName, maskMatric, priceForClass, normMatric, type ClassPrice } from "@/lib/payment-link-utils";
+import {
+  isPaidFinalizeOutcome,
+  parsePaystackChargeData,
+  PaystackPayloadError,
+} from "@/lib/paystack-provider.server";
 
 const token = z.string().regex(/^[A-Za-z0-9-]{8,64}$/);
 
@@ -65,16 +71,42 @@ export const startLinkPayment = createServerFn({ method: "POST" })
     });
     if (error) throw new Error("We couldn't start this payment. Please try again.");
 
+    const markInitFailed = async (reason: string) => {
+      const { error: updErr } = await db
+        .from("payment_link_payments")
+        .update({ status: "failed", note: `paystack_init_failed:${reason}` })
+        .eq("reference", reference)
+        .eq("status", "pending");
+      if (updErr) {
+        console.error("Could not mark payment-link initialization failure", {
+          reference,
+          reason,
+          error: updErr,
+        });
+      }
+    };
+
     cb.searchParams.set("ref", reference);
-    const res = await fetch("https://api.paystack.co/transaction/initialize", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ email, amount, currency: "NGN", reference, callback_url: cb.toString(),
-        metadata: { kind: "payment_link", link_id: l.id, matric_no: matric, class: data.class_label } }),
-    });
-    const json = (await res.json()) as { status: boolean; data?: { authorization_url: string } };
-    if (!json.status || !json.data) throw new Error("The payment page could not be opened. Please try again.");
-    return { authorization_url: json.data.authorization_url, reference };
+    try {
+      const init = await initializePaystackCheckout({
+        secret,
+        payload: {
+          email,
+          amount,
+          currency: "NGN",
+          reference,
+          callback_url: cb.toString(),
+          metadata: { kind: "payment_link", link_id: l.id, matric_no: matric, class: data.class_label },
+        },
+      });
+      return { authorization_url: init.authorization_url, reference };
+    } catch (error) {
+      if (error instanceof PaystackInitError) {
+        await markInitFailed(error.reason);
+      }
+      throw new Error("The payment page could not be opened. Please try again.");
+    }
+
   });
 
 /** Called after Paystack redirects back — double-checks with Paystack, then records. */
@@ -85,19 +117,43 @@ export const confirmLinkPayment = createServerFn({ method: "POST" })
     const { data: p } = await db.from("payment_link_payments").select("status, amount_minor, payer_name, class_label").eq("reference", data.reference).maybeSingle();
     if (!p) return { status: "not_found" as const };
     if (p.status === "paid") return { status: "paid" as const, amount_minor: p.amount_minor, payer: maskName(p.payer_name) };
+
     const { getPaystackSecret } = await import("@/lib/payments-guard.server");
+    const secret = getPaystackSecret();
     const res = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(data.reference)}`, {
-      headers: { Authorization: `Bearer ${getPaystackSecret()}` },
+      headers: { Authorization: "Bearer " + secret },
     });
-    const j = (await res.json()) as any;
-    if (j?.data?.status === "success") {
-      const { data: out } = await db.rpc("finalize_link_payment", {
-        _reference: data.reference, _provider_ref: String(j.data.id ?? ""), _amount_minor: Number(j.data.amount),
-        _currency: String(j.data.currency ?? "NGN"), _paid_at: j.data.paid_at ?? new Date().toISOString(), _event_id: `verify-${j.data.id}`,
-      });
-      if (out === "captured" || out === "already_paid") return { status: "paid" as const, amount_minor: p.amount_minor, payer: maskName(p.payer_name) };
-      return { status: "problem" as const };
+
+    let json: { status?: boolean; data?: Record<string, unknown> };
+    try {
+      json = await res.json();
+    } catch {
+      return { status: "pending" as const };
     }
+    if (!res.ok || !json.status || !json.data) return { status: "pending" as const };
+    if ((json.data.status as string | undefined) !== "success") return { status: "pending" as const };
+
+    let parsed;
+    try {
+      parsed = parsePaystackChargeData(json.data, { expectedReference: data.reference });
+    } catch (error) {
+      if (error instanceof PaystackPayloadError) return { status: "problem" as const };
+      throw error;
+    }
+
+    const { data: out, error } = await db.rpc("finalize_link_payment", {
+      _reference: data.reference,
+      _provider_ref: parsed.providerRef,
+      _amount_minor: parsed.amountMinor,
+      _currency: parsed.currency,
+      _paid_at: parsed.paidAt,
+      _event_id: `verify-${data.reference}`,
+    });
+    if (error) return { status: "problem" as const };
+    if (isPaidFinalizeOutcome(out as string | undefined)) {
+      return { status: "paid" as const, amount_minor: p.amount_minor, payer: maskName(p.payer_name) };
+    }
+    if (out === "amount_mismatch" || out === "currency_mismatch") return { status: "problem" as const };
     return { status: "pending" as const };
   });
 
