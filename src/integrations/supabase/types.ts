@@ -1231,22 +1231,38 @@ export type Database = {
         Row: {
           id: string
           issued_at: string
+          link_payment_id: string | null
           qr_token: string
-          transaction_id: string
+          receipt_no: string | null
+          transaction_id: string | null
+          verification_hash: string | null
         }
         Insert: {
           id?: string
           issued_at?: string
+          link_payment_id?: string | null
           qr_token: string
-          transaction_id: string
+          receipt_no?: string | null
+          transaction_id?: string | null
+          verification_hash?: string | null
         }
         Update: {
           id?: string
           issued_at?: string
+          link_payment_id?: string | null
           qr_token?: string
-          transaction_id?: string
+          receipt_no?: string | null
+          transaction_id?: string | null
+          verification_hash?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "receipts_link_payment_id_fkey"
+            columns: ["link_payment_id"]
+            isOneToOne: true
+            referencedRelation: "payment_link_payments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "receipts_transaction_id_fkey"
             columns: ["transaction_id"]
@@ -1592,6 +1608,7 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      issue_link_receipt: { Args: { _payment_id: string }; Returns: string }
       qr_log_scan: {
         Args: { _ip: string; _token: string; _ua: string }
         Returns: Database["public"]["Enums"]["qr_scan_result"]
