@@ -10,7 +10,7 @@ import { QrCode, Camera, Upload, ShieldCheck, ArrowRight, CameraOff } from "luci
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/verify/")({
-  validateSearch: (s: Record<string, unknown>) => ({ token: typeof s.token === "string" && /^[A-Za-z0-9-]{8,128}$/.test(s.token) ? s.token : undefined }),
+  validateSearch: (s: Record<string, unknown>): { token?: string } => ({ token: typeof s.token === "string" && /^[A-Za-z0-9-]{8,128}$/.test(s.token) ? s.token : undefined }),
   beforeLoad: ({ search }) => { if (search.token) throw redirect({ to: "/verify/$token", params: { token: search.token } }); },
   head: () => ({
     meta: [
