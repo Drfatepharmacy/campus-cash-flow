@@ -52,7 +52,13 @@ export const startLinkPayment = createServerFn({ method: "POST" })
     if (!l.active || l.association?.status !== "active") throw new Error("This payment link is not accepting payments right now");
     const amount = priceForClass(l.class_prices ?? [], data.class_label);
     const matric = normMatric(data.matric_no);
-    const cb = new URL(data.callback_url);
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const { constrainCallbackUrl } = await import("@/lib/callback-url");
+    const req = getRequest();
+    const fwdHost = req.headers.get("x-forwarded-host");
+    const proto = req.headers.get("x-forwarded-proto") ?? new URL(req.url).protocol.replace(":", "");
+    const appOrigin = fwdHost ? `${proto}://${fwdHost}` : new URL(req.url).origin;
+    const cb = constrainCallbackUrl(data.callback_url, appOrigin, `/p/${data.token}`);
     const { randomUUID } = await import("node:crypto");
     const reference = `PL-${Date.now().toString(36).toUpperCase()}-${randomUUID().replace(/-/g, "").slice(0, 14).toUpperCase()}`;
     const email = data.payer_email || `${matric.toLowerCase()}@payer.uniego.app`;

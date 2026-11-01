@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/spreadsheet-safe";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -24,7 +25,7 @@ function TransactionsPage() {
       t.reference, t.student?.full_name ?? "", t.student?.matric_no ?? "", t.student?.email ?? "",
       t.payment_request?.title ?? "", t.base_amount, t.service_charge, t.total_amount,
       t.status, t.paid_at ?? "", t.created_at,
-    ].map((v) => `"${String(v).replaceAll('"', '""')}"`).join(","));
+    ].map(csvCell).join(","));
     const csv = [header.join(","), ...body].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);

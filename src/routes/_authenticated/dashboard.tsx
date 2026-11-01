@@ -64,7 +64,7 @@ function Dashboard() {
   }, [verify, qc]);
 
   const claim = useMutation({
-    mutationFn: () => grant(),
+    mutationFn: () => grant({ data: { bootstrap_secret: window.prompt("Enter the admin bootstrap code") ?? "" } }),
     onSuccess: () => { toast.success("Admin role granted"); qc.invalidateQueries({ queryKey: ["my-roles"] }); },
     onError: (e: Error) => toast.error(e.message),
   });

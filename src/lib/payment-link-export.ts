@@ -3,9 +3,10 @@ export type Col = { key: string; label: string };
 
 export async function downloadXlsx(filename: string, sheets: { name: string; cols: Col[]; rows: Record<string, any>[] }[]) {
   const XLSX = await import("xlsx");
+  const { safeCell } = await import("@/lib/spreadsheet-safe");
   const wb = XLSX.utils.book_new();
   for (const s of sheets) {
-    const aoa = [s.cols.map((c) => c.label), ...s.rows.map((r) => s.cols.map((c) => r[c.key] ?? ""))];
+    const aoa = [s.cols.map((c) => c.label), ...s.rows.map((r) => s.cols.map((c) => safeCell(r[c.key] ?? "")))];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), s.name.slice(0, 31));
   }
   XLSX.writeFile(wb, filename);
