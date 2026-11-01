@@ -61,6 +61,10 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
             _paid_at: event.data.paid_at ?? new Date().toISOString(),
             _event_id: eventId,
           });
+          if (!plErr && out === "captured") {
+            const { emailLinkReceipt } = await import("@/lib/link-receipt.server");
+            await emailLinkReceipt(supabaseAdmin, reference, new URL(request.url).origin);
+          }
           await supabaseAdmin.from("webhook_events").update({ outcome: plErr ? "error" : String(out) }).eq("provider", "paystack").eq("event_id", eventId);
           return new Response(plErr ? "finalize failed" : "ok", { status: plErr ? 500 : 200 });
         }

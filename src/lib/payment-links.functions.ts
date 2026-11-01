@@ -101,10 +101,26 @@ export const confirmLinkPayment = createServerFn({ method: "POST" })
         _reference: data.reference, _provider_ref: String(j.data.id ?? ""), _amount_minor: Number(j.data.amount),
         _currency: String(j.data.currency ?? "NGN"), _paid_at: j.data.paid_at ?? new Date().toISOString(), _event_id: `verify-${j.data.id}`,
       });
+      if (out === "captured") {
+        const { emailLinkReceipt } = await import("@/lib/link-receipt.server");
+        const { getRequest } = await import("@tanstack/react-start/server");
+        await emailLinkReceipt(db, data.reference, new URL(getRequest().url).origin);
+      }
       if (out === "captured" || out === "already_paid") return { status: "paid" as const, amount_minor: p.amount_minor, payer: maskName(p.payer_name) };
       return { status: "problem" as const };
     }
     return { status: "pending" as const };
+  });
+
+/** Official receipt for a paid link payment. The PL- reference is unguessable and known only to the payer. */
+export const getLinkReceipt = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ reference: z.string().regex(/^PL-[A-Z0-9-]{8,60}$/) }).parse(d))
+  .handler(async ({ data }) => {
+    const { loadLinkReceipt } = await import("@/lib/link-receipt.server");
+    const rec = await loadLinkReceipt(await admin(), data.reference);
+    if (!rec) return null;
+    const { payer_email: _e, ...safe } = rec;
+    return safe;
   });
 
 export const getPublicLedger = createServerFn({ method: "GET" })
