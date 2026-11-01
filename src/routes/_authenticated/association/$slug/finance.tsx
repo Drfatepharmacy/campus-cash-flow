@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/spreadsheet-safe";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -102,7 +103,7 @@ function TransactionsTab({ slug, canExport }: { slug: string; canExport: boolean
   const exportCsv = () => {
     const rows = [["Reference", "Item", "Student", "Status", "Total", "Created"],
       ...((q.data as any[]) ?? []).map((t) => [t.reference, t.payment_request?.title ?? "", t.student?.full_name ?? "", t.status, String(Number(t.total_minor) / 100), t.created_at])];
-    const blob = new Blob([rows.map((r) => r.join(",")).join("\n")], { type: "text/csv" });
+    const blob = new Blob([rows.map((r) => r.map(csvCell).join(",")).join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `${slug}-transactions.csv`; a.click(); URL.revokeObjectURL(url);
   };
