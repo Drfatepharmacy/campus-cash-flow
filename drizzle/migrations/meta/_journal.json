@@ -22,6 +22,13 @@
       "when": 1791059778817,
       "tag": "0002_public_payment_links",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793492642961,
+      "tag": "0003_link_payment_receipts",
+      "breakpoints": true
     }
   ]
 }

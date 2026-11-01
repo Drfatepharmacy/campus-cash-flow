@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getPublicLink, startLinkPayment, confirmLinkPayment, getPublicLedger } from "@/lib/payment-links.functions";
+import { getPublicLink, startLinkPayment, confirmLinkPayment, getPublicLedger, getLinkReceipt } from "@/lib/payment-links.functions";
 import { nairaMinor } from "@/lib/payment-link-utils";
 import { toUserMessage } from "@/lib/user-error";
 import { Logo } from "@/components/brand/logo";
@@ -70,6 +70,16 @@ function Confirm({ reference, onDone }: { reference: string; onDone: () => void 
     refetchInterval: (s) => (s.state.data?.status === "pending" ? 3000 : false),
   });
   const s = q.data?.status;
+  const receiptFn = useServerFn(getLinkReceipt);
+  const rec = useQuery({ queryKey: ["plreceipt", reference], queryFn: () => receiptFn({ data: { reference } }), enabled: s === "paid", retry: 2 });
+  const [busy, setBusy] = useState(false);
+  const downloadReceipt = async () => {
+    if (!rec.data) return;
+    setBusy(true);
+    try { const { downloadLinkReceiptPdf } = await import("@/lib/link-receipt-pdf"); await downloadLinkReceiptPdf(rec.data); }
+    catch { toast.error("Couldn't create the receipt. Please try again."); }
+    finally { setBusy(false); }
+  };
   return (
     <Card className="mt-6 border-emerald-500/40">
       <CardContent className="py-6 flex items-center gap-3">
@@ -79,6 +89,11 @@ function Confirm({ reference, onDone }: { reference: string; onDone: () => void 
             : s === "problem" || s === "not_found" ? <p>We couldn't confirm this payment. Keep your reference ({reference}) and contact your treasurer.</p>
             : <p>Confirming your payment…</p>}
         </div>
+        {s === "paid" && (
+          <Button size="sm" onClick={downloadReceipt} disabled={!rec.data || busy}>
+            {busy || rec.isLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Download className="h-4 w-4 mr-1" />}Receipt PDF
+          </Button>
+        )}
         {s && s !== "pending" && <Button size="sm" variant="ghost" onClick={onDone}>Close</Button>}
       </CardContent>
     </Card>
