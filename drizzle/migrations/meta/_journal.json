@@ -29,6 +29,13 @@
       "when": 1793492642961,
       "tag": "0003_link_payment_receipts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793626468546,
+      "tag": "0004_bank_resolution_subaccounts_refunds",
+      "breakpoints": true
     }
   ]
 }
