@@ -92,12 +92,12 @@ function Confirm({ reference, onDone }: { reference: string; onDone: () => void 
             : s === "problem" || s === "not_found" ? <p>We couldn't confirm this payment. Keep your reference ({reference}) and contact your treasurer.</p>
             : <p>Confirming your payment…</p>}
         </div>
-        {s === "paid" && (
+        {s === "paid" && (<div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={downloadReceipt} disabled={!rec.data || busy}>
             {busy || rec.isLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Download className="h-4 w-4 mr-1" />}Receipt PDF
           </Button>
           {reference && <RefundRequestDialog publicPayer onSubmit={(v) => linkRefundFn({ data: { reference, matric_no: v.matric_no ?? "", contact: v.contact ?? "", reason_type: v.reason_type, reason: v.reason } })} />}
-        )}
+        </div>)}
         {s && s !== "pending" && <Button size="sm" variant="ghost" onClick={onDone}>Close</Button>}
       </CardContent>
     </Card>
