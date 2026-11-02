@@ -47,8 +47,9 @@ function BankVerificationsPage() {
   const m = useMutation({
     mutationFn: (v: { id: string; decision: "verified" | "rejected" }) =>
       decide({ data: { id: v.id, decision: v.decision, reason: reason || null } }),
-    onSuccess: () => {
-      toast.success("Decision recorded and logged");
+    onSuccess: (res: any) => {
+      if (res?.subaccount?.error) toast.warning("Verified, but automatic payouts couldn't be turned on yet. You can retry from the card.");
+      else toast.success("Decision recorded and logged");
       setReason("");
       qc.invalidateQueries({ queryKey: ["admin-bank-verifications"] });
     },
