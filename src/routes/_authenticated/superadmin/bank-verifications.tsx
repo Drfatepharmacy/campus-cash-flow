@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listBankVerifications, decideBankVerification } from "@/lib/superadmin.functions";
+import { listBankVerifications, decideBankVerification, retrySubaccount } from "@/lib/superadmin.functions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -90,6 +90,20 @@ function BankVerificationsPage() {
             <CardContent className="space-y-3 text-sm">
               <div className="font-mono">{r.masked}</div>
               {r.rejection_reason && <p className="text-destructive">Reason: {r.rejection_reason}</p>}
+              <div className="flex flex-wrap gap-2">
+                <Badge variant={r.nuban_verified_at ? "default" : "outline"}>{r.nuban_verified_at ? "Name confirmed by bank" : "Name not bank-confirmed"}</Badge>
+                {r.status === "verified" && (
+                  <Badge variant={r.paystack_subaccount_code ? "default" : "destructive"}>
+                    {r.paystack_subaccount_code ? "Automatic payouts on" : "Automatic payouts off"}
+                  </Badge>
+                )}
+              </div>
+              {r.status === "verified" && !r.paystack_subaccount_code && (
+                <div className="space-y-1">
+                  {r.subaccount_error && <p className="text-xs text-destructive">{r.subaccount_error}</p>}
+                  <RetrySplit id={r.id} />
+                </div>
+              )}
               {r.status === "officer_approved" && (
                 <div className="space-y-2">
                   <Textarea placeholder="Reason (required when rejecting)" value={reason} onChange={(e) => setReason(e.target.value)} />
@@ -105,4 +119,15 @@ function BankVerificationsPage() {
       </div>
     </div>
   );
+}
+
+function RetrySplit({ id }: { id: string }) {
+  const qc = useQueryClient();
+  const fn = useServerFn(retrySubaccount);
+  const m = useMutation({
+    mutationFn: () => fn({ data: { id } }),
+    onSuccess: () => { toast.success("Automatic payouts are now on for this association"); qc.invalidateQueries(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate()}>Turn on automatic payouts</Button>;
 }
