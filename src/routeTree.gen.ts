@@ -69,6 +69,7 @@ import { Route as AuthenticatedAssociationSlugFinanceRouteImport } from './route
 import { Route as AuthenticatedAssociationSlugMembersRouteImport } from './routes/_authenticated/association/$slug/members'
 import { Route as AuthenticatedAssociationSlugPaymentLinksRouteImport } from './routes/_authenticated/association/$slug/payment-links'
 import { Route as AuthenticatedSuperadminAssociationIdRouteImport } from './routes/_authenticated/superadmin/association.$id'
+import { Route as ApiPublicCronReconcileRouteImport } from './routes/api/public/cron/reconcile'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
 
 const IndexRoute = IndexRouteImport.update({
@@ -404,6 +405,11 @@ const AuthenticatedSuperadminAssociationIdRoute =
     path: '/association/$id',
     getParentRoute: () => AuthenticatedSuperadminRouteRoute,
   } as any)
+const ApiPublicCronReconcileRoute = ApiPublicCronReconcileRouteImport.update({
+  id: '/api/public/cron/reconcile',
+  path: '/api/public/cron/reconcile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksPaystackRoute =
   ApiPublicWebhooksPaystackRouteImport.update({
     id: '/api/public/webhooks/paystack',
@@ -470,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
   '/superadmin/association/$id': typeof AuthenticatedSuperadminAssociationIdRoute
+  '/api/public/cron/reconcile': typeof ApiPublicCronReconcileRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -527,6 +534,7 @@ export interface FileRoutesByTo {
   '/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
   '/superadmin/association/$id': typeof AuthenticatedSuperadminAssociationIdRoute
+  '/api/public/cron/reconcile': typeof ApiPublicCronReconcileRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/association/$slug': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -591,6 +599,7 @@ export interface FileRoutesById {
   '/_authenticated/association/$slug/members': typeof AuthenticatedAssociationSlugMembersRoute
   '/_authenticated/association/$slug/payment-links': typeof AuthenticatedAssociationSlugPaymentLinksRoute
   '/_authenticated/superadmin/association/$id': typeof AuthenticatedSuperadminAssociationIdRoute
+  '/api/public/cron/reconcile': typeof ApiPublicCronReconcileRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
   '/_authenticated/association/$slug/': typeof AuthenticatedAssociationSlugIndexRoute
 }
@@ -655,6 +664,7 @@ export interface FileRouteTypes {
     | '/association/$slug/members'
     | '/association/$slug/payment-links'
     | '/superadmin/association/$id'
+    | '/api/public/cron/reconcile'
     | '/api/public/webhooks/paystack'
     | '/association/$slug/'
   fileRoutesByTo: FileRoutesByTo
@@ -712,6 +722,7 @@ export interface FileRouteTypes {
     | '/association/$slug/members'
     | '/association/$slug/payment-links'
     | '/superadmin/association/$id'
+    | '/api/public/cron/reconcile'
     | '/api/public/webhooks/paystack'
     | '/association/$slug'
   id:
@@ -775,6 +786,7 @@ export interface FileRouteTypes {
     | '/_authenticated/association/$slug/members'
     | '/_authenticated/association/$slug/payment-links'
     | '/_authenticated/superadmin/association/$id'
+    | '/api/public/cron/reconcile'
     | '/api/public/webhooks/paystack'
     | '/_authenticated/association/$slug/'
   fileRoutesById: FileRoutesById
@@ -791,6 +803,7 @@ export interface RootRouteChildren {
   VerifyTokenRoute: typeof VerifyTokenRoute
   AssociationsIndexRoute: typeof AssociationsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
+  ApiPublicCronReconcileRoute: typeof ApiPublicCronReconcileRoute
   ApiPublicWebhooksPaystackRoute: typeof ApiPublicWebhooksPaystackRoute
 }
 
@@ -1216,6 +1229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuperadminAssociationIdRouteImport
       parentRoute: typeof AuthenticatedSuperadminRouteRoute
     }
+    '/api/public/cron/reconcile': {
+      id: '/api/public/cron/reconcile'
+      path: '/api/public/cron/reconcile'
+      fullPath: '/api/public/cron/reconcile'
+      preLoaderRoute: typeof ApiPublicCronReconcileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/paystack': {
       id: '/api/public/webhooks/paystack'
       path: '/api/public/webhooks/paystack'
@@ -1430,6 +1450,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyTokenRoute: VerifyTokenRoute,
   AssociationsIndexRoute: AssociationsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
+  ApiPublicCronReconcileRoute: ApiPublicCronReconcileRoute,
   ApiPublicWebhooksPaystackRoute: ApiPublicWebhooksPaystackRoute,
 }
 export const routeTree = rootRouteImport

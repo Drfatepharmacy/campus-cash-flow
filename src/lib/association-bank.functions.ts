@@ -80,8 +80,7 @@ export const submitBankChangeRequest = createServerFn({ method: "POST" })
     z
       .object({
         slug: z.string().min(1).max(80),
-        bank_name: z.string().trim().min(2).max(120),
-        account_name: z.string().trim().min(2).max(160),
+        bank_code: z.string().trim().regex(/^[0-9A-Za-z]{2,10}$/, "Choose your bank from the list"),
         account_number: z.string().trim().regex(/^\d{10}$/, "Account number must be exactly 10 digits"),
         reason: z.string().trim().max(500).optional().nullable(),
       })
@@ -93,6 +92,13 @@ export const submitBankChangeRequest = createServerFn({ method: "POST" })
     if (["suspended", "archived", "rejected"].includes(String(ctx.association.status))) {
       throw new Error("Bank details cannot be changed while the association is suspended or archived");
     }
+
+    // NIBSS name enquiry: the account name is never typed — it comes from the bank.
+    const { listBanks, resolveAccount } = await import("@/lib/paystack.server");
+    const bank = (await listBanks()).find((b) => b.code === data.bank_code);
+    if (!bank) throw new Error("Choose your bank from the list");
+    const resolvedName = await resolveAccount(data.account_number, data.bank_code);
+    const bankName = bank.name;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: dupe } = await supabaseAdmin
@@ -108,8 +114,10 @@ export const submitBankChangeRequest = createServerFn({ method: "POST" })
       association_id: ctx.association.id,
       action_type: "bank_details.change",
       payload: {
-        bank_name: data.bank_name,
-        account_name: data.account_name,
+        bank_name: bankName,
+        bank_code: data.bank_code,
+        account_name: resolvedName,
+        nuban_verified_at: new Date().toISOString(),
         account_number: data.account_number,
         account_last4: data.account_number.slice(-4),
       } as never,
@@ -126,7 +134,28 @@ export const submitBankChangeRequest = createServerFn({ method: "POST" })
       action: "bank_details.change_requested",
       entity: "approval_request",
       association_id: ctx.association.id,
-      metadata: { bank_name: data.bank_name, last4: data.account_number.slice(-4) },
+      metadata: { bank_name: bankName, nuban_verified: true, last4: data.account_number.slice(-4) },
     });
     return { ok: true };
+  });
+
+/** Nigerian bank list from Paystack, for the bank picker. */
+export const listSettlementBanks = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { listBanks } = await import("@/lib/paystack.server");
+    return listBanks();
+  });
+
+/** Live NUBAN name enquiry so officers can confirm before submitting. */
+export const resolveSettlementAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ slug: z.string().min(1).max(80), bank_code: z.string().regex(/^[0-9A-Za-z]{2,10}$/), account_number: z.string().regex(/^\d{10}$/) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
+    requirePermission(ctx, "bank_details.change_request");
+    const { resolveAccount } = await import("@/lib/paystack.server");
+    return { account_name: await resolveAccount(data.account_number, data.bank_code) };
   });
