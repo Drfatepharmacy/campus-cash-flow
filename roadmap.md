@@ -31,3 +31,10 @@
 ## Oct 3 — added
 - Public payment links (no sign-in), per-class fixed prices, QR + share, masked public ledger with Excel/PDF by class, instant offline records, roster upload, paid/defaulters reports. Online link payments run on Paystack test keys until live mode is enabled.
 - Branded auto-retry loading screen, privacy-safe page error records, admin Page health assistant (AI).
+
+## Money operations (Nov 2026)
+- [x] Bank-confirmed account names (NUBAN) on association bank form
+- [x] Missed-payment recovery (admin button + scheduled endpoint, needs CRON_SECRET + scheduler)
+- [x] Split payments to association accounts via Paystack subaccounts
+- [x] Refund requests + admin review + Paystack refunds
+- [ ] Live verification — blocked on a Paystack key with refunds/subaccounts enabled
