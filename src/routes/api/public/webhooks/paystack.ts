@@ -29,6 +29,27 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
           };
         };
         try { event = JSON.parse(body); } catch { return new Response("bad json", { status: 400 }); }
+        if (event.event === "refund.processed" || event.event === "refund.failed") {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const d = event.data as any;
+          const txRef = String(d?.transaction_reference ?? d?.transaction?.reference ?? "");
+          const { data: rr } = await supabaseAdmin.from("refund_requests").select("*")
+            .eq("reference", txRef).in("status", ["processing", "approved"]).maybeSingle();
+          if (!rr) return new Response("ok", { status: 200 });
+          if (event.event === "refund.failed") {
+            await supabaseAdmin.from("refund_requests").update({ status: "failed", failure_reason: "Provider reported refund failure" }).eq("id", rr.id);
+          } else {
+            await supabaseAdmin.from("refund_requests").update({ status: "processed", processed_at: new Date().toISOString() }).eq("id", rr.id).eq("status", rr.status);
+            if (rr.transaction_id) await supabaseAdmin.from("transactions").update({ status: "refunded" }).eq("id", rr.transaction_id);
+            if (rr.link_payment_id) await supabaseAdmin.from("payment_link_payments").update({ status: "refunded" }).eq("id", rr.link_payment_id);
+            await supabaseAdmin.from("payment_ledger").insert({
+              transaction_id: rr.transaction_id, reference: rr.reference, entry_type: "refund", amount_minor: -Number(rr.amount_minor),
+              currency: "NGN", provider: "paystack", provider_ref: String(d?.id ?? ""), provider_event_id: `refund:${String(d?.id ?? rr.id)}`, metadata: { refund_request_id: rr.id } as never,
+            });
+          }
+          await supabaseAdmin.from("audit_logs").insert({ actor_id: null, action: event.event, entity: "refund_request", entity_id: rr.id, association_id: rr.association_id, metadata: { reference: rr.reference } as never });
+          return new Response("ok", { status: 200 });
+        }
         if (event.event !== "charge.success") return new Response("ok", { status: 200 });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

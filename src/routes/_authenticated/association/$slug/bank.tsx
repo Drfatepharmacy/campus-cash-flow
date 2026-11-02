@@ -2,7 +2,9 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getAssociationBankAccounts, submitBankChangeRequest } from "@/lib/association-bank.functions";
+import { getAssociationBankAccounts, submitBankChangeRequest, listSettlementBanks, resolveSettlementAccount } from "@/lib/association-bank.functions";
+import { useEffect } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { decideApprovalRequest } from "@/lib/associations.functions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Landmark, ShieldCheck, Loader2, AlertTriangle } from "lucide-react";
+import { Landmark, ShieldCheck, Loader2, AlertTriangle, BadgeCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/association/$slug/bank")({
   head: () => ({
@@ -48,17 +50,22 @@ function BankPage() {
 
   const q = useQuery({ queryKey: ["assoc-bank", slug], queryFn: () => load({ data: { slug } }), retry: false });
 
-  const [bankName, setBankName] = useState("");
+  const banksFn = useServerFn(listSettlementBanks);
+  const resolveFn = useServerFn(resolveSettlementAccount);
+  const banks = useQuery({ queryKey: ["paystack-banks"], queryFn: () => banksFn(), staleTime: 3_600_000, retry: 1, enabled: Boolean(q.data?.canSubmit) });
+  const [bankCode, setBankCode] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [resolving, setResolving] = useState(false);
+  const [resolveError, setResolveError] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
 
   const submitM = useMutation({
-    mutationFn: () => submit({ data: { slug, bank_name: bankName, account_name: accountName, account_number: accountNumber, reason: reason || null } }),
+    mutationFn: () => submit({ data: { slug, bank_code: bankCode, account_number: accountNumber, reason: reason || null } }),
     onSuccess: () => {
       toast.success("Submitted — a second officer must approve it next");
-      setBankName(""); setAccountName(""); setAccountNumber(""); setReason("");
+      setBankCode(""); setAccountName(""); setAccountNumber(""); setReason("");
       qc.invalidateQueries({ queryKey: ["assoc-bank", slug] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -73,6 +80,18 @@ function BankPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  useEffect(() => {
+    setAccountName(""); setResolveError("");
+    if (!bankCode || accountNumber.length !== 10) return;
+    let live = true;
+    setResolving(true);
+    resolveFn({ data: { slug, bank_code: bankCode, account_number: accountNumber } })
+      .then((r) => { if (live) setAccountName(r.account_name); })
+      .catch((e: Error) => { if (live) setResolveError(e.message); })
+      .finally(() => { if (live) setResolving(false); });
+    return () => { live = false; };
+  }, [bankCode, accountNumber, slug, resolveFn]);
 
   if (q.isLoading) return <div className="space-y-3"><Skeleton className="h-24" /><Skeleton className="h-64" /></div>;
   if (q.error) {
@@ -180,24 +199,35 @@ function BankPage() {
               onSubmit={(e) => { e.preventDefault(); submitM.mutate(); }}
             >
               <div className="space-y-2">
-                <Label>Bank name</Label>
-                <Input required value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. Zenith Bank" />
-              </div>
-              <div className="space-y-2">
-                <Label>Account name</Label>
-                <Input required value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="Registered association account name" />
+                <Label>Bank</Label>
+                <Select value={bankCode} onValueChange={setBankCode}>
+                  <SelectTrigger><SelectValue placeholder={banks.isLoading ? "Loading banks…" : "Choose your bank"} /></SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {(banks.data ?? []).map((b) => <SelectItem key={b.code} value={b.code}>{b.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                {banks.error && <p className="text-xs text-destructive">{(banks.error as Error).message}</p>}
               </div>
               <div className="space-y-2">
                 <Label>Account number</Label>
                 <Input required inputMode="numeric" pattern="\d{10}" maxLength={10} value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="10 digits" />
               </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Account name (confirmed by the bank)</Label>
+                <div className="flex min-h-10 items-center gap-2 rounded-md border bg-muted/40 px-3 text-sm">
+                  {resolving ? <><Loader2 className="h-4 w-4 animate-spin" /> Checking with the bank…</>
+                    : accountName ? <><BadgeCheck className="h-4 w-4 text-emerald-600" /><span className="font-medium">{accountName}</span></>
+                    : resolveError ? <span className="text-destructive">{resolveError}</span>
+                    : <span className="text-muted-foreground">Choose a bank and enter the 10-digit number</span>}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label>Reason / context <span className="text-muted-foreground">(optional)</span></Label>
                 <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. new treasury account for 2026 session" />
               </div>
               <div className="sm:col-span-2">
-                <Button type="submit" disabled={submitM.isPending}>
+                <Button type="submit" disabled={submitM.isPending || !accountName || resolving}>
                   {submitM.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Submit for approval
                 </Button>
               </div>

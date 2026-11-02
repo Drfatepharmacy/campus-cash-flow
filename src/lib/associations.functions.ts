@@ -442,7 +442,7 @@ export const decideApprovalRequest = createServerFn({ method: "POST" })
 
     // Officer approval of a bank change stages the account for Super Admin verification.
     if (data.decision === "approved" && req.action_type === "bank_details.change") {
-      const p = (req.payload ?? {}) as { bank_name?: string; account_name?: string; account_number?: string };
+      const p = (req.payload ?? {}) as { bank_name?: string; bank_code?: string; account_name?: string; account_number?: string; nuban_verified_at?: string };
       if (p.bank_name && p.account_name && /^\d{10}$/.test(String(p.account_number ?? ""))) {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         await supabaseAdmin.from("association_financial_accounts").insert({
@@ -450,6 +450,9 @@ export const decideApprovalRequest = createServerFn({ method: "POST" })
           bank_name: p.bank_name,
           account_name: p.account_name,
           account_number: p.account_number!,
+          bank_code: p.bank_code ?? null,
+          nuban_resolved_name: p.nuban_verified_at ? p.account_name : null,
+          nuban_verified_at: p.nuban_verified_at ?? null,
           account_last4: p.account_number!.slice(-4),
           is_primary: false,
           verified: false,

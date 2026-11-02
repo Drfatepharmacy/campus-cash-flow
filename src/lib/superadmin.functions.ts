@@ -346,7 +346,7 @@ export const listBankVerifications = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await supabaseAdmin
       .from("association_financial_accounts")
-      .select("id, association_id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, officer_approved_at, verified_at, created_at, association:associations(name, slug, status)")
+      .select("id, association_id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, officer_approved_at, verified_at, created_at, nuban_verified_at, paystack_subaccount_code, subaccount_error, association:associations(name, slug, status)")
       .order("created_at", { ascending: false })
       .limit(200);
     return (rows ?? []).map((r: any) => ({ ...r, masked: `•••• •••• ${r.account_last4}` }));
@@ -367,6 +367,8 @@ export const decideBankVerification = createServerFn({ method: "POST" })
     const { data: row } = await supabaseAdmin.from("association_financial_accounts").select("*").eq("id", data.id).maybeSingle();
     if (!row) throw new Error("Bank account not found");
     if (row.status !== "officer_approved") throw new Error("Only officer-approved accounts can be verified");
+    if (data.decision === "verified" && !row.nuban_verified_at) throw new Error("This account was not confirmed with the bank (NUBAN). Ask the association to resubmit it.");
+    let subaccount: { code: string | null; error: string | null } = { code: null, error: null };
 
     if (data.decision === "verified") {
       await supabaseAdmin.from("association_financial_accounts").update({ is_primary: false }).eq("association_id", row.association_id);
@@ -375,6 +377,7 @@ export const decideBankVerification = createServerFn({ method: "POST" })
         .update({ status: "verified", verified: true, is_primary: true, verified_by: context.userId, verified_at: new Date().toISOString(), rejection_reason: null })
         .eq("id", data.id);
       if (error) throw new Error(error.message);
+      subaccount = await ensureSubaccount(supabaseAdmin, row);
     } else {
       const { error } = await supabaseAdmin
         .from("association_financial_accounts")
@@ -390,7 +393,39 @@ export const decideBankVerification = createServerFn({ method: "POST" })
       entity: "association_financial_account",
       entity_id: data.id,
       association_id: row.association_id,
-      metadata: { bank_name: row.bank_name, last4: row.account_last4, reason: data.reason ?? null },
+      metadata: { bank_name: row.bank_name, last4: row.account_last4, reason: data.reason ?? null, subaccount: subaccount.code, subaccount_error: subaccount.error },
     });
-    return { ok: true };
+    return { ok: true, subaccount };
+  });
+
+/** Creates the Paystack split (sub)account so collections settle straight to the association. */
+async function ensureSubaccount(db: any, row: any): Promise<{ code: string | null; error: string | null }> {
+  if (row.paystack_subaccount_code) return { code: row.paystack_subaccount_code, error: null };
+  try {
+    if (!row.bank_code) throw new Error("Missing bank code");
+    const { data: assoc } = await db.from("associations").select("name, official_email").eq("id", row.association_id).maybeSingle();
+    const { createSubaccount } = await import("@/lib/paystack.server");
+    const code = await createSubaccount({ business_name: assoc?.name ?? row.account_name, bank_code: row.bank_code, account_number: row.account_number, email: assoc?.official_email });
+    await db.from("association_financial_accounts").update({ paystack_subaccount_code: code, subaccount_error: null }).eq("id", row.id);
+    return { code, error: null };
+  } catch (e) {
+    const msg = (e as Error).message.slice(0, 300);
+    await db.from("association_financial_accounts").update({ subaccount_error: msg }).eq("id", row.id);
+    return { code: null, error: msg };
+  }
+}
+
+/** Retry split-account creation for a verified account. */
+export const retrySubaccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+    if (!isSuper) throw new Error("Forbidden: platform administrators only");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin.from("association_financial_accounts").select("*").eq("id", data.id).maybeSingle();
+    if (!row || row.status !== "verified") throw new Error("Only verified accounts can be linked for split payments");
+    const r = await ensureSubaccount(supabaseAdmin, row);
+    if (r.error) throw new Error(r.error);
+    return r;
   });
