@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getPublicLink, startLinkPayment, confirmLinkPayment, getPublicLedger, getLinkReceipt } from "@/lib/payment-links.functions";
+import { requestLinkRefund } from "@/lib/money-ops.functions";
+import { RefundRequestDialog } from "@/components/refund-request-dialog";
 import { nairaMinor } from "@/lib/payment-link-utils";
 import { toUserMessage } from "@/lib/user-error";
 import { Logo } from "@/components/brand/logo";
@@ -71,6 +73,7 @@ function Confirm({ reference, onDone }: { reference: string; onDone: () => void 
   });
   const s = q.data?.status;
   const receiptFn = useServerFn(getLinkReceipt);
+  const linkRefundFn = useServerFn(requestLinkRefund);
   const rec = useQuery({ queryKey: ["plreceipt", reference], queryFn: () => receiptFn({ data: { reference } }), enabled: s === "paid", retry: 2 });
   const [busy, setBusy] = useState(false);
   const downloadReceipt = async () => {
@@ -93,6 +96,7 @@ function Confirm({ reference, onDone }: { reference: string; onDone: () => void 
           <Button size="sm" onClick={downloadReceipt} disabled={!rec.data || busy}>
             {busy || rec.isLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Download className="h-4 w-4 mr-1" />}Receipt PDF
           </Button>
+          {reference && <RefundRequestDialog publicPayer onSubmit={(v) => linkRefundFn({ data: { reference, matric_no: v.matric_no ?? "", contact: v.contact ?? "", reason_type: v.reason_type, reason: v.reason } })} />}
         )}
         {s && s !== "pending" && <Button size="sm" variant="ghost" onClick={onDone}>Close</Button>}
       </CardContent>
