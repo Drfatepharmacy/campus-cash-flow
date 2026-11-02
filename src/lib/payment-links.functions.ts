@@ -64,7 +64,10 @@ export const startLinkPayment = createServerFn({ method: "POST" })
     const email = data.payer_email || `${matric.toLowerCase()}@payer.uniego.app`;
 
     const db = await admin();
+    const { subaccountFor } = await import("@/lib/paystack.server");
+    const subaccount = await subaccountFor(db, l.association_id);
     const { error } = await db.from("payment_link_payments").insert({
+      subaccount_code: subaccount,
       link_id: l.id, association_id: l.association_id, reference,
       payer_name: data.payer_name, matric_no: matric, class_label: data.class_label,
       payer_email: data.payer_email || null, amount_minor: amount, status: "pending", source: "online",
@@ -76,6 +79,7 @@ export const startLinkPayment = createServerFn({ method: "POST" })
       method: "POST",
       headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
       body: JSON.stringify({ email, amount, currency: "NGN", reference, callback_url: cb.toString(),
+        ...(subaccount ? { subaccount, transaction_charge: 0 } : {}),
         metadata: { kind: "payment_link", link_id: l.id, matric_no: matric, class: data.class_label } }),
     });
     const json = (await res.json()) as { status: boolean; data?: { authorization_url: string } };

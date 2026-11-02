@@ -119,8 +119,15 @@ export const initiatePayment = createServerFn({ method: "POST" })
     // Reuse an existing pending attempt instead of stacking references.
     const reference = `UEG-${Date.now().toString(36).toUpperCase()}-${randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase()}`;
 
+    // Split settlement: route the dues straight to the association's verified Paystack subaccount.
+    const { supabaseAdmin: splitDb } = await import("@/integrations/supabase/client.server");
+    const { subaccountFor } = await import("@/lib/paystack.server");
+    const subaccount = await subaccountFor(splitDb, pr.association_id);
+
     const { error: insErr } = await context.supabase.from("transactions").insert({
       reference,
+      association_id: pr.association_id ?? null,
+      subaccount_code: subaccount,
       student_id: context.userId,
       payment_request_id: pr.id,
       base_amount: fromMinor(baseMinor),
@@ -143,6 +150,8 @@ export const initiatePayment = createServerFn({ method: "POST" })
         currency: "NGN",
         reference,
         callback_url: data.callback_url,
+        // Platform keeps only the service charge; the base amount settles to the association.
+        ...(subaccount ? { subaccount, transaction_charge: chargeMinor } : {}),
         metadata: {
           payment_request_id: pr.id,
           student_id: context.userId,

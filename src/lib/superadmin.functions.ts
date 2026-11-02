@@ -346,7 +346,7 @@ export const listBankVerifications = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await supabaseAdmin
       .from("association_financial_accounts")
-      .select("id, association_id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, officer_approved_at, verified_at, created_at, association:associations(name, slug, status)")
+      .select("id, association_id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, officer_approved_at, verified_at, created_at, nuban_verified_at, paystack_subaccount_code, subaccount_error, association:associations(name, slug, status)")
       .order("created_at", { ascending: false })
       .limit(200);
     return (rows ?? []).map((r: any) => ({ ...r, masked: `•••• •••• ${r.account_last4}` }));
