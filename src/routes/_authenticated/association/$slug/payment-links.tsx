@@ -1,3 +1,4 @@
+import { PaymentImages, EditPaymentBranding } from "@/components/association/payment-branding";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,7 +22,7 @@ import { toast } from "sonner";
 import { Copy, Download, FileText, Link2, Plus, QrCode, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/association/$slug/payment-links")({
-  head: () => ({ meta: [{ title: "Payment links — Association workspace | UniEgo" }, { name: "description", content: "Create public payment links and QR codes, record offline payments and track defaulters." }] }),
+  head: () => ({ meta: [{ title: "Payment links — Association workspace | UniEgo" }, { name: "description", content: "Manage public association payment links and branded checkout pages." }, { property: "og:title", content: "Payment links — Association workspace | UniEgo" }, { property: "og:description", content: "Manage public association payment links and branded checkout pages." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: PaymentLinksPage,
 });
 
@@ -33,7 +34,8 @@ function PaymentLinksPage() {
 
   if (q.isLoading) return <Skeleton className="h-64" />;
   if (q.error) return <Card><CardContent className="py-10 text-center text-sm text-destructive">{toUserMessage(q.error)}</CardContent></Card>;
-  const d = q.data!;
+  const d = q.data;
+  if (!d) return null;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -51,6 +53,7 @@ function PaymentLinksPage() {
                   <p className="mt-1 text-sm">{l.paid_count} paid · {nairaMinor(l.paid_total_minor)}</p>
                 </div>
                 <div className="flex items-center gap-2">
+                  {d.canManage && <EditPaymentBranding slug={slug} item={l} kind="public" onSaved={() => q.refetch()} />}
                   <Badge variant={l.active ? "default" : "secondary"}>{l.active ? "Open" : "Paused"}</Badge>
                   <Button size="sm" variant="outline" onClick={() => setOpen(open === l.id ? null : l.id)}>{open === l.id ? "Close" : "Manage"}</Button>
                 </div>
@@ -70,20 +73,23 @@ function CreateLink({ slug }: { slug: string }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [banner, setBanner] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [prices, setPrices] = useState([{ class: "100", amount: "" }]);
   const m = useMutation({
-    mutationFn: () => create({ data: { slug, title, description: desc || null, class_prices: prices.filter((p) => p.class.trim() && Number(p.amount) > 0).map((p) => ({ class: p.class.trim(), amount_minor: Math.round(Number(p.amount) * 100) })) } }),
-    onSuccess: () => { toast.success("Payment link created"); setOpen(false); setTitle(""); setDesc(""); setPrices([{ class: "100", amount: "" }]); qc.invalidateQueries({ queryKey: ["plinks", slug] }); },
+    mutationFn: () => create({ data: { slug, title, description: desc || null, banner_path: banner, class_prices: prices.filter((p) => p.class.trim() && Number(p.amount) > 0).map((p) => ({ class: p.class.trim(), amount_minor: Math.round(Number(p.amount) * 100) })) } }),
+    onSuccess: () => { toast.success("Payment link created"); setOpen(false); setTitle(""); setDesc(""); setBanner(null); setPrices([{ class: "100", amount: "" }]); qc.invalidateQueries({ queryKey: ["plinks", slug] }); },
     onError: (e) => toast.error(toUserMessage(e)),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" />New payment link</Button></DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader><DialogTitle>New payment link</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5"><Label>What is being paid for</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="2026 departmental dues" maxLength={120} /></div>
           <div className="space-y-1.5"><Label>Note for payers (optional)</Label><Textarea value={desc} onChange={(e) => setDesc(e.target.value)} maxLength={500} /></div>
+          <PaymentImages slug={slug} banner={banner} onBanner={setBanner} onBusy={setUploading} />
           <Label>Price for each class (₦)</Label>
           {prices.map((p, i) => (
             <div key={i} className="flex gap-2">
@@ -93,7 +99,7 @@ function CreateLink({ slug }: { slug: string }) {
             </div>
           ))}
           <Button size="sm" variant="outline" onClick={() => setPrices([...prices, { class: "", amount: "" }])}><Plus className="h-4 w-4 mr-1" />Add class</Button>
-          <Button className="w-full" disabled={title.trim().length < 3 || m.isPending || !prices.some((p) => p.class.trim() && Number(p.amount) > 0)} onClick={() => m.mutate()}>Create link</Button>
+          <Button className="w-full" disabled={uploading || title.trim().length < 3 || m.isPending || !prices.some((p) => p.class.trim() && Number(p.amount) > 0)} onClick={() => m.mutate()}>Create link</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -116,7 +122,8 @@ function LinkDetail({ slug, linkId, canManage }: { slug: string; linkId: string;
 
   if (q.isLoading) return <Skeleton className="h-40" />;
   if (q.error) return <p className="text-sm text-destructive">{toUserMessage(q.error)}</p>;
-  const d = q.data!;
+  const d = q.data;
+  if (!d) return null;
   const payRows = d.payments.map((p: any) => ({ ...p, amount: nairaMinor(Number(p.amount_minor)), how: p.source === "online" ? "Online" : `Offline (${String(p.offline_method ?? "").replace("_", " ")})`, date: p.paid_at ? new Date(p.paid_at).toLocaleDateString() : "" }));
   const defRows = d.defaulters.map((r: any) => ({ ...r, state: "Unpaid" }));
   const rosterRows = d.roster.map((r: any) => ({ ...r, state: r.paid ? "Paid" : "Unpaid" }));

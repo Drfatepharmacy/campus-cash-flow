@@ -1,3 +1,4 @@
+import { PaymentHeading } from "@/components/association/payment-heading";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -10,7 +11,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/pay/$requestId")({
-  head: () => ({ meta: [{ title: "Pay — UniEgo" }] }),
+  head: () => ({ meta: [{ title: "Pay association dues — UniEgo" }, { name: "description", content: "Review your association payment and pay securely." }, { property: "og:title", content: "Pay association dues — UniEgo" }, { property: "og:description", content: "Review your association payment and pay securely." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Pay,
 });
 
@@ -41,6 +42,7 @@ function Pay() {
           </Button>
         </div>
 
+        {q.data && <PaymentHeading title={q.data.title} description={q.data.description} association={q.data.association_name} logo={q.data.logo_url} banner={q.data.banner_url} />}
         <Card className="mt-6 shadow-elegant">
           <CardHeader>
             <div className="text-xs uppercase tracking-wider text-muted-foreground">Payment summary</div>
