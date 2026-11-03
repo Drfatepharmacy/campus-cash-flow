@@ -300,6 +300,7 @@ export type Database = {
       associations: {
         Row: {
           banner_url: string | null
+          branding_logo_path: string | null
           campus_id: string | null
           created_at: string
           created_by: string | null
@@ -326,6 +327,7 @@ export type Database = {
         }
         Insert: {
           banner_url?: string | null
+          branding_logo_path?: string | null
           campus_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -352,6 +354,7 @@ export type Database = {
         }
         Update: {
           banner_url?: string | null
+          branding_logo_path?: string | null
           campus_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -933,6 +936,7 @@ export type Database = {
         Row: {
           active: boolean
           association_id: string
+          banner_path: string | null
           class_prices: Json
           created_at: string
           created_by: string | null
@@ -945,6 +949,7 @@ export type Database = {
         Insert: {
           active?: boolean
           association_id: string
+          banner_path?: string | null
           class_prices?: Json
           created_at?: string
           created_by?: string | null
@@ -957,6 +962,7 @@ export type Database = {
         Update: {
           active?: boolean
           association_id?: string
+          banner_path?: string | null
           class_prices?: Json
           created_at?: string
           created_by?: string | null
@@ -980,6 +986,7 @@ export type Database = {
         Row: {
           active: boolean
           association_id: string | null
+          banner_path: string | null
           base_amount: number
           campus_id: string
           closes_at: string | null
@@ -997,6 +1004,7 @@ export type Database = {
         Insert: {
           active?: boolean
           association_id?: string | null
+          banner_path?: string | null
           base_amount: number
           campus_id: string
           closes_at?: string | null
@@ -1014,6 +1022,7 @@ export type Database = {
         Update: {
           active?: boolean
           association_id?: string | null
+          banner_path?: string | null
           base_amount?: number
           campus_id?: string
           closes_at?: string | null

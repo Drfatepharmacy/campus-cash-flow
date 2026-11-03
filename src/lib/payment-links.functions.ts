@@ -4,6 +4,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { loadAssociationContext, requirePermission } from "@/lib/association-access";
 import { maskName, maskMatric, priceForClass, normMatric, type ClassPrice } from "@/lib/payment-link-utils";
 
+import { assertBrandingPath, brandingPath } from "./payment-branding";
+
 const token = z.string().regex(/^[A-Za-z0-9-]{8,64}$/);
 
 async function admin() {
@@ -15,7 +17,7 @@ async function loadLink(tok: string) {
   const db = await admin();
   const { data } = await db
     .from("payment_links")
-    .select("id, token, title, description, class_prices, active, association_id, association:associations(name, short_name, status)")
+    .select("id, token, title, description, banner_path, class_prices, active, association_id, association:associations(name, short_name, status, logo_url, branding_logo_path)")
     .eq("token", tok)
     .maybeSingle();
   if (!data) throw new Error("This payment link does not exist");
@@ -28,7 +30,10 @@ export const getPublicLink = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ token }).parse(d))
   .handler(async ({ data }) => {
     const l = await loadLink(data.token);
+    const { paymentBranding } = await import("./payment-branding.server");
+    const branding = await paymentBranding(await admin(), l.association, l.banner_path);
     return {
+      ...branding,
       token: l.token, title: l.title, description: l.description,
       class_prices: (l.class_prices ?? []) as ClassPrice[],
       active: Boolean(l.active) && l.association?.status === "active",
@@ -172,18 +177,19 @@ export const createPaymentLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     slug: z.string().min(1).max(80), title: z.string().trim().min(3).max(120),
-    description: z.string().trim().max(500).optional().nullable(), class_prices: priceSchema,
+    description: z.string().trim().max(500).optional().nullable(), banner_path: brandingPath, class_prices: priceSchema,
   }).parse(d))
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "dues.manage");
+    assertBrandingPath(data.banner_path, ctx.association.id, "banner");
     if (ctx.association.status !== "active") throw new Error("Your association must be active before collecting payments");
     const bytes = new Uint8Array(12); globalThis.crypto.getRandomValues(bytes);
     const tok = "PAY-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
     const db = await admin();
     const { data: row, error } = await db.from("payment_links").insert({
       association_id: ctx.association.id, token: tok, title: data.title, description: data.description ?? null,
-      class_prices: data.class_prices, created_by: context.userId,
+      banner_path: data.banner_path ?? null, class_prices: data.class_prices, created_by: context.userId,
     }).select("id, token").single();
     if (error) throw new Error("Could not create the payment link");
     await db.from("audit_logs").insert({ actor_id: context.userId, action: "payment_link.created", entity: "payment_link", entity_id: row.id, association_id: ctx.association.id, metadata: { title: data.title } });

@@ -1,3 +1,4 @@
+import { PaymentHeading } from "@/components/association/payment-heading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -47,11 +48,7 @@ function PublicPay() {
           <Card className="mt-6"><CardContent className="py-12 text-center text-sm text-muted-foreground">{toUserMessage(q.error)}</CardContent></Card>
         ) : (
           <>
-            <div className="mt-6">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">{q.data!.association}</p>
-              <h1 className="font-display text-3xl font-bold">{q.data!.title}</h1>
-              {q.data!.description && <p className="mt-1 text-muted-foreground">{q.data!.description}</p>}
-            </div>
+            {q.data && <PaymentHeading title={q.data.title} description={q.data.description} association={q.data.association} logo={q.data.logo_url} banner={q.data.banner_url} />}
             {ref ? <Confirm reference={ref} onDone={() => { setRef(null); window.history.replaceState(null, "", window.location.pathname); }} /> : null}
             <Tabs defaultValue="pay" className="mt-6">
               <TabsList><TabsTrigger value="pay">Pay</TabsTrigger><TabsTrigger value="ledger">Who has paid</TabsTrigger></TabsList>

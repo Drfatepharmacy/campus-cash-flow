@@ -1,3 +1,4 @@
+import { assertBrandingPath, brandingPath } from "./payment-branding";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -515,6 +516,7 @@ export const createAssociationDues = createServerFn({ method: "POST" })
       slug: z.string().min(1).max(80),
       title: z.string().trim().min(3).max(160),
       description: z.string().trim().max(1000).optional().nullable(),
+      banner_path: brandingPath,
       base_amount: z.number().positive().max(10_000_000),
       target_level: z.number().int().min(100).max(900).optional().nullable(),
       closes_at: z.string().optional().nullable(),
@@ -523,6 +525,7 @@ export const createAssociationDues = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "dues.manage");
+    assertBrandingPath(data.banner_path, ctx.association.id, "banner");
     if (!["active", "verified"].includes(String(ctx.association.status))) {
       throw new Error("Dues can only be created once the association is verified and active");
     }
@@ -537,6 +540,7 @@ export const createAssociationDues = createServerFn({ method: "POST" })
       target_level: data.target_level ?? null,
       title: data.title,
       description: data.description ?? null,
+      banner_path: data.banner_path ?? null,
       base_amount: data.base_amount,
       closes_at: data.closes_at || null,
       active: true,

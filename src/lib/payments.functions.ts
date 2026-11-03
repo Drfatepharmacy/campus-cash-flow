@@ -85,6 +85,13 @@ export const previewCharge = createServerFn({ method: "POST" })
     const { pr, baseMinor, chargeMinor, totalMinor } = await resolveAmounts(context.supabase, data.payment_request_id);
     return {
       title: pr.title,
+      description: pr.description,
+      ...(await (async () => {
+        const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+        const { data: association } = pr.association_id ? await db.from("associations").select("name, logo_url, branding_logo_path").eq("id", pr.association_id).maybeSingle() : { data: null };
+        const { paymentBranding } = await import("./payment-branding.server");
+        return paymentBranding(db, association, pr.banner_path);
+      })()),
       base_amount: fromMinor(baseMinor),
       service_charge: fromMinor(chargeMinor),
       total_amount: fromMinor(totalMinor),

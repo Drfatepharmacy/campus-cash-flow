@@ -111,16 +111,6 @@ export const Route =
           content:
             "Pay with ease and stress free. UniEgo powers payments for universities, faculties, departments, and student organizations across Nigeria. Powered by EMMTEC Securities.",
         },
-        {
-          property: "og:image",
-          content:
-            "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/b6f28ab2-4bc0-4f7d-8cac-0a43be8daddd",
-        },
-        {
-          name: "twitter:image",
-          content:
-            "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/b6f28ab2-4bc0-4f7d-8cac-0a43be8daddd",
-        },
       ],
       links: [
         {
@@ -146,7 +136,8 @@ export const Route =
         },
         {
           rel: "icon",
-          href: "/favicon.ico",
+          href: "/favicon-32x32.png",
+          type: "image/png",
         },
         {
           rel: "apple-touch-icon",

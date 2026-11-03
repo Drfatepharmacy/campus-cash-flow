@@ -33,6 +33,7 @@
 - Branded auto-retry loading screen, privacy-safe page error records, admin Page health assistant (AI).
 
 ## Money operations (Nov 2026)
+- [ ] Refresh UniEgo logo using existing Android icon; add treasurer payment branding; deliver officers portal screenshot
 - [x] Bank-confirmed account names (NUBAN) on association bank form
 - [x] Missed-payment recovery (admin button + scheduled endpoint, needs CRON_SECRET + scheduler)
 - [x] Split payments to association accounts via Paystack subaccounts
