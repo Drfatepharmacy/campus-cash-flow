@@ -135,7 +135,7 @@ export const submitBankChangeRequest = createServerFn({ method: "POST" })
       entity: "approval_request",
       association_id: ctx.association.id,
       metadata: { bank_name: bankName, nuban_verified: true, last4: data.account_number.slice(-4) },
-    });
+    }, context.supabase);
     return { ok: true };
   });
 

@@ -213,7 +213,7 @@ export const setMemberStatus = createServerFn({ method: "POST" })
       .eq("association_id", ctx.association.id);
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "membership.status_changed", entity: "association_membership", entity_id: data.membership_id, association_id: ctx.association.id, metadata: { status: data.status } });
+    await recordAudit({ actor_id: context.userId, action: "membership.status_changed", entity: "association_membership", entity_id: data.membership_id, association_id: ctx.association.id, metadata: { status: data.status } }, context.supabase);
     return { ok: true };
   });
 
@@ -288,7 +288,7 @@ export const submitNomination = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "executive.nominated", entity: "leadership_nomination", association_id: ctx.association.id, metadata: { role: data.role_key, nominee: data.nominee_email } });
+    await recordAudit({ actor_id: context.userId, action: "executive.nominated", entity: "leadership_nomination", association_id: ctx.association.id, metadata: { role: data.role_key, nominee: data.nominee_email } }, context.supabase);
     return { ok: true, nominee_has_account: Boolean(profile) };
   });
 
@@ -384,7 +384,7 @@ export const raiseApprovalRequest = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "approval.requested", entity: "approval_request", association_id: ctx.association.id, metadata: { action_type: data.action_type } });
+    await recordAudit({ actor_id: context.userId, action: "approval.requested", entity: "approval_request", association_id: ctx.association.id, metadata: { action_type: data.action_type } }, context.supabase);
     return { ok: true };
   });
 
@@ -469,7 +469,7 @@ export const decideApprovalRequest = createServerFn({ method: "POST" })
 
 
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: `approval.${data.decision}`, entity: "approval_request", entity_id: data.id, association_id: ctx.association.id, metadata: { action_type: req.action_type, executed } });
+    await recordAudit({ actor_id: context.userId, action: `approval.${data.decision}`, entity: "approval_request", entity_id: data.id, association_id: ctx.association.id, metadata: { action_type: req.action_type, executed } }, context.supabase);
     return { ok: true, executed };
   });
 
@@ -547,7 +547,7 @@ export const createAssociationDues = createServerFn({ method: "POST" })
     } as never);
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "dues.created", entity: "payment_request", association_id: ctx.association.id, metadata: { title: data.title, base_amount: data.base_amount } });
+    await recordAudit({ actor_id: context.userId, action: "dues.created", entity: "payment_request", association_id: ctx.association.id, metadata: { title: data.title, base_amount: data.base_amount } }, context.supabase);
     return { ok: true };
   });
 
@@ -563,7 +563,7 @@ export const setAssociationDuesActive = createServerFn({ method: "POST" })
       .eq("id", data.id).eq("association_id", ctx.association.id);
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: data.active ? "dues.resumed" : "dues.paused", entity: "payment_request", entity_id: data.id, association_id: ctx.association.id });
+    await recordAudit({ actor_id: context.userId, action: data.active ? "dues.resumed" : "dues.paused", entity: "payment_request", entity_id: data.id, association_id: ctx.association.id }, context.supabase);
     return { ok: true };
   });
 
