@@ -50,6 +50,13 @@
       "when": 1793766649685,
       "tag": "0006_zero_service_key_rpcs",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793766913769,
+      "tag": "0007_zero_service_key_superadmin_webhook",
+      "breakpoints": true
     }
   ]
 }
