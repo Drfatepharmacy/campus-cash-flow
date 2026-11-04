@@ -1764,6 +1764,30 @@ export type Database = {
         }
         Returns: string
       }
+      svc_paystack_charge: {
+        Args: {
+          _amount_minor: number
+          _currency: string
+          _customer_email: string
+          _event_id: string
+          _paid_at: string
+          _payload_hash: string
+          _provider_ref: string
+          _raw: Json
+          _reference: string
+          _secret: string
+        }
+        Returns: Json
+      }
+      svc_paystack_refund: {
+        Args: {
+          _event: string
+          _provider_refund_id: string
+          _secret: string
+          _tx_ref: string
+        }
+        Returns: string
+      }
       verify_public_receipt: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
