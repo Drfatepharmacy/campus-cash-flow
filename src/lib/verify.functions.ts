@@ -1,45 +1,20 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-/** Public verification — no auth. Returns safe projection only. */
+type VerifyResult =
+  | { valid: false }
+  | {
+      valid: true; receipt_id: string; issued_at: string; reference: string; title: string;
+      amount: number; status: string; paid_at: string | null; student_name: string; matric_no: string;
+    };
+
+/** Public verification — no auth, no service key. Database returns a masked projection only. */
 export const verifyReceipt = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ token: z.string().min(8).max(128) }).parse(d))
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: receipt } = await supabaseAdmin
-      .from("receipts")
-      .select("id, issued_at, transaction:transactions(reference, base_amount, service_charge, total_amount, status, paid_at, payment_request:payment_requests(title), student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no))")
-      .eq("qr_token", data.token)
-      .maybeSingle();
-    if (!receipt) return { valid: false as const };
-    if (!receipt.transaction) {
-      const { data: lr } = await supabaseAdmin.from("receipts")
-        .select("issued_at, receipt_no, payment:payment_link_payments(reference, payer_name, matric_no, class_label, amount_minor, status, paid_at, link:payment_links(title), association:associations(name))")
-        .eq("qr_token", data.token).maybeSingle();
-      const p = (lr as any)?.payment;
-      if (!p) return { valid: false as const };
-      return {
-        valid: true as const, receipt_id: lr!.receipt_no ?? data.token.slice(0, 10), issued_at: lr!.issued_at,
-        reference: p.reference as string, title: `${p.link?.title ?? "Payment"} · ${p.association?.name ?? ""}`,
-        amount: Number(p.amount_minor) / 100, status: p.status as string, paid_at: p.paid_at as string | null,
-        student_name: p.payer_name as string, matric_no: `${p.matric_no} · Class ${p.class_label}`,
-      };
-    }
-    const t = receipt.transaction as unknown as {
-      reference: string; total_amount: number; status: string; paid_at: string | null;
-      payment_request: { title: string } | null;
-      student: { full_name: string | null; matric_no: string | null } | null;
-    };
-    return {
-      valid: true as const,
-      receipt_id: receipt.id,
-      issued_at: receipt.issued_at,
-      reference: t.reference,
-      title: t.payment_request?.title ?? "Payment",
-      amount: Number(t.total_amount),
-      status: t.status,
-      paid_at: t.paid_at,
-      student_name: t.student?.full_name ?? "—",
-      matric_no: t.student?.matric_no ?? "—",
-    };
+  .handler(async ({ data }): Promise<VerifyResult> => {
+    const { publicDb } = await import("@/lib/public-db.server");
+    const { data: res, error } = await publicDb().rpc("verify_public_receipt", { _token: data.token });
+    if (error || !res || !(res as any).valid) return { valid: false };
+    const r = res as any;
+    return { ...r, amount: Number(r.amount) } as VerifyResult;
   });

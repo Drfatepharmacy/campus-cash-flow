@@ -21,7 +21,7 @@ export const uploadPaymentImage = createServerFn({ method: "POST" })
       const { error: updateError } = await db.from("associations").update({ branding_logo_path: path }).eq("id", ctx.association.id);
       if (updateError) throw new Error("The association logo could not be saved.");
       const { recordAudit } = await import("@/lib/association-audit.server");
-      await recordAudit({ actor_id: context.userId, action: "association.logo_updated", entity: "association", entity_id: ctx.association.id, association_id: ctx.association.id });
+      await recordAudit({ actor_id: context.userId, action: "association.logo_updated", entity: "association", entity_id: ctx.association.id, association_id: ctx.association.id }, context.supabase);
     }
     const { data: signed } = await db.storage.from("association-branding").createSignedUrl(path, 3600);
     return { path, url: signed?.signedUrl ?? null };
@@ -39,6 +39,6 @@ export const updatePaymentBranding = createServerFn({ method: "POST" })
     const { data: row, error } = await db.from(table).update({ description: data.description || null, banner_path: data.banner_path ?? null }).eq("id", data.id).eq("association_id", ctx.association.id).select("id").maybeSingle();
     if (error || !row) throw new Error("This payment could not be updated.");
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "payment.branding_updated", entity: table, entity_id: row.id, association_id: ctx.association.id });
+    await recordAudit({ actor_id: context.userId, action: "payment.branding_updated", entity: table, entity_id: row.id, association_id: ctx.association.id }, context.supabase);
     return { ok: true };
   });

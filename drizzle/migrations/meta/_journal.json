@@ -43,6 +43,13 @@
       "when": 1793694027196,
       "tag": "0005_association_payment_branding",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793766649685,
+      "tag": "0006_zero_service_key_rpcs",
+      "breakpoints": true
     }
   ]
 }

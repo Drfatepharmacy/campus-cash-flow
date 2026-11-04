@@ -68,7 +68,7 @@ export const setAssociationStatus = createServerFn({ method: "POST" })
       entity_id: data.id,
       association_id: data.id,
       metadata: { before, after: patch, reason: data.reason ?? null },
-    });
+    }, context.supabase);
     return { ok: true };
   });
 
@@ -97,7 +97,7 @@ export const decideNomination = createServerFn({ method: "POST" })
       await supabaseAdmin.from("leadership_nominations")
         .update({ status: "rejected", decided_by: context.userId, decided_at: new Date().toISOString(), decision_reason: data.reason ?? null })
         .eq("id", data.id);
-      await recordAudit({ actor_id: context.userId, action: "executive.nomination_rejected", entity: "leadership_nomination", entity_id: data.id, association_id: nom.association_id, metadata: { reason: data.reason ?? null } });
+      await recordAudit({ actor_id: context.userId, action: "executive.nomination_rejected", entity: "leadership_nomination", entity_id: data.id, association_id: nom.association_id, metadata: { reason: data.reason ?? null } }, context.supabase);
       return { ok: true, activated: false };
     }
 
@@ -131,7 +131,7 @@ export const decideNomination = createServerFn({ method: "POST" })
       await supabaseAdmin.from("association_role_assignments")
         .update({ status: "revoked", revocation_reason: "Replaced by approved nomination", ends_at: new Date().toISOString() })
         .eq("id", s.id);
-      await recordAudit({ actor_id: context.userId, action: "executive.revoked", entity: "association_role_assignment", entity_id: s.id, association_id: nom.association_id, metadata: { role: nom.role_key, replaced_user: s.user_id } });
+      await recordAudit({ actor_id: context.userId, action: "executive.revoked", entity: "association_role_assignment", entity_id: s.id, association_id: nom.association_id, metadata: { role: nom.role_key, replaced_user: s.user_id } }, context.supabase);
     }
 
     const { error: aErr } = await supabaseAdmin.from("association_role_assignments").insert({
@@ -161,7 +161,7 @@ export const decideNomination = createServerFn({ method: "POST" })
       entity: "association_role_assignment",
       association_id: nom.association_id,
       metadata: { role: nom.role_key, user_id: userId, ends_at: endsAt.toISOString(), nomination_id: data.id },
-    });
+    }, context.supabase);
     return { ok: true, activated: true };
   });
 
@@ -208,7 +208,7 @@ export const changeAssignmentStatus = createServerFn({ method: "POST" })
       actor_id: context.userId, action: `executive.${data.status}`, entity: "association_role_assignment",
       entity_id: data.id, association_id: row.association_id,
       metadata: { before: row.status, after: data.status, role: row.role_key, reason: data.reason ?? null },
-    });
+    }, context.supabase);
     return { ok: true };
   });
 
@@ -257,7 +257,7 @@ export const setAssociationBankAccount = createServerFn({ method: "POST" })
     await recordAudit({
       actor_id: context.userId, action: "bank_details.changed", entity: "association_financial_account",
       association_id: data.association_id, metadata: { bank_name: data.bank_name, last4: data.account_number.slice(-4) },
-    });
+    }, context.supabase);
     return { ok: true };
   });
 
@@ -320,7 +320,7 @@ export const rejectAssociationRequest = createServerFn({ method: "POST" })
     await recordAudit({
       actor_id: context.userId, action: "association.rejected", entity: "association", entity_id: data.id, association_id: data.id,
       metadata: { previous_status: before.status, new_status: "rejected", rejection_reason: data.reason },
-    });
+    }, context.supabase);
 
     const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
     const contact = await resolveRequesterContact(supabaseAdmin, before);
@@ -394,7 +394,7 @@ export const decideBankVerification = createServerFn({ method: "POST" })
       entity_id: data.id,
       association_id: row.association_id,
       metadata: { bank_name: row.bank_name, last4: row.account_last4, reason: data.reason ?? null, subaccount: subaccount.code, subaccount_error: subaccount.error },
-    });
+    }, context.supabase);
     return { ok: true, subaccount };
   });
 
