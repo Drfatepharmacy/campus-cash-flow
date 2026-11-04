@@ -1733,6 +1733,7 @@ export type Database = {
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       issue_link_receipt: { Args: { _payment_id: string }; Returns: string }
+      mask_name: { Args: { _n: string }; Returns: string }
       qr_log_scan: {
         Args: { _ip: string; _token: string; _ua: string }
         Returns: Database["public"]["Enums"]["qr_scan_result"]
@@ -1753,6 +1754,17 @@ export type Database = {
           type: string
         }[]
       }
+      record_audit_event: {
+        Args: {
+          _action: string
+          _association_id?: string
+          _entity: string
+          _entity_id?: string
+          _metadata?: Json
+        }
+        Returns: string
+      }
+      verify_public_receipt: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
       app_role:
