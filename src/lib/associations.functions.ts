@@ -98,7 +98,7 @@ export const createAssociation = createServerFn({ method: "POST" })
     await context.supabase.from("association_memberships").insert({ association_id: row.id, user_id: context.userId, status: "pending" });
 
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "association.created", entity: "association", entity_id: row.id, association_id: row.id, metadata: { name: data.name } });
+    await recordAudit({ actor_id: context.userId, action: "association.created", entity: "association", entity_id: row.id, association_id: row.id, metadata: { name: data.name } }, context.supabase);
 
     const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
     await notifyPlatformAdmins(`New association registration: ${data.name}`, [
@@ -136,7 +136,7 @@ export const submitAssociationForReview = createServerFn({ method: "POST" })
       actor_id: context.userId,
       action: wasRejected ? "association.resubmitted" : "association.submitted",
       entity: "association", entity_id: assoc.id, association_id: assoc.id,
-    });
+    }, context.supabase);
     const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
     await notifyPlatformAdmins(`Association ${wasRejected ? "resubmitted" : "submitted"} for review: ${assoc.name}`, [
       `Name: ${assoc.name}`,
@@ -147,8 +147,7 @@ export const submitAssociationForReview = createServerFn({ method: "POST" })
 
     // Confirm to the requester by email and SMS that the application is back in the queue.
     const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const contact = await resolveRequesterContact(supabaseAdmin, assoc);
+    const contact = await resolveRequesterContact(context.supabase, assoc);
     await notifyRequester(
       contact,
       wasRejected ? "Association Application Resubmitted" : "Association Application Submitted",
