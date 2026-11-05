@@ -1,5 +1,11 @@
 # UniEgo — open items after the Sept 21 hardening pass
 
+## Current Vercel association approval work
+- [ ] Remove service-key dependency from creation, nominations and submission.
+- [ ] Use atomic, Super Admin-authorized approval and leadership operations; make console reads session-scoped.
+- [ ] Test authorization, audit integrity and the signed-in application flow without a service key.
+- [ ] Verify deployed Vercel flow — requires redeployment after these changes.
+
 ## Fixed in this pass
 - Faculty/department reps with no assigned scope no longer see platform-wide payment data (fails closed).
 - QR tokens now use a cryptographically secure generator (was `Math.random`).

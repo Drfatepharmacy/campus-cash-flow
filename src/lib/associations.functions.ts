@@ -4,9 +4,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { loadAssociationContext, requirePermission, maskAccount } from "@/lib/association-access";
 
-const slugify = (s: string) =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
-
 /** Public directory of active associations. */
 export const listPublicAssociations = createServerFn({ method: "GET" }).handler(async () => {
   const { createClient } = await import("@supabase/supabase-js");
@@ -85,20 +82,9 @@ export const createAssociation = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const base = slugify(data.short_name || data.name) || "association";
-    const slug = `${base}-${Math.random().toString(36).slice(2, 7)}`;
-    const { data: row, error } = await context.supabase
-      .from("associations")
-      .insert({ ...data, slug, status: "draft", created_by: context.userId })
-      .select("id, slug")
-      .single();
-    if (error) throw new Error(error.message);
-
-    // The creator becomes a member — never an executive. Roles come from Super Admin approval.
-    await context.supabase.from("association_memberships").insert({ association_id: row.id, user_id: context.userId, status: "pending" });
-
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "association.created", entity: "association", entity_id: row.id, association_id: row.id, metadata: { name: data.name } }, context.supabase);
+    const { data: result, error } = await context.supabase.rpc("create_association_application", { _details: data });
+    if (error) throw new Error("Could not save your association application");
+    const row = result as { id: string; slug: string };
 
     const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
     await notifyPlatformAdmins(`New association registration: ${data.name}`, [
@@ -121,28 +107,15 @@ export const submitAssociationForReview = createServerFn({ method: "POST" })
       const ctx = await loadAssociationContext(context.supabase, context.userId, assoc.id);
       requirePermission(ctx, "association.manage");
     }
-    if (!["draft", "under_review", "rejected"].includes(assoc.status)) throw new Error(`Cannot submit an association in state "${assoc.status}"`);
-    if (!assoc.official_email) throw new Error("An official email is required before submitting");
-
-    const { data: nominations } = await context.supabase
-      .from("leadership_nominations").select("id").eq("association_id", assoc.id).eq("role_key", "president").limit(1);
-    if (!(nominations ?? []).length) throw new Error("Nominate a proposed President before submitting for review");
-
+    const { error } = await context.supabase.rpc("submit_association_application", { _association_id: assoc.id });
+    if (error) throw new Error("Could not submit the application. Check the official email and proposed President, then try again.");
     const wasRejected = assoc.status === "rejected";
-    const { error } = await context.supabase.from("associations").update({ status: "submitted" }).eq("id", assoc.id);
-    if (error) throw new Error(error.message);
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({
-      actor_id: context.userId,
-      action: wasRejected ? "association.resubmitted" : "association.submitted",
-      entity: "association", entity_id: assoc.id, association_id: assoc.id,
-    }, context.supabase);
     const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
     await notifyPlatformAdmins(`Association ${wasRejected ? "resubmitted" : "submitted"} for review: ${assoc.name}`, [
       `Name: ${assoc.name}`,
       `Institution: ${assoc.institution}`,
       `Official email: ${assoc.official_email}`,
-      `Review it in the Super Admin console: /admin/associations`,
+      `Review it in the Super Admin console: /superadmin/associations`,
     ]);
 
     // Confirm to the requester by email and SMS that the application is back in the queue.
@@ -273,23 +246,15 @@ export const submitNomination = createServerFn({ method: "POST" })
     const isOwner = ctx.association.created_by === context.userId;
     if (!isOwner) requirePermission(ctx, "executives.nominate");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: profile } = await supabaseAdmin.from("profiles").select("id").ilike("email", data.nominee_email).maybeSingle();
-
-    const { error } = await context.supabase.from("leadership_nominations").insert({
-      association_id: ctx.association.id,
-      role_key: data.role_key,
-      nominee_name: data.nominee_name,
-      nominee_email: data.nominee_email.toLowerCase(),
-      nominee_user_id: profile?.id ?? null,
-      notes: data.notes ?? null,
-      status: "submitted",
-      submitted_by: context.userId,
+    const { data: result, error } = await context.supabase.rpc("nominate_association_executive", {
+      _association_id: ctx.association.id,
+      _role_key: data.role_key,
+      _name: data.nominee_name,
+      _email: data.nominee_email,
+      _notes: data.notes ?? undefined,
     });
-    if (error) throw new Error(error.message);
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "executive.nominated", entity: "leadership_nomination", association_id: ctx.association.id, metadata: { role: data.role_key, nominee: data.nominee_email } }, context.supabase);
-    return { ok: true, nominee_has_account: Boolean(profile) };
+    if (error) throw new Error("Could not submit the proposed executive");
+    return result as { ok: boolean; nominee_has_account: boolean };
   });
 
 /** Financial overview — visibility only. Bank details are masked unless explicitly permitted. */

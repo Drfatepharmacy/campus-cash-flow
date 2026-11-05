@@ -57,6 +57,20 @@
       "when": 1793766913769,
       "tag": "0007_zero_service_key_superadmin_webhook",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793861269925,
+      "tag": "0008_atomic_association_applications",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793861369160,
+      "tag": "0009_session_authorized_leadership_decisions",
+      "breakpoints": true
     }
   ]
 }
