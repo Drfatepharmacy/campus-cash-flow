@@ -1685,6 +1685,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_association_application: {
+        Args: { _association_id: string; _term_months?: number }
+        Returns: Json
+      }
+      create_association_application: {
+        Args: { _details: Json }
+        Returns: Json
+      }
       expire_role_assignments: { Args: never; Returns: number }
       finalize_link_payment: {
         Args: {
@@ -1734,6 +1742,16 @@ export type Database = {
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       issue_link_receipt: { Args: { _payment_id: string }; Returns: string }
       mask_name: { Args: { _n: string }; Returns: string }
+      nominate_association_executive: {
+        Args: {
+          _association_id: string
+          _email: string
+          _name: string
+          _notes?: string
+          _role_key: string
+        }
+        Returns: Json
+      }
       qr_log_scan: {
         Args: { _ip: string; _token: string; _ua: string }
         Returns: Database["public"]["Enums"]["qr_scan_result"]
@@ -1763,6 +1781,19 @@ export type Database = {
           _metadata?: Json
         }
         Returns: string
+      }
+      review_association_application: {
+        Args: {
+          _association_id: string
+          _financials_enabled?: boolean
+          _reason?: string
+          _status: string
+        }
+        Returns: Json
+      }
+      submit_association_application: {
+        Args: { _association_id: string }
+        Returns: Json
       }
       svc_paystack_charge: {
         Args: {
