@@ -13,12 +13,11 @@ export const getSuperCounts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertSuper(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const head = (q: any) => q.then((r: any) => r.count ?? 0);
+    const head = (q: any) => q.then((r: any) => { if (r.error) throw new Error("Could not load the review queue"); return r.count ?? 0; });
     const [applications, leadership, bank] = await Promise.all([
-      head(supabaseAdmin.from("associations").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"])),
-      head(supabaseAdmin.from("leadership_nominations").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"])),
-      head(supabaseAdmin.from("association_financial_accounts").select("id", { count: "exact", head: true }).eq("status", "officer_approved")),
+      head(context.supabase.from("associations").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"])),
+      head(context.supabase.from("leadership_nominations").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"])),
+      head(context.supabase.from("association_financial_accounts").select("id", { count: "exact", head: true }).eq("status", "officer_approved")),
     ]);
     return { applications, leadership, bank, total: applications + leadership + bank };
   });
@@ -28,21 +27,21 @@ export const getAssociationDetail = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertSuper(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: association } = await supabaseAdmin
+    const { data: association } = await context.supabase
       .from("associations")
       .select("*, campus:campuses(name), faculty:faculties(name), department:departments(name)")
       .eq("id", data.id).maybeSingle();
     if (!association) throw new Error("Association not found");
     const [noms, accts, assigns, audit, members] = await Promise.all([
-      supabaseAdmin.from("leadership_nominations").select("id, nominee_name, nominee_email, role_key, status, decision_reason, created_at").eq("association_id", data.id).order("created_at", { ascending: false }),
-      supabaseAdmin.from("association_financial_accounts").select("id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, created_at").eq("association_id", data.id),
-      supabaseAdmin.from("association_role_assignments").select("id, user_id, role_key, status, starts_at, ends_at").eq("association_id", data.id),
-      supabaseAdmin.from("audit_logs").select("id, action, actor_id, metadata, created_at").eq("association_id", data.id).order("created_at", { ascending: false }).limit(50),
-      supabaseAdmin.from("association_memberships").select("id", { count: "exact", head: true }).eq("association_id", data.id).eq("status", "active"),
+      context.supabase.from("leadership_nominations").select("id, nominee_name, nominee_email, role_key, status, decision_reason, created_at").eq("association_id", data.id).order("created_at", { ascending: false }),
+      context.supabase.from("association_financial_accounts").select("id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, created_at").eq("association_id", data.id),
+      context.supabase.from("association_role_assignments").select("id, user_id, role_key, status, starts_at, ends_at").eq("association_id", data.id),
+      context.supabase.from("audit_logs").select("id, action, actor_id, metadata, created_at").eq("association_id", data.id).order("created_at", { ascending: false }).limit(50),
+      context.supabase.from("association_memberships").select("id", { count: "exact", head: true }).eq("association_id", data.id).eq("status", "active"),
     ]);
+    if ([noms, accts, assigns, audit, members].some((r) => r.error)) throw new Error("Could not load application details");
     const ids = Array.from(new Set([association.created_by, ...(assigns.data ?? []).map((a) => a.user_id), ...(audit.data ?? []).map((a) => a.actor_id)].filter(Boolean))) as string[];
-    const { data: profs } = ids.length ? await supabaseAdmin.from("profiles").select("id, full_name, email").in("id", ids) : { data: [] as any[] };
+    const { data: profs } = ids.length ? await context.supabase.from("profiles").select("id, full_name, email").in("id", ids) : { data: [] as any[] };
     const people = Object.fromEntries((profs ?? []).map((p: any) => [p.id, p]));
     return {
       association,
@@ -59,14 +58,13 @@ export const listPlatformActivity = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertSuper(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin
+    const { data } = await context.supabase
       .from("audit_logs")
       .select("id, action, entity, entity_id, actor_id, association_id, created_at, association:associations(name, slug)")
       .order("created_at", { ascending: false })
       .limit(300);
     const ids = Array.from(new Set((data ?? []).map((r) => r.actor_id).filter(Boolean))) as string[];
-    const { data: profs } = ids.length ? await supabaseAdmin.from("profiles").select("id, full_name, email").in("id", ids) : { data: [] as any[] };
+    const { data: profs } = ids.length ? await context.supabase.from("profiles").select("id, full_name, email").in("id", ids) : { data: [] as any[] };
     const people = Object.fromEntries((profs ?? []).map((p: any) => [p.id, p]));
     return (data ?? []).map((r) => ({ ...r, actor: r.actor_id ? people[r.actor_id] ?? null : null }));
   });

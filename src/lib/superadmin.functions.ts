@@ -9,8 +9,7 @@ export const listAllAssociations = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin
+    const { data } = await context.supabase
       .from("associations")
       .select("*, campus:campuses(name), faculty:faculties(name), department:departments(name)")
       .order("created_at", { ascending: false });
@@ -22,8 +21,7 @@ export const listAllNominations = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin
+    const { data } = await context.supabase
       .from("leadership_nominations")
       .select("*, association:associations(name, slug, status), role:association_roles(name, is_head)")
       .order("created_at", { ascending: false })
@@ -44,31 +42,11 @@ export const setAssociationStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: before } = await supabaseAdmin.from("associations").select("status, financials_enabled").eq("id", data.id).maybeSingle();
-
-    const patch: any = {
-      status: data.status,
-      status_reason: data.reason ?? null,
-      reviewed_by: context.userId,
-      reviewed_at: new Date().toISOString(),
-    };
-    // Financial activation is never implied by approval — it is an explicit decision.
-    if (typeof data.financials_enabled === "boolean") patch["financials_enabled"] = data.financials_enabled;
-    if (data.status === "suspended" || data.status === "archived") patch["financials_enabled"] = false;
-
-    const { error } = await supabaseAdmin.from("associations").update(patch).eq("id", data.id);
-    if (error) throw new Error(error.message);
-
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({
-      actor_id: context.userId,
-      action: `association.${data.status}`,
-      entity: "association",
-      entity_id: data.id,
-      association_id: data.id,
-      metadata: { before, after: patch, reason: data.reason ?? null },
-    }, context.supabase);
+    const { error } = await context.supabase.rpc("review_association_application", {
+      _association_id: data.id, _status: data.status,
+      _reason: data.reason ?? undefined, _financials_enabled: data.financials_enabled,
+    });
+    if (error) throw new Error("This status change is not allowed. Check the application stage and reason.");
     return { ok: true };
   });
 
@@ -171,8 +149,7 @@ export const listAssignmentsForAssociation = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows } = await supabaseAdmin
+    const { data: rows } = await context.supabase
       .from("association_role_assignments")
       .select("*, role:association_roles(name, is_head)")
       .eq("association_id", data.association_id)
@@ -180,7 +157,7 @@ export const listAssignmentsForAssociation = createServerFn({ method: "POST" })
     const ids = Array.from(new Set((rows ?? []).map((r: any) => r.user_id)));
     let map = new Map<string, any>();
     if (ids.length) {
-      const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name, email").in("id", ids);
+      const { data: profiles } = await context.supabase.from("profiles").select("id, full_name, email").in("id", ids);
       map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
     }
     return (rows ?? []).map((r: any) => ({ ...r, profile: map.get(r.user_id) ?? null }));
@@ -276,12 +253,12 @@ export const approveAssociationRequest = createServerFn({ method: "POST" })
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
 
     const { provisionApprovedAssociation } = await import("@/lib/association-provision.server");
-    const result = await provisionApprovedAssociation(data.id, context.userId, data.term_months);
+    const result = await provisionApprovedAssociation(data.id, context.supabase, data.term_months);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: assoc } = await supabaseAdmin.from("associations").select("name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
+    if (!result.activated) return result;
+    const { data: assoc } = await context.supabase.from("associations").select("name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
     const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
-    const contact = await resolveRequesterContact(supabaseAdmin, assoc ?? {});
+    const contact = await resolveRequesterContact(context.supabase, assoc ?? {});
     await notifyRequester(
       contact,
       "Association Creation Approved",
@@ -306,24 +283,15 @@ export const rejectAssociationRequest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: before } = await supabaseAdmin.from("associations").select("status, name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
-    if (!before) throw new Error("Association not found");
-    if (before.status === "active") throw new Error("This association is already active — suspend it instead of rejecting");
-
-    const { error } = await supabaseAdmin.from("associations")
-      .update({ status: "rejected", status_reason: data.reason, financials_enabled: false, reviewed_by: context.userId, reviewed_at: new Date().toISOString() })
-      .eq("id", data.id);
-    if (error) throw new Error(error.message);
-
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({
-      actor_id: context.userId, action: "association.rejected", entity: "association", entity_id: data.id, association_id: data.id,
-      metadata: { previous_status: before.status, new_status: "rejected", rejection_reason: data.reason },
-    }, context.supabase);
+    const { data: before, error: readError } = await context.supabase.from("associations").select("status, name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
+    if (readError || !before) throw new Error("Association not found");
+    const { error } = await context.supabase.rpc("review_association_application", {
+      _association_id: data.id, _status: "rejected", _reason: data.reason,
+    });
+    if (error) throw new Error("This application cannot be rejected in its current stage");
 
     const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
-    const contact = await resolveRequesterContact(supabaseAdmin, before);
+    const contact = await resolveRequesterContact(context.supabase, before);
     await notifyRequester(
       contact,
       "Association Creation Rejected",
