@@ -1693,6 +1693,15 @@ export type Database = {
         Args: { _details: Json }
         Returns: Json
       }
+      decide_association_nomination: {
+        Args: {
+          _decision: string
+          _id: string
+          _reason?: string
+          _term_months?: number
+        }
+        Returns: Json
+      }
       expire_role_assignments: { Args: never; Returns: number }
       finalize_link_payment: {
         Args: {
