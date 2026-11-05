@@ -5,3 +5,5 @@
 - Sign-in/recovery forms use method="post" and keep the submit button disabled until the page is hydrated. Why: an early tap before scripts load triggers a native submit that reloads the page (and a GET would put the password in the URL).
 
 - Association payment images use private Storage, server-authorized dues.manage uploads and temporary signed URLs; never accept another tenant’s media path. Why: public checkout must show branding without opening tenant uploads or bypassing tenure permissions.
+
+- Association application creation, nominations, submission and approval use session-authorized atomic database RPCs; console reads use the authenticated client. Why: Vercel must not require a service-role key and audit writes must commit with governance changes.
