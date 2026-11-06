@@ -5,7 +5,7 @@
 - [ ] Use atomic, Super Admin-authorized approval and leadership operations; make console reads session-scoped.
 - [ ] Test authorization, audit integrity and the signed-in application flow without a service key.
 - [ ] Verify deployed Vercel flow — requires redeployment after these changes.
-- [ ] Remove service-key reads from officer member, executive, finance, settlement, and bank dashboards; scope access through authenticated RLS policies.
+- [x] Remove service-key reads from officer member, executive, finance, settlement, and bank dashboards; scope access through authenticated RLS policies.
 
 ## Fixed in this pass
 - Faculty/department reps with no assigned scope no longer see platform-wide payment data (fails closed).
