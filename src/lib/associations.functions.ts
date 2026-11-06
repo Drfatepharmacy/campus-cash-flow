@@ -573,7 +573,7 @@ export const listAssociationSettlements = createServerFn({ method: "POST" })
       .from("settlements").select("*").eq("association_id", ctx.association.id)
       .order("created_at", { ascending: false }).limit(100);
     if (error) throw new Error("Could not load association settlements");
-    const { data: pending, pendingError } = await context.supabase
+    const { data: pending, error: pendingError } = await context.supabase
       .from("approval_requests").select("id, payload, status, requested_by, created_at")
       .eq("association_id", ctx.association.id).eq("action_type", "settlement.status_update").eq("status", "pending");
     if (pendingError) throw new Error("Could not load pending settlement approvals");
