@@ -21,15 +21,15 @@ export const getAssociationBankAccounts = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "bank_details.view");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: rows } = await supabaseAdmin
+    const { data: rows, error: accountsError } = await context.supabase
       .from("association_financial_accounts")
       .select(
         "id, bank_name, account_name, account_last4, status, verified, is_primary, rejection_reason, submitted_by, officer_approved_by, officer_approved_at, verified_at, created_at",
       )
       .eq("association_id", ctx.association.id)
       .order("created_at", { ascending: false });
+    if (accountsError) throw new Error("Could not load association bank details");
 
     const accounts = (rows ?? []).map((a: any) => ({
       id: a.id,
@@ -45,13 +45,14 @@ export const getAssociationBankAccounts = createServerFn({ method: "POST" })
       submitted_by_me: a.submitted_by === context.userId,
     }));
 
-    const { data: pending } = await supabaseAdmin
+    const { data: pending, error: requestsError } = await context.supabase
       .from("approval_requests")
       .select("id, payload, status, reason, requested_by, created_at")
       .eq("association_id", ctx.association.id)
       .eq("action_type", "bank_details.change")
       .in("status", ["pending"])
       .order("created_at", { ascending: false });
+    if (requestsError) throw new Error("Could not load bank change requests");
 
     const requests = (pending ?? []).map((r: any) => ({
       id: r.id,
@@ -100,17 +101,17 @@ export const submitBankChangeRequest = createServerFn({ method: "POST" })
     const resolvedName = await resolveAccount(data.account_number, data.bank_code);
     const bankName = bank.name;
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: dupe } = await supabaseAdmin
+    const { data: dupe, error: duplicateCheckError } = await context.supabase
       .from("approval_requests")
       .select("id")
       .eq("association_id", ctx.association.id)
       .eq("action_type", "bank_details.change")
       .eq("status", "pending")
       .maybeSingle();
+    if (duplicateCheckError) throw new Error("Could not check for an existing bank change request");
     if (dupe) throw new Error("A bank change request is already awaiting approval");
 
-    const { error } = await supabaseAdmin.from("approval_requests").insert({
+    const { error } = await context.supabase.from("approval_requests").insert({
       association_id: ctx.association.id,
       action_type: "bank_details.change",
       payload: {
