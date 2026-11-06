@@ -71,6 +71,13 @@
       "when": 1793861369160,
       "tag": "0009_session_authorized_leadership_decisions",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793990816275,
+      "tag": "0010_association_dashboard_session_reads",
+      "breakpoints": true
     }
   ]
 }

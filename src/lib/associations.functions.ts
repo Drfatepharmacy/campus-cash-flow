@@ -165,8 +165,8 @@ export const listMembers = createServerFn({ method: "POST" })
       .limit(500);
     const ids = (rows ?? []).map((r: any) => r.user_id);
     if (!ids.length) return [];
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name, email, matric_no, level").in("id", ids);
+    const { data: profiles, error } = await context.supabase.from("profiles").select("id, full_name, email, matric_no, level").in("id", ids);
+    if (error) throw new Error("Could not load association member profiles");
     const map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
     return (rows ?? []).map((r: any) => ({ ...r, profile: map.get(r.user_id) ?? null }));
   });
@@ -220,8 +220,8 @@ export const listExecutives = createServerFn({ method: "POST" })
     const ids = Array.from(new Set((rows ?? []).map((r: any) => r.user_id)));
     let map = new Map<string, any>();
     if (ids.length) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name, email").in("id", ids);
+      const { data: profiles, error } = await context.supabase.from("profiles").select("id, full_name, email").in("id", ids);
+      if (error) throw new Error("Could not load association executive profiles");
       map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
     }
     return {
@@ -264,27 +264,29 @@ export const getAssociationFinance = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "finance.view");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: txns } = await supabaseAdmin
+    const { data: txns, error: transactionsError } = await context.supabase
       .from("transactions")
       .select("id, reference, status, total_minor, charge_minor, base_minor, created_at, paid_at, payment_request:payment_requests(title)")
       .eq("association_id", ctx.association.id)
       .order("created_at", { ascending: false })
       .limit(200);
+    if (transactionsError) throw new Error("Could not load association finance");
     const rows = txns ?? [];
     const paid = rows.filter((t: any) => t.status === "paid");
 
-    const { data: settlements } = await supabaseAdmin
+    const { data: settlements, error: settlementsError } = await context.supabase
       .from("settlements").select("id, reference, amount, status, created_at, settled_at")
       .eq("association_id", ctx.association.id).order("created_at", { ascending: false }).limit(50);
+    if (settlementsError) throw new Error("Could not load association settlements");
 
     let bank: { bank_name: string; account_name: string; masked: string; verified: boolean } | null = null;
     if (ctx.permissions.includes("bank_details.view")) {
-      const { data: acct } = await supabaseAdmin
+      const { data: acct, error: bankError } = await context.supabase
         .from("association_financial_accounts")
         .select("bank_name, account_name, account_last4, verified")
         .eq("association_id", ctx.association.id).eq("is_primary", true).maybeSingle();
+      if (bankError) throw new Error("Could not load association bank details");
       if (acct) bank = { bank_name: acct.bank_name, account_name: acct.account_name, masked: maskAccount(acct.account_last4), verified: acct.verified };
     }
 
@@ -547,8 +549,7 @@ export const listAssociationTransactions = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "transactions.view");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let q = supabaseAdmin
+    let q = context.supabase
       .from("transactions")
       .select("id, reference, status, total_minor, base_minor, charge_minor, created_at, paid_at, payment_request:payment_requests(title), student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no)")
       .eq("association_id", ctx.association.id)
@@ -568,13 +569,14 @@ export const listAssociationSettlements = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "settlement.view");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows } = await supabaseAdmin
+    const { data: rows, error } = await context.supabase
       .from("settlements").select("*").eq("association_id", ctx.association.id)
       .order("created_at", { ascending: false }).limit(100);
-    const { data: pending } = await supabaseAdmin
+    if (error) throw new Error("Could not load association settlements");
+    const { data: pending, error: pendingError } = await context.supabase
       .from("approval_requests").select("id, payload, status, requested_by, created_at")
       .eq("association_id", ctx.association.id).eq("action_type", "settlement.status_update").eq("status", "pending");
+    if (pendingError) throw new Error("Could not load pending settlement approvals");
     return {
       settlements: rows ?? [],
       pendingUpdates: pending ?? [],

@@ -7,3 +7,4 @@
 - Association payment images use private Storage, server-authorized dues.manage uploads and temporary signed URLs; never accept another tenant’s media path. Why: public checkout must show branding without opening tenant uploads or bypassing tenure permissions.
 
 - Association application creation, nominations, submission and approval use session-authorized atomic database RPCs; console reads use the authenticated client. Why: Vercel must not require a service-role key and audit writes must commit with governance changes.
+- Association dashboard reads use the signed-in caller client with association-scoped RLS; never use service-role access for member, finance, settlement, or bank-detail visibility. Why: preserve tenant isolation and make officer dashboards work on Vercel without privileged credentials.
