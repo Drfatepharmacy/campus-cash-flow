@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { Logo } from "@/components/brand/logo";
@@ -10,6 +10,8 @@ import { QrCode, Camera, Upload, ShieldCheck, ArrowRight, CameraOff } from "luci
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/verify/")({
+  validateSearch: (s: Record<string, unknown>): { token?: string } => ({ token: typeof s.token === "string" && /^[A-Za-z0-9-]{8,128}$/.test(s.token) ? s.token : undefined }),
+  beforeLoad: ({ search }) => { if (search.token) throw redirect({ to: "/verify/$token", params: { token: search.token } }); },
   head: () => ({
     meta: [
       { title: "Verify a receipt — UniEgo" },
@@ -37,6 +39,8 @@ function extractToken(raw: string): string | null {
   if (!trimmed) return null;
   try {
     const url = new URL(trimmed);
+    const q = url.searchParams.get("token");
+    if (q) return q;
     const parts = url.pathname.split("/").filter(Boolean);
     const idx = parts.findIndex((p) => p === "verify" || p === "receipt");
     if (idx >= 0 && parts[idx + 1]) return parts[idx + 1];

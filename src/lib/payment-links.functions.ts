@@ -10,6 +10,8 @@ import {
   PaystackPayloadError,
 } from "@/lib/paystack-provider.server";
 
+import { assertBrandingPath, brandingPath } from "./payment-branding";
+
 const token = z.string().regex(/^[A-Za-z0-9-]{8,64}$/);
 
 async function admin() {
@@ -21,7 +23,7 @@ async function loadLink(tok: string) {
   const db = await admin();
   const { data } = await db
     .from("payment_links")
-    .select("id, token, title, description, class_prices, active, association_id, association:associations(name, short_name, status)")
+    .select("id, token, title, description, banner_path, class_prices, active, association_id, association:associations(name, short_name, status, logo_url, branding_logo_path)")
     .eq("token", tok)
     .maybeSingle();
   if (!data) throw new Error("This payment link does not exist");
@@ -34,7 +36,10 @@ export const getPublicLink = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ token }).parse(d))
   .handler(async ({ data }) => {
     const l = await loadLink(data.token);
+    const { paymentBranding } = await import("./payment-branding.server");
+    const branding = await paymentBranding(await admin(), l.association, l.banner_path);
     return {
+      ...branding,
       token: l.token, title: l.title, description: l.description,
       class_prices: (l.class_prices ?? []) as ClassPrice[],
       active: Boolean(l.active) && l.association?.status === "active",
@@ -58,13 +63,22 @@ export const startLinkPayment = createServerFn({ method: "POST" })
     if (!l.active || l.association?.status !== "active") throw new Error("This payment link is not accepting payments right now");
     const amount = priceForClass(l.class_prices ?? [], data.class_label);
     const matric = normMatric(data.matric_no);
-    const cb = new URL(data.callback_url);
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const { constrainCallbackUrl } = await import("@/lib/callback-url");
+    const req = getRequest();
+    const fwdHost = req.headers.get("x-forwarded-host");
+    const proto = req.headers.get("x-forwarded-proto") ?? new URL(req.url).protocol.replace(":", "");
+    const appOrigin = fwdHost ? `${proto}://${fwdHost}` : new URL(req.url).origin;
+    const cb = constrainCallbackUrl(data.callback_url, appOrigin, `/p/${data.token}`);
     const { randomUUID } = await import("node:crypto");
     const reference = `PL-${Date.now().toString(36).toUpperCase()}-${randomUUID().replace(/-/g, "").slice(0, 14).toUpperCase()}`;
     const email = data.payer_email || `${matric.toLowerCase()}@payer.uniego.app`;
 
     const db = await admin();
+    const { subaccountFor } = await import("@/lib/paystack.server");
+    const subaccount = await subaccountFor(db, l.association_id);
     const { error } = await db.from("payment_link_payments").insert({
+      subaccount_code: subaccount,
       link_id: l.id, association_id: l.association_id, reference,
       payer_name: data.payer_name, matric_no: matric, class_label: data.class_label,
       payer_email: data.payer_email || null, amount_minor: amount, status: "pending", source: "online",
@@ -96,6 +110,7 @@ export const startLinkPayment = createServerFn({ method: "POST" })
           currency: "NGN",
           reference,
           callback_url: cb.toString(),
+          ...(subaccount ? { subaccount, transaction_charge: 0 } : {}),
           metadata: { kind: "payment_link", link_id: l.id, matric_no: matric, class: data.class_label },
         },
       });
@@ -150,11 +165,31 @@ export const confirmLinkPayment = createServerFn({ method: "POST" })
       _event_id: `verify-${data.reference}`,
     });
     if (error) return { status: "problem" as const };
+    if (out === "captured") {
+      try {
+        const { emailLinkReceipt } = await import("@/lib/link-receipt.server");
+        const { getRequest } = await import("@tanstack/react-start/server");
+        await emailLinkReceipt(db, data.reference, new URL(getRequest().url).origin);
+      } catch (error) {
+        console.error("Link receipt email failed", error);
+      }
+    }
     if (isPaidFinalizeOutcome(out as string | undefined)) {
       return { status: "paid" as const, amount_minor: p.amount_minor, payer: maskName(p.payer_name) };
     }
     if (out === "amount_mismatch" || out === "currency_mismatch") return { status: "problem" as const };
     return { status: "pending" as const };
+  });
+
+/** Official receipt for a paid link payment. The PL- reference is unguessable and known only to the payer. */
+export const getLinkReceipt = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ reference: z.string().regex(/^PL-[A-Z0-9-]{8,60}$/) }).parse(d))
+  .handler(async ({ data }) => {
+    const { loadLinkReceipt } = await import("@/lib/link-receipt.server");
+    const rec = await loadLinkReceipt(await admin(), data.reference);
+    if (!rec) return null;
+    const { payer_email: _e, ...safe } = rec;
+    return safe;
   });
 
 export const getPublicLedger = createServerFn({ method: "GET" })
@@ -202,18 +237,19 @@ export const createPaymentLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     slug: z.string().min(1).max(80), title: z.string().trim().min(3).max(120),
-    description: z.string().trim().max(500).optional().nullable(), class_prices: priceSchema,
+    description: z.string().trim().max(500).optional().nullable(), banner_path: brandingPath, class_prices: priceSchema,
   }).parse(d))
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "dues.manage");
+    assertBrandingPath(data.banner_path, ctx.association.id, "banner");
     if (ctx.association.status !== "active") throw new Error("Your association must be active before collecting payments");
     const bytes = new Uint8Array(12); globalThis.crypto.getRandomValues(bytes);
     const tok = "PAY-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
     const db = await admin();
     const { data: row, error } = await db.from("payment_links").insert({
       association_id: ctx.association.id, token: tok, title: data.title, description: data.description ?? null,
-      class_prices: data.class_prices, created_by: context.userId,
+      banner_path: data.banner_path ?? null, class_prices: data.class_prices, created_by: context.userId,
     }).select("id, token").single();
     if (error) throw new Error("Could not create the payment link");
     await db.from("audit_logs").insert({ actor_id: context.userId, action: "payment_link.created", entity: "payment_link", entity_id: row.id, association_id: ctx.association.id, metadata: { title: data.title } });

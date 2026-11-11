@@ -79,15 +79,20 @@ export type Database = {
           account_name: string
           account_number: string
           association_id: string
+          bank_code: string | null
           bank_name: string
           created_at: string
           created_by: string | null
           id: string
           is_primary: boolean
+          nuban_resolved_name: string | null
+          nuban_verified_at: string | null
           officer_approved_at: string | null
           officer_approved_by: string | null
+          paystack_subaccount_code: string | null
           rejection_reason: string | null
           status: string
+          subaccount_error: string | null
           submitted_by: string | null
           updated_at: string
           verified: boolean
@@ -99,15 +104,20 @@ export type Database = {
           account_name: string
           account_number: string
           association_id: string
+          bank_code?: string | null
           bank_name: string
           created_at?: string
           created_by?: string | null
           id?: string
           is_primary?: boolean
+          nuban_resolved_name?: string | null
+          nuban_verified_at?: string | null
           officer_approved_at?: string | null
           officer_approved_by?: string | null
+          paystack_subaccount_code?: string | null
           rejection_reason?: string | null
           status?: string
+          subaccount_error?: string | null
           submitted_by?: string | null
           updated_at?: string
           verified?: boolean
@@ -119,15 +129,20 @@ export type Database = {
           account_name?: string
           account_number?: string
           association_id?: string
+          bank_code?: string | null
           bank_name?: string
           created_at?: string
           created_by?: string | null
           id?: string
           is_primary?: boolean
+          nuban_resolved_name?: string | null
+          nuban_verified_at?: string | null
           officer_approved_at?: string | null
           officer_approved_by?: string | null
+          paystack_subaccount_code?: string | null
           rejection_reason?: string | null
           status?: string
+          subaccount_error?: string | null
           submitted_by?: string | null
           updated_at?: string
           verified?: boolean
@@ -285,6 +300,7 @@ export type Database = {
       associations: {
         Row: {
           banner_url: string | null
+          branding_logo_path: string | null
           campus_id: string | null
           created_at: string
           created_by: string | null
@@ -311,6 +327,7 @@ export type Database = {
         }
         Insert: {
           banner_url?: string | null
+          branding_logo_path?: string | null
           campus_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -337,6 +354,7 @@ export type Database = {
         }
         Update: {
           banner_url?: string | null
+          branding_logo_path?: string | null
           campus_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -808,6 +826,7 @@ export type Database = {
           reference: string
           source: string
           status: string
+          subaccount_code: string | null
         }
         Insert: {
           amount_minor: number
@@ -828,6 +847,7 @@ export type Database = {
           reference: string
           source?: string
           status?: string
+          subaccount_code?: string | null
         }
         Update: {
           amount_minor?: number
@@ -848,6 +868,7 @@ export type Database = {
           reference?: string
           source?: string
           status?: string
+          subaccount_code?: string | null
         }
         Relationships: [
           {
@@ -915,6 +936,7 @@ export type Database = {
         Row: {
           active: boolean
           association_id: string
+          banner_path: string | null
           class_prices: Json
           created_at: string
           created_by: string | null
@@ -927,6 +949,7 @@ export type Database = {
         Insert: {
           active?: boolean
           association_id: string
+          banner_path?: string | null
           class_prices?: Json
           created_at?: string
           created_by?: string | null
@@ -939,6 +962,7 @@ export type Database = {
         Update: {
           active?: boolean
           association_id?: string
+          banner_path?: string | null
           class_prices?: Json
           created_at?: string
           created_by?: string | null
@@ -962,6 +986,7 @@ export type Database = {
         Row: {
           active: boolean
           association_id: string | null
+          banner_path: string | null
           base_amount: number
           campus_id: string
           closes_at: string | null
@@ -979,6 +1004,7 @@ export type Database = {
         Insert: {
           active?: boolean
           association_id?: string | null
+          banner_path?: string | null
           base_amount: number
           campus_id: string
           closes_at?: string | null
@@ -996,6 +1022,7 @@ export type Database = {
         Update: {
           active?: boolean
           association_id?: string | null
+          banner_path?: string | null
           base_amount?: number
           campus_id?: string
           closes_at?: string | null
@@ -1231,26 +1258,136 @@ export type Database = {
         Row: {
           id: string
           issued_at: string
+          link_payment_id: string | null
           qr_token: string
-          transaction_id: string
+          receipt_no: string | null
+          transaction_id: string | null
+          verification_hash: string | null
         }
         Insert: {
           id?: string
           issued_at?: string
+          link_payment_id?: string | null
           qr_token: string
-          transaction_id: string
+          receipt_no?: string | null
+          transaction_id?: string | null
+          verification_hash?: string | null
         }
         Update: {
           id?: string
           issued_at?: string
+          link_payment_id?: string | null
           qr_token?: string
-          transaction_id?: string
+          receipt_no?: string | null
+          transaction_id?: string | null
+          verification_hash?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "receipts_link_payment_id_fkey"
+            columns: ["link_payment_id"]
+            isOneToOne: true
+            referencedRelation: "payment_link_payments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "receipts_transaction_id_fkey"
             columns: ["transaction_id"]
             isOneToOne: true
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      refund_requests: {
+        Row: {
+          amount_minor: number
+          association_id: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reason: string | null
+          duplicate_suspected: boolean
+          failure_reason: string | null
+          id: string
+          kind: string
+          link_payment_id: string | null
+          paystack_refund_id: string | null
+          processed_at: string | null
+          reason: string
+          reason_type: string
+          reference: string
+          requester_contact: string | null
+          requester_id: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_minor: number
+          association_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          duplicate_suspected?: boolean
+          failure_reason?: string | null
+          id?: string
+          kind: string
+          link_payment_id?: string | null
+          paystack_refund_id?: string | null
+          processed_at?: string | null
+          reason: string
+          reason_type: string
+          reference: string
+          requester_contact?: string | null
+          requester_id?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_minor?: number
+          association_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          duplicate_suspected?: boolean
+          failure_reason?: string | null
+          id?: string
+          kind?: string
+          link_payment_id?: string | null
+          paystack_refund_id?: string | null
+          processed_at?: string | null
+          reason?: string
+          reason_type?: string
+          reference?: string
+          requester_contact?: string | null
+          requester_id?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_requests_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_link_payment_id_fkey"
+            columns: ["link_payment_id"]
+            isOneToOne: false
+            referencedRelation: "payment_link_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
             referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
@@ -1409,6 +1546,7 @@ export type Database = {
           settlement_id: string | null
           status: Database["public"]["Enums"]["txn_status"]
           student_id: string
+          subaccount_code: string | null
           total_amount: number
           total_minor: number
           updated_at: string
@@ -1430,6 +1568,7 @@ export type Database = {
           settlement_id?: string | null
           status?: Database["public"]["Enums"]["txn_status"]
           student_id: string
+          subaccount_code?: string | null
           total_amount: number
           total_minor: number
           updated_at?: string
@@ -1451,6 +1590,7 @@ export type Database = {
           settlement_id?: string | null
           status?: Database["public"]["Enums"]["txn_status"]
           student_id?: string
+          subaccount_code?: string | null
           total_amount?: number
           total_minor?: number
           updated_at?: string
@@ -1545,6 +1685,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_association_application: {
+        Args: { _association_id: string; _term_months?: number }
+        Returns: Json
+      }
+      create_association_application: {
+        Args: { _details: Json }
+        Returns: Json
+      }
+      decide_association_nomination: {
+        Args: {
+          _decision: string
+          _id: string
+          _reason?: string
+          _term_months?: number
+        }
+        Returns: Json
+      }
       expire_role_assignments: { Args: never; Returns: number }
       finalize_link_payment: {
         Args: {
@@ -1592,6 +1749,18 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      issue_link_receipt: { Args: { _payment_id: string }; Returns: string }
+      mask_name: { Args: { _n: string }; Returns: string }
+      nominate_association_executive: {
+        Args: {
+          _association_id: string
+          _email: string
+          _name: string
+          _notes?: string
+          _role_key: string
+        }
+        Returns: Json
+      }
       qr_log_scan: {
         Args: { _ip: string; _token: string; _ua: string }
         Returns: Database["public"]["Enums"]["qr_scan_result"]
@@ -1612,6 +1781,54 @@ export type Database = {
           type: string
         }[]
       }
+      record_audit_event: {
+        Args: {
+          _action: string
+          _association_id?: string
+          _entity: string
+          _entity_id?: string
+          _metadata?: Json
+        }
+        Returns: string
+      }
+      review_association_application: {
+        Args: {
+          _association_id: string
+          _financials_enabled?: boolean
+          _reason?: string
+          _status: string
+        }
+        Returns: Json
+      }
+      submit_association_application: {
+        Args: { _association_id: string }
+        Returns: Json
+      }
+      svc_paystack_charge: {
+        Args: {
+          _amount_minor: number
+          _currency: string
+          _customer_email: string
+          _event_id: string
+          _paid_at: string
+          _payload_hash: string
+          _provider_ref: string
+          _raw: Json
+          _reference: string
+          _secret: string
+        }
+        Returns: Json
+      }
+      svc_paystack_refund: {
+        Args: {
+          _event: string
+          _provider_refund_id: string
+          _secret: string
+          _tx_ref: string
+        }
+        Returns: string
+      }
+      verify_public_receipt: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
       app_role:

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import QRCode from "@/lib/qr-browser";
 import { jsPDF } from "jspdf";
 import { getMyReceipt } from "@/lib/receipts.functions";
+import { requestRefund } from "@/lib/money-ops.functions";
+import { RefundRequestDialog } from "@/components/refund-request-dialog";
 import { Logo } from "@/components/brand/logo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,7 @@ function ReceiptPage() {
   }, [token]);
 
   const t = q.data?.transaction as any;
+  const refundFn = useServerFn(requestRefund);
 
   const downloadPdf = () => {
     if (!t) return;
@@ -89,6 +92,9 @@ function ReceiptPage() {
             <Link to="/dashboard"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1"/>Back</Button></Link>
             <Button size="sm" variant="outline" onClick={downloadPdf} disabled={!t}><Download className="h-4 w-4 mr-1"/>PDF</Button>
             <Button size="sm" onClick={() => window.print()}><Printer className="h-4 w-4 mr-1"/>Print</Button>
+            {t?.status === "paid" && t?.reference && (
+              <RefundRequestDialog onSubmit={(v) => refundFn({ data: { reference: t.reference, reason_type: v.reason_type, reason: v.reason } })} />
+            )}
           </div>
         </div>
 

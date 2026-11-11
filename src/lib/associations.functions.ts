@@ -1,10 +1,8 @@
+import { assertBrandingPath, brandingPath } from "./payment-branding";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { loadAssociationContext, requirePermission, maskAccount } from "@/lib/association-access";
-
-const slugify = (s: string) =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
 
 /** Public directory of active associations. */
 export const listPublicAssociations = createServerFn({ method: "GET" }).handler(async () => {
@@ -84,20 +82,9 @@ export const createAssociation = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const base = slugify(data.short_name || data.name) || "association";
-    const slug = `${base}-${Math.random().toString(36).slice(2, 7)}`;
-    const { data: row, error } = await context.supabase
-      .from("associations")
-      .insert({ ...data, slug, status: "draft", created_by: context.userId })
-      .select("id, slug")
-      .single();
-    if (error) throw new Error(error.message);
-
-    // The creator becomes a member — never an executive. Roles come from Super Admin approval.
-    await context.supabase.from("association_memberships").insert({ association_id: row.id, user_id: context.userId, status: "pending" });
-
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "association.created", entity: "association", entity_id: row.id, association_id: row.id, metadata: { name: data.name } });
+    const { data: result, error } = await context.supabase.rpc("create_association_application", { _details: data });
+    if (error) throw new Error("Could not save your association application");
+    const row = result as { id: string; slug: string };
 
     const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
     await notifyPlatformAdmins(`New association registration: ${data.name}`, [
@@ -120,34 +107,20 @@ export const submitAssociationForReview = createServerFn({ method: "POST" })
       const ctx = await loadAssociationContext(context.supabase, context.userId, assoc.id);
       requirePermission(ctx, "association.manage");
     }
-    if (!["draft", "under_review", "rejected"].includes(assoc.status)) throw new Error(`Cannot submit an association in state "${assoc.status}"`);
-    if (!assoc.official_email) throw new Error("An official email is required before submitting");
-
-    const { data: nominations } = await context.supabase
-      .from("leadership_nominations").select("id").eq("association_id", assoc.id).eq("role_key", "president").limit(1);
-    if (!(nominations ?? []).length) throw new Error("Nominate a proposed President before submitting for review");
-
+    const { error } = await context.supabase.rpc("submit_association_application", { _association_id: assoc.id });
+    if (error) throw new Error("Could not submit the application. Check the official email and proposed President, then try again.");
     const wasRejected = assoc.status === "rejected";
-    const { error } = await context.supabase.from("associations").update({ status: "submitted" }).eq("id", assoc.id);
-    if (error) throw new Error(error.message);
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({
-      actor_id: context.userId,
-      action: wasRejected ? "association.resubmitted" : "association.submitted",
-      entity: "association", entity_id: assoc.id, association_id: assoc.id,
-    });
     const { notifyPlatformAdmins } = await import("@/lib/platform-notify.server");
     await notifyPlatformAdmins(`Association ${wasRejected ? "resubmitted" : "submitted"} for review: ${assoc.name}`, [
       `Name: ${assoc.name}`,
       `Institution: ${assoc.institution}`,
       `Official email: ${assoc.official_email}`,
-      `Review it in the Super Admin console: /admin/associations`,
+      `Review it in the Super Admin console: /superadmin/associations`,
     ]);
 
     // Confirm to the requester by email and SMS that the application is back in the queue.
     const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const contact = await resolveRequesterContact(supabaseAdmin, assoc);
+    const contact = await resolveRequesterContact(context.supabase, assoc);
     await notifyRequester(
       contact,
       wasRejected ? "Association Application Resubmitted" : "Association Application Submitted",
@@ -192,8 +165,8 @@ export const listMembers = createServerFn({ method: "POST" })
       .limit(500);
     const ids = (rows ?? []).map((r: any) => r.user_id);
     if (!ids.length) return [];
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name, email, matric_no, level").in("id", ids);
+    const { data: profiles, error } = await context.supabase.from("profiles").select("id, full_name, email, matric_no, level").in("id", ids);
+    if (error) throw new Error("Could not load association member profiles");
     const map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
     return (rows ?? []).map((r: any) => ({ ...r, profile: map.get(r.user_id) ?? null }));
   });
@@ -213,7 +186,7 @@ export const setMemberStatus = createServerFn({ method: "POST" })
       .eq("association_id", ctx.association.id);
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "membership.status_changed", entity: "association_membership", entity_id: data.membership_id, association_id: ctx.association.id, metadata: { status: data.status } });
+    await recordAudit({ actor_id: context.userId, action: "membership.status_changed", entity: "association_membership", entity_id: data.membership_id, association_id: ctx.association.id, metadata: { status: data.status } }, context.supabase);
     return { ok: true };
   });
 
@@ -247,8 +220,8 @@ export const listExecutives = createServerFn({ method: "POST" })
     const ids = Array.from(new Set((rows ?? []).map((r: any) => r.user_id)));
     let map = new Map<string, any>();
     if (ids.length) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name, email").in("id", ids);
+      const { data: profiles, error } = await context.supabase.from("profiles").select("id, full_name, email").in("id", ids);
+      if (error) throw new Error("Could not load association executive profiles");
       map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
     }
     return {
@@ -273,23 +246,15 @@ export const submitNomination = createServerFn({ method: "POST" })
     const isOwner = ctx.association.created_by === context.userId;
     if (!isOwner) requirePermission(ctx, "executives.nominate");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: profile } = await supabaseAdmin.from("profiles").select("id").ilike("email", data.nominee_email).maybeSingle();
-
-    const { error } = await context.supabase.from("leadership_nominations").insert({
-      association_id: ctx.association.id,
-      role_key: data.role_key,
-      nominee_name: data.nominee_name,
-      nominee_email: data.nominee_email.toLowerCase(),
-      nominee_user_id: profile?.id ?? null,
-      notes: data.notes ?? null,
-      status: "submitted",
-      submitted_by: context.userId,
+    const { data: result, error } = await context.supabase.rpc("nominate_association_executive", {
+      _association_id: ctx.association.id,
+      _role_key: data.role_key,
+      _name: data.nominee_name,
+      _email: data.nominee_email,
+      _notes: data.notes ?? undefined,
     });
-    if (error) throw new Error(error.message);
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "executive.nominated", entity: "leadership_nomination", association_id: ctx.association.id, metadata: { role: data.role_key, nominee: data.nominee_email } });
-    return { ok: true, nominee_has_account: Boolean(profile) };
+    if (error) throw new Error("Could not submit the proposed executive");
+    return result as { ok: boolean; nominee_has_account: boolean };
   });
 
 /** Financial overview — visibility only. Bank details are masked unless explicitly permitted. */
@@ -299,27 +264,29 @@ export const getAssociationFinance = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "finance.view");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: txns } = await supabaseAdmin
+    const { data: txns, error: transactionsError } = await context.supabase
       .from("transactions")
       .select("id, reference, status, total_minor, charge_minor, base_minor, created_at, paid_at, payment_request:payment_requests(title)")
       .eq("association_id", ctx.association.id)
       .order("created_at", { ascending: false })
       .limit(200);
+    if (transactionsError) throw new Error("Could not load association finance");
     const rows = txns ?? [];
     const paid = rows.filter((t: any) => t.status === "paid");
 
-    const { data: settlements } = await supabaseAdmin
+    const { data: settlements, error: settlementsError } = await context.supabase
       .from("settlements").select("id, reference, amount, status, created_at, settled_at")
       .eq("association_id", ctx.association.id).order("created_at", { ascending: false }).limit(50);
+    if (settlementsError) throw new Error("Could not load association settlements");
 
     let bank: { bank_name: string; account_name: string; masked: string; verified: boolean } | null = null;
     if (ctx.permissions.includes("bank_details.view")) {
-      const { data: acct } = await supabaseAdmin
+      const { data: acct, error: bankError } = await context.supabase
         .from("association_financial_accounts")
         .select("bank_name, account_name, account_last4, verified")
         .eq("association_id", ctx.association.id).eq("is_primary", true).maybeSingle();
+      if (bankError) throw new Error("Could not load association bank details");
       if (acct) bank = { bank_name: acct.bank_name, account_name: acct.account_name, masked: maskAccount(acct.account_last4), verified: acct.verified };
     }
 
@@ -384,7 +351,7 @@ export const raiseApprovalRequest = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "approval.requested", entity: "approval_request", association_id: ctx.association.id, metadata: { action_type: data.action_type } });
+    await recordAudit({ actor_id: context.userId, action: "approval.requested", entity: "approval_request", association_id: ctx.association.id, metadata: { action_type: data.action_type } }, context.supabase);
     return { ok: true };
   });
 
@@ -442,7 +409,7 @@ export const decideApprovalRequest = createServerFn({ method: "POST" })
 
     // Officer approval of a bank change stages the account for Super Admin verification.
     if (data.decision === "approved" && req.action_type === "bank_details.change") {
-      const p = (req.payload ?? {}) as { bank_name?: string; account_name?: string; account_number?: string };
+      const p = (req.payload ?? {}) as { bank_name?: string; bank_code?: string; account_name?: string; account_number?: string; nuban_verified_at?: string };
       if (p.bank_name && p.account_name && /^\d{10}$/.test(String(p.account_number ?? ""))) {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         await supabaseAdmin.from("association_financial_accounts").insert({
@@ -450,6 +417,9 @@ export const decideApprovalRequest = createServerFn({ method: "POST" })
           bank_name: p.bank_name,
           account_name: p.account_name,
           account_number: p.account_number!,
+          bank_code: p.bank_code ?? null,
+          nuban_resolved_name: p.nuban_verified_at ? p.account_name : null,
+          nuban_verified_at: p.nuban_verified_at ?? null,
           account_last4: p.account_number!.slice(-4),
           is_primary: false,
           verified: false,
@@ -466,7 +436,7 @@ export const decideApprovalRequest = createServerFn({ method: "POST" })
 
 
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: `approval.${data.decision}`, entity: "approval_request", entity_id: data.id, association_id: ctx.association.id, metadata: { action_type: req.action_type, executed } });
+    await recordAudit({ actor_id: context.userId, action: `approval.${data.decision}`, entity: "approval_request", entity_id: data.id, association_id: ctx.association.id, metadata: { action_type: req.action_type, executed } }, context.supabase);
     return { ok: true, executed };
   });
 
@@ -512,6 +482,7 @@ export const createAssociationDues = createServerFn({ method: "POST" })
       slug: z.string().min(1).max(80),
       title: z.string().trim().min(3).max(160),
       description: z.string().trim().max(1000).optional().nullable(),
+      banner_path: brandingPath,
       base_amount: z.number().positive().max(10_000_000),
       target_level: z.number().int().min(100).max(900).optional().nullable(),
       closes_at: z.string().optional().nullable(),
@@ -520,6 +491,7 @@ export const createAssociationDues = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "dues.manage");
+    assertBrandingPath(data.banner_path, ctx.association.id, "banner");
     if (!["active", "verified"].includes(String(ctx.association.status))) {
       throw new Error("Dues can only be created once the association is verified and active");
     }
@@ -534,6 +506,7 @@ export const createAssociationDues = createServerFn({ method: "POST" })
       target_level: data.target_level ?? null,
       title: data.title,
       description: data.description ?? null,
+      banner_path: data.banner_path ?? null,
       base_amount: data.base_amount,
       closes_at: data.closes_at || null,
       active: true,
@@ -541,7 +514,7 @@ export const createAssociationDues = createServerFn({ method: "POST" })
     } as never);
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: "dues.created", entity: "payment_request", association_id: ctx.association.id, metadata: { title: data.title, base_amount: data.base_amount } });
+    await recordAudit({ actor_id: context.userId, action: "dues.created", entity: "payment_request", association_id: ctx.association.id, metadata: { title: data.title, base_amount: data.base_amount } }, context.supabase);
     return { ok: true };
   });
 
@@ -557,7 +530,7 @@ export const setAssociationDuesActive = createServerFn({ method: "POST" })
       .eq("id", data.id).eq("association_id", ctx.association.id);
     if (error) throw new Error(error.message);
     const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({ actor_id: context.userId, action: data.active ? "dues.resumed" : "dues.paused", entity: "payment_request", entity_id: data.id, association_id: ctx.association.id });
+    await recordAudit({ actor_id: context.userId, action: data.active ? "dues.resumed" : "dues.paused", entity: "payment_request", entity_id: data.id, association_id: ctx.association.id }, context.supabase);
     return { ok: true };
   });
 
@@ -576,8 +549,7 @@ export const listAssociationTransactions = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "transactions.view");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let q = supabaseAdmin
+    let q = context.supabase
       .from("transactions")
       .select("id, reference, status, total_minor, base_minor, charge_minor, created_at, paid_at, payment_request:payment_requests(title), student:profiles!transactions_student_id_profiles_fkey(full_name, matric_no)")
       .eq("association_id", ctx.association.id)
@@ -597,13 +569,14 @@ export const listAssociationSettlements = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const ctx = await loadAssociationContext(context.supabase, context.userId, data.slug);
     requirePermission(ctx, "settlement.view");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows } = await supabaseAdmin
+    const { data: rows, error } = await context.supabase
       .from("settlements").select("*").eq("association_id", ctx.association.id)
       .order("created_at", { ascending: false }).limit(100);
-    const { data: pending } = await supabaseAdmin
+    if (error) throw new Error("Could not load association settlements");
+    const { data: pending, error: pendingError } = await context.supabase
       .from("approval_requests").select("id, payload, status, requested_by, created_at")
       .eq("association_id", ctx.association.id).eq("action_type", "settlement.status_update").eq("status", "pending");
+    if (pendingError) throw new Error("Could not load pending settlement approvals");
     return {
       settlements: rows ?? [],
       pendingUpdates: pending ?? [],

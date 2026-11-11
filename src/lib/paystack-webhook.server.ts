@@ -93,6 +93,60 @@ async function defaultSendReceiptEmail(args: {
   }
 }
 
+async function handleRefundEvent(supabaseAdmin: SupabaseLike, event: { event?: string; data?: unknown }) {
+  const d = (event.data ?? {}) as Record<string, unknown>;
+  const txRef = String(d.transaction_reference ?? (d.transaction as any)?.reference ?? "");
+  if (!txRef) return;
+
+  const { data: rr } = await supabaseAdmin
+    .from("refund_requests")
+    .select("*")
+    .eq("reference", txRef)
+    .in("status", ["processing", "approved"])
+    .maybeSingle();
+  if (!rr) return;
+
+  if (event.event === "refund.failed") {
+    await supabaseAdmin
+      .from("refund_requests")
+      .update({ status: "failed", failure_reason: "Provider reported refund failure" })
+      .eq("id", (rr as any).id);
+  } else {
+    await supabaseAdmin
+      .from("refund_requests")
+      .update({ status: "processed", processed_at: new Date().toISOString() })
+      .eq("id", (rr as any).id)
+      .eq("status", (rr as any).status);
+    if ((rr as any).transaction_id) {
+      await supabaseAdmin.from("transactions").update({ status: "refunded" }).eq("id", (rr as any).transaction_id);
+    }
+    if ((rr as any).link_payment_id) {
+      await supabaseAdmin.from("payment_link_payments").update({ status: "refunded" }).eq("id", (rr as any).link_payment_id);
+    }
+    await supabaseAdmin.from("payment_ledger").insert({
+      transaction_id: (rr as any).transaction_id,
+      reference: (rr as any).reference,
+      entry_type: "refund",
+      amount_minor: -Number((rr as any).amount_minor),
+      currency: "NGN",
+      provider: "paystack",
+      provider_ref: String(d.id ?? ""),
+      provider_event_id: `refund:${String(d.id ?? (rr as any).id)}`,
+      metadata: { refund_request_id: (rr as any).id } as never,
+    });
+  }
+
+  await supabaseAdmin.from("audit_logs").insert({
+    actor_id: null,
+    action: String(event.event ?? "refund.unknown"),
+    entity: "refund_request",
+    entity_id: (rr as any).id,
+    association_id: (rr as any).association_id,
+    metadata: { reference: (rr as any).reference } as never,
+  });
+}
+
+
 export async function handlePaystackWebhookRequest(
   request: Request,
   deps: WebhookDeps = {},
@@ -119,6 +173,15 @@ export async function handlePaystackWebhookRequest(
   } catch {
     return new Response("bad json", { status: 400 });
   }
+  const supabaseAdmin =
+    deps.getSupabaseAdmin
+      ? await deps.getSupabaseAdmin()
+      : (await import("@/integrations/supabase/client.server")).supabaseAdmin;
+
+  if (event.event === "refund.processed" || event.event === "refund.failed") {
+    await handleRefundEvent(supabaseAdmin, event);
+    return new Response("ok", { status: 200 });
+  }
   if (event.event !== "charge.success") return new Response("ok", { status: 200 });
 
   const now = deps.now?.() ?? new Date();
@@ -131,11 +194,6 @@ export async function handlePaystackWebhookRequest(
     }
     throw error;
   }
-
-  const supabaseAdmin =
-    deps.getSupabaseAdmin
-      ? await deps.getSupabaseAdmin()
-      : (await import("@/integrations/supabase/client.server")).supabaseAdmin;
 
   const payloadHash = createHash("sha256").update(body).digest("hex");
   const eventId = String(event.id ?? parsed.providerRef ?? payloadHash);
@@ -178,6 +236,14 @@ export async function handlePaystackWebhookRequest(
       return new Response("finalize failed", { status: 500 });
     }
     const outcome = String(out ?? "unknown");
+    if (outcome === "captured") {
+      try {
+        const { emailLinkReceipt } = await import("@/lib/link-receipt.server");
+        await emailLinkReceipt(supabaseAdmin as any, parsed.reference, new URL(request.url).origin);
+      } catch (error) {
+        logError("Link receipt email failed", error);
+      }
+    }
     await setOutcome(outcome);
     return new Response(outcome === "captured" || outcome === "already_paid" || outcome === "amount_mismatch" || outcome === "not_found" ? "ok" : outcome, {
       status: 200,

@@ -22,6 +22,62 @@
       "when": 1791059778817,
       "tag": "0002_public_payment_links",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793492642961,
+      "tag": "0003_link_payment_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793626468546,
+      "tag": "0004_bank_resolution_subaccounts_refunds",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793694027196,
+      "tag": "0005_association_payment_branding",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793766649685,
+      "tag": "0006_zero_service_key_rpcs",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793766913769,
+      "tag": "0007_zero_service_key_superadmin_webhook",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793861269925,
+      "tag": "0008_atomic_association_applications",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793861369160,
+      "tag": "0009_session_authorized_leadership_decisions",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793990816275,
+      "tag": "0010_association_dashboard_session_reads",
+      "breakpoints": true
     }
   ]
 }

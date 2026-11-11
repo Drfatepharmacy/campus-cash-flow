@@ -1,8 +1,11 @@
+import { PaymentHeading } from "@/components/association/payment-heading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getPublicLink, startLinkPayment, confirmLinkPayment, getPublicLedger } from "@/lib/payment-links.functions";
+import { getPublicLink, startLinkPayment, confirmLinkPayment, getPublicLedger, getLinkReceipt } from "@/lib/payment-links.functions";
+import { requestLinkRefund } from "@/lib/money-ops.functions";
+import { RefundRequestDialog } from "@/components/refund-request-dialog";
 import { nairaMinor } from "@/lib/payment-link-utils";
 import { toUserMessage } from "@/lib/user-error";
 import { Logo } from "@/components/brand/logo";
@@ -45,11 +48,7 @@ function PublicPay() {
           <Card className="mt-6"><CardContent className="py-12 text-center text-sm text-muted-foreground">{toUserMessage(q.error)}</CardContent></Card>
         ) : (
           <>
-            <div className="mt-6">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">{q.data!.association}</p>
-              <h1 className="font-display text-3xl font-bold">{q.data!.title}</h1>
-              {q.data!.description && <p className="mt-1 text-muted-foreground">{q.data!.description}</p>}
-            </div>
+            {q.data && <PaymentHeading title={q.data.title} description={q.data.description} association={q.data.association} logo={q.data.logo_url} banner={q.data.banner_url} />}
             {ref ? <Confirm reference={ref} onDone={() => { setRef(null); window.history.replaceState(null, "", window.location.pathname); }} /> : null}
             <Tabs defaultValue="pay" className="mt-6">
               <TabsList><TabsTrigger value="pay">Pay</TabsTrigger><TabsTrigger value="ledger">Who has paid</TabsTrigger></TabsList>
@@ -70,6 +69,17 @@ function Confirm({ reference, onDone }: { reference: string; onDone: () => void 
     refetchInterval: (s) => (s.state.data?.status === "pending" ? 3000 : false),
   });
   const s = q.data?.status;
+  const receiptFn = useServerFn(getLinkReceipt);
+  const linkRefundFn = useServerFn(requestLinkRefund);
+  const rec = useQuery({ queryKey: ["plreceipt", reference], queryFn: () => receiptFn({ data: { reference } }), enabled: s === "paid", retry: 2 });
+  const [busy, setBusy] = useState(false);
+  const downloadReceipt = async () => {
+    if (!rec.data) return;
+    setBusy(true);
+    try { const { downloadLinkReceiptPdf } = await import("@/lib/link-receipt-pdf"); await downloadLinkReceiptPdf(rec.data); }
+    catch { toast.error("Couldn't create the receipt. Please try again."); }
+    finally { setBusy(false); }
+  };
   return (
     <Card className="mt-6 border-emerald-500/40">
       <CardContent className="py-6 flex items-center gap-3">
@@ -79,6 +89,12 @@ function Confirm({ reference, onDone }: { reference: string; onDone: () => void 
             : s === "problem" || s === "not_found" ? <p>We couldn't confirm this payment. Keep your reference ({reference}) and contact your treasurer.</p>
             : <p>Confirming your payment…</p>}
         </div>
+        {s === "paid" && (<div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={downloadReceipt} disabled={!rec.data || busy}>
+            {busy || rec.isLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Download className="h-4 w-4 mr-1" />}Receipt PDF
+          </Button>
+          {reference && <RefundRequestDialog publicPayer onSubmit={(v) => linkRefundFn({ data: { reference, matric_no: v.matric_no ?? "", contact: v.contact ?? "", reason_type: v.reason_type, reason: v.reason } })} />}
+        </div>)}
         {s && s !== "pending" && <Button size="sm" variant="ghost" onClick={onDone}>Close</Button>}
       </CardContent>
     </Card>

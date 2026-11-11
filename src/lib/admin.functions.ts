@@ -122,7 +122,17 @@ export const deletePaymentRequest = createServerFn({ method: "POST" })
 
 export const grantAdminToMe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) => z.object({ bootstrap_secret: z.string().max(500).optional() }).parse(d ?? {}))
+  .handler(async ({ context, data }) => {
+    // Existing admins/super admins never need this; others must present ADMIN_BOOTSTRAP_SECRET.
+    const expected = process.env.ADMIN_BOOTSTRAP_SECRET;
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+    if (!isSuper) {
+      if (!expected || expected.length < 16) throw new Error("Admin bootstrap is disabled.");
+      const { timingSafeEqual } = await import("node:crypto");
+      const a = Buffer.from(data.bootstrap_secret ?? ""), b = Buffer.from(expected);
+      if (a.length !== b.length || !timingSafeEqual(a, b)) throw new Error("Forbidden");
+    }
     // Bootstrap: first user can claim admin if no admins exist yet.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: existing } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin").limit(1);

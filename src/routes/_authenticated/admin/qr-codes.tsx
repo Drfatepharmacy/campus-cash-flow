@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/spreadsheet-safe";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -347,7 +348,7 @@ function Manager() {
   const exportCsv = () => {
     const rows = q.data ?? [];
     const header = ["token","label","type","status","scans","max_scans","expires_at","created_at","encoded_value"];
-    const csv = [header.join(","), ...rows.map(r => [r.token, r.label, r.type, r.status, r.scan_count, r.max_scans ?? "", r.expires_at ?? "", r.created_at, JSON.stringify(r.encoded_value)].map(v => `"${String(v).replace(/"/g,'""')}"`).join(","))].join("\n");
+    const csv = [header.join(","), ...rows.map(r => [r.token, r.label, r.type, r.status, r.scan_count, r.max_scans ?? "", r.expires_at ?? "", r.created_at, JSON.stringify(r.encoded_value)].map(csvCell).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "qr-codes.csv"; a.click();
   };

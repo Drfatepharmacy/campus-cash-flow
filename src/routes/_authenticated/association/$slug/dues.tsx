@@ -1,3 +1,4 @@
+import { PaymentImages, EditPaymentBranding } from "@/components/association/payment-branding";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,12 +15,7 @@ import { toast } from "sonner";
 import { Plus, Pause, Play } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/association/$slug/dues")({
-  head: () => ({
-    meta: [
-      { title: "Dues — Association workspace | UniEgo" },
-      { name: "description", content: "Set up association dues, track collections and review dues payment history." },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Dues — Association workspace | UniEgo" }, { name: "description", content: "Manage association dues and branded payment requests." }, { property: "og:title", content: "Dues — Association workspace | UniEgo" }, { property: "og:description", content: "Manage association dues and branded payment requests." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DuesPage,
 });
 
@@ -35,6 +31,8 @@ function DuesPage() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [banner, setBanner] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [amount, setAmount] = useState("");
   const [level, setLevel] = useState("");
   const [closesAt, setClosesAt] = useState("");
@@ -50,6 +48,7 @@ function DuesPage() {
           slug,
           title: title.trim(),
           description: description.trim() || null,
+          banner_path: banner,
           base_amount: Number(amount),
           target_level: level ? Number(level) : null,
           closes_at: closesAt || null,
@@ -57,7 +56,7 @@ function DuesPage() {
       }),
     onSuccess: () => {
       toast.success("Dues published — members can now pay");
-      setOpen(false); setTitle(""); setDescription(""); setAmount(""); setLevel(""); setClosesAt("");
+      setOpen(false); setTitle(""); setDescription(""); setBanner(null); setAmount(""); setLevel(""); setClosesAt("");
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -72,7 +71,8 @@ function DuesPage() {
   if (q.isLoading) return <Skeleton className="h-64" />;
   if (q.error) return <Card><CardContent className="py-10 text-center text-sm text-destructive">{(q.error as Error).message}</CardContent></Card>;
 
-  const d = q.data!;
+  const d = q.data;
+  if (!d) return null;
   const dues = d.dues as any[];
   const totalCollected = dues.reduce((sum, x) => sum + Number(x.stats.collected_minor ?? 0), 0);
   const totalPaid = dues.reduce((sum, x) => sum + Number(x.stats.paid ?? 0), 0);
@@ -102,6 +102,7 @@ function DuesPage() {
                 <Label htmlFor="dues-desc">Description</Label>
                 <Textarea id="dues-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What the dues cover" />
               </div>
+              <div className="sm:col-span-2"><PaymentImages slug={slug} banner={banner} onBanner={setBanner} onBusy={setUploading} /></div>
               <div className="space-y-1.5">
                 <Label htmlFor="dues-amount">Amount (₦)</Label>
                 <Input id="dues-amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="5000" />
@@ -116,7 +117,7 @@ function DuesPage() {
               </div>
               <div className="sm:col-span-2">
                 <Button
-                  disabled={createM.isPending || !d.hasCampus || title.trim().length < 3 || !(Number(amount) > 0)}
+                  disabled={uploading || createM.isPending || !d.hasCampus || title.trim().length < 3 || !(Number(amount) > 0)}
                   onClick={() => createM.mutate()}
                 >
                   Publish dues
@@ -144,6 +145,7 @@ function DuesPage() {
                     {x.closes_at && <p className="text-xs text-muted-foreground mt-1">Closes {new Date(x.closes_at).toLocaleDateString()}</p>}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    {d.canManage && <EditPaymentBranding slug={slug} item={x} kind="private" onSaved={invalidate} />}
                     <Badge variant={x.active ? "default" : "secondary"}>{x.active ? "Active" : "Paused"}</Badge>
                     {d.canManage && (
                       <Button size="sm" variant="outline" disabled={toggleM.isPending} onClick={() => toggleM.mutate({ id: x.id, active: !x.active })}>

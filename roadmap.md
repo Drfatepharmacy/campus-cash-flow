@@ -1,5 +1,12 @@
 # UniEgo — open items after the Sept 21 hardening pass
 
+## Current Vercel association approval work
+- [ ] Remove service-key dependency from creation, nominations and submission.
+- [ ] Use atomic, Super Admin-authorized approval and leadership operations; make console reads session-scoped.
+- [ ] Test authorization, audit integrity and the signed-in application flow without a service key.
+- [ ] Verify deployed Vercel flow — requires redeployment after these changes.
+- [x] Remove service-key reads from officer member, executive, finance, settlement, and bank dashboards; scope access through authenticated RLS policies.
+
 ## Fixed in this pass
 - Faculty/department reps with no assigned scope no longer see platform-wide payment data (fails closed).
 - QR tokens now use a cryptographically secure generator (was `Math.random`).
@@ -31,3 +38,11 @@
 ## Oct 3 — added
 - Public payment links (no sign-in), per-class fixed prices, QR + share, masked public ledger with Excel/PDF by class, instant offline records, roster upload, paid/defaulters reports. Online link payments run on Paystack test keys until live mode is enabled.
 - Branded auto-retry loading screen, privacy-safe page error records, admin Page health assistant (AI).
+
+## Money operations (Nov 2026)
+- [ ] Refresh UniEgo logo using existing Android icon; add treasurer payment branding; deliver officers portal screenshot
+- [x] Bank-confirmed account names (NUBAN) on association bank form
+- [x] Missed-payment recovery (admin button + scheduled endpoint, needs CRON_SECRET + scheduler)
+- [x] Split payments to association accounts via Paystack subaccounts
+- [x] Refund requests + admin review + Paystack refunds
+- [ ] Live verification — blocked on a Paystack key with refunds/subaccounts enabled

@@ -9,11 +9,11 @@ export const listAllAssociations = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("associations")
       .select("*, campus:campuses(name), faculty:faculties(name), department:departments(name)")
       .order("created_at", { ascending: false });
+    if (error) throw new Error("Could not load the association review queue");
     return data ?? [];
   });
 
@@ -22,12 +22,12 @@ export const listAllNominations = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("leadership_nominations")
       .select("*, association:associations(name, slug, status), role:association_roles(name, is_head)")
       .order("created_at", { ascending: false })
       .limit(200);
+    if (error) throw new Error("Could not load the association review queue");
     return data ?? [];
   });
 
@@ -44,31 +44,11 @@ export const setAssociationStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: before } = await supabaseAdmin.from("associations").select("status, financials_enabled").eq("id", data.id).maybeSingle();
-
-    const patch: any = {
-      status: data.status,
-      status_reason: data.reason ?? null,
-      reviewed_by: context.userId,
-      reviewed_at: new Date().toISOString(),
-    };
-    // Financial activation is never implied by approval — it is an explicit decision.
-    if (typeof data.financials_enabled === "boolean") patch["financials_enabled"] = data.financials_enabled;
-    if (data.status === "suspended" || data.status === "archived") patch["financials_enabled"] = false;
-
-    const { error } = await supabaseAdmin.from("associations").update(patch).eq("id", data.id);
-    if (error) throw new Error(error.message);
-
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({
-      actor_id: context.userId,
-      action: `association.${data.status}`,
-      entity: "association",
-      entity_id: data.id,
-      association_id: data.id,
-      metadata: { before, after: patch, reason: data.reason ?? null },
+    const { error } = await context.supabase.rpc("review_association_application", {
+      _association_id: data.id, _status: data.status,
+      _reason: data.reason ?? undefined, _financials_enabled: data.financials_enabled,
     });
+    if (error) throw new Error("This status change is not allowed. Check the application stage and reason.");
     return { ok: true };
   });
 
@@ -86,83 +66,11 @@ export const decideNomination = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { recordAudit } = await import("@/lib/association-audit.server");
-
-    const { data: nom } = await supabaseAdmin.from("leadership_nominations").select("*").eq("id", data.id).maybeSingle();
-    if (!nom) throw new Error("Nomination not found");
-    if (nom.status !== "submitted" && nom.status !== "under_review") throw new Error("This nomination has already been decided");
-
-    if (data.decision === "rejected") {
-      await supabaseAdmin.from("leadership_nominations")
-        .update({ status: "rejected", decided_by: context.userId, decided_at: new Date().toISOString(), decision_reason: data.reason ?? null })
-        .eq("id", data.id);
-      await recordAudit({ actor_id: context.userId, action: "executive.nomination_rejected", entity: "leadership_nomination", entity_id: data.id, association_id: nom.association_id, metadata: { reason: data.reason ?? null } });
-      return { ok: true, activated: false };
-    }
-
-    let userId = nom.nominee_user_id as string | null;
-    if (!userId && nom.nominee_email) {
-      const { data: prof } = await supabaseAdmin.from("profiles").select("id").ilike("email", nom.nominee_email).maybeSingle();
-      userId = prof?.id ?? null;
-    }
-    if (!userId) throw new Error("The nominee has no UniEgo account yet — ask them to sign up with the nominated email first.");
-
-    // One current term per association.
-    let { data: term } = await supabaseAdmin
-      .from("executive_terms").select("*").eq("association_id", nom.association_id).eq("is_current", true).maybeSingle();
-    if (!term) {
-      const { data: created, error: termErr } = await supabaseAdmin
-        .from("executive_terms")
-        .insert({ association_id: nom.association_id, label: `Tenure ${new Date().getFullYear()}`, session_year: String(new Date().getFullYear()), created_by: context.userId })
-        .select("*").single();
-      if (termErr) throw new Error(termErr.message);
-      term = created;
-    }
-
-    const endsAt = new Date();
-    endsAt.setMonth(endsAt.getMonth() + data.term_months);
-
-    // Replace any sitting holder of this role — history is retained, not deleted.
-    const { data: sitting } = await supabaseAdmin
-      .from("association_role_assignments").select("id, user_id")
-      .eq("association_id", nom.association_id).eq("role_key", nom.role_key).eq("status", "active");
-    for (const s of sitting ?? []) {
-      await supabaseAdmin.from("association_role_assignments")
-        .update({ status: "revoked", revocation_reason: "Replaced by approved nomination", ends_at: new Date().toISOString() })
-        .eq("id", s.id);
-      await recordAudit({ actor_id: context.userId, action: "executive.revoked", entity: "association_role_assignment", entity_id: s.id, association_id: nom.association_id, metadata: { role: nom.role_key, replaced_user: s.user_id } });
-    }
-
-    const { error: aErr } = await supabaseAdmin.from("association_role_assignments").insert({
-      association_id: nom.association_id,
-      user_id: userId,
-      role_key: nom.role_key,
-      term_id: term!.id,
-      status: "active",
-      appointment_source: "nomination",
-      approved_by: context.userId,
-      approved_at: new Date().toISOString(),
-      starts_at: new Date().toISOString(),
-      ends_at: endsAt.toISOString(),
+    const { data: result, error } = await context.supabase.rpc("decide_association_nomination", {
+      _id: data.id, _decision: data.decision, _reason: data.reason ?? undefined, _term_months: data.term_months,
     });
-    if (aErr) throw new Error(aErr.message);
-
-    await supabaseAdmin.from("association_memberships")
-      .upsert({ association_id: nom.association_id, user_id: userId, status: "active", joined_at: new Date().toISOString() }, { onConflict: "association_id,user_id" });
-
-    await supabaseAdmin.from("leadership_nominations")
-      .update({ status: "approved", decided_by: context.userId, decided_at: new Date().toISOString(), decision_reason: data.reason ?? null, nominee_user_id: userId, term_id: term!.id })
-      .eq("id", data.id);
-
-    await recordAudit({
-      actor_id: context.userId,
-      action: "executive.approved",
-      entity: "association_role_assignment",
-      association_id: nom.association_id,
-      metadata: { role: nom.role_key, user_id: userId, ends_at: endsAt.toISOString(), nomination_id: data.id },
-    });
-    return { ok: true, activated: true };
+    if (error) throw new Error("Could not decide this nomination. Confirm the nominee has signed up and the nomination is still pending.");
+    return result as { ok: boolean; activated: boolean };
   });
 
 export const listAssignmentsForAssociation = createServerFn({ method: "POST" })
@@ -171,8 +79,7 @@ export const listAssignmentsForAssociation = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows } = await supabaseAdmin
+    const { data: rows } = await context.supabase
       .from("association_role_assignments")
       .select("*, role:association_roles(name, is_head)")
       .eq("association_id", data.association_id)
@@ -180,7 +87,7 @@ export const listAssignmentsForAssociation = createServerFn({ method: "POST" })
     const ids = Array.from(new Set((rows ?? []).map((r: any) => r.user_id)));
     let map = new Map<string, any>();
     if (ids.length) {
-      const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name, email").in("id", ids);
+      const { data: profiles } = await context.supabase.from("profiles").select("id, full_name, email").in("id", ids);
       map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
     }
     return (rows ?? []).map((r: any) => ({ ...r, profile: map.get(r.user_id) ?? null }));
@@ -194,13 +101,12 @@ export const changeAssignmentStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row } = await supabaseAdmin.from("association_role_assignments").select("*").eq("id", data.id).maybeSingle();
+    const { data: row } = await context.supabase.from("association_role_assignments").select("*").eq("id", data.id).maybeSingle();
     if (!row) throw new Error("Assignment not found");
 
     const patch: any = { status: data.status, revocation_reason: data.reason ?? null };
     if (data.status === "revoked" || data.status === "expired") patch["ends_at"] = new Date().toISOString();
-    const { error } = await supabaseAdmin.from("association_role_assignments").update(patch).eq("id", data.id);
+    const { error } = await context.supabase.from("association_role_assignments").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
 
     const { recordAudit } = await import("@/lib/association-audit.server");
@@ -208,7 +114,7 @@ export const changeAssignmentStatus = createServerFn({ method: "POST" })
       actor_id: context.userId, action: `executive.${data.status}`, entity: "association_role_assignment",
       entity_id: data.id, association_id: row.association_id,
       metadata: { before: row.status, after: data.status, role: row.role_key, reason: data.reason ?? null },
-    });
+    }, context.supabase);
     return { ok: true };
   });
 
@@ -217,8 +123,7 @@ export const expireLapsedTenures = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin.rpc("expire_role_assignments");
+    const { data, error } = await context.supabase.rpc("expire_role_assignments");
     if (error) throw new Error(error.message);
     return { expired: Number(data ?? 0) };
   });
@@ -257,7 +162,7 @@ export const setAssociationBankAccount = createServerFn({ method: "POST" })
     await recordAudit({
       actor_id: context.userId, action: "bank_details.changed", entity: "association_financial_account",
       association_id: data.association_id, metadata: { bank_name: data.bank_name, last4: data.account_number.slice(-4) },
-    });
+    }, context.supabase);
     return { ok: true };
   });
 
@@ -276,12 +181,12 @@ export const approveAssociationRequest = createServerFn({ method: "POST" })
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
 
     const { provisionApprovedAssociation } = await import("@/lib/association-provision.server");
-    const result = await provisionApprovedAssociation(data.id, context.userId, data.term_months);
+    const result = await provisionApprovedAssociation(data.id, context.supabase, data.term_months);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: assoc } = await supabaseAdmin.from("associations").select("name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
+    if (!result.activated) return result;
+    const { data: assoc } = await context.supabase.from("associations").select("name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
     const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
-    const contact = await resolveRequesterContact(supabaseAdmin, assoc ?? {});
+    const contact = await resolveRequesterContact(context.supabase, assoc ?? {});
     await notifyRequester(
       contact,
       "Association Creation Approved",
@@ -306,24 +211,15 @@ export const rejectAssociationRequest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Forbidden: platform administrators only");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: before } = await supabaseAdmin.from("associations").select("status, name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
-    if (!before) throw new Error("Association not found");
-    if (before.status === "active") throw new Error("This association is already active — suspend it instead of rejecting");
-
-    const { error } = await supabaseAdmin.from("associations")
-      .update({ status: "rejected", status_reason: data.reason, financials_enabled: false, reviewed_by: context.userId, reviewed_at: new Date().toISOString() })
-      .eq("id", data.id);
-    if (error) throw new Error(error.message);
-
-    const { recordAudit } = await import("@/lib/association-audit.server");
-    await recordAudit({
-      actor_id: context.userId, action: "association.rejected", entity: "association", entity_id: data.id, association_id: data.id,
-      metadata: { previous_status: before.status, new_status: "rejected", rejection_reason: data.reason },
+    const { data: before, error: readError } = await context.supabase.from("associations").select("status, name, slug, created_by, official_email, official_phone").eq("id", data.id).maybeSingle();
+    if (readError || !before) throw new Error("Association not found");
+    const { error } = await context.supabase.rpc("review_association_application", {
+      _association_id: data.id, _status: "rejected", _reason: data.reason,
     });
+    if (error) throw new Error("This application cannot be rejected in its current stage");
 
     const { resolveRequesterContact, notifyRequester } = await import("@/lib/notify.server");
-    const contact = await resolveRequesterContact(supabaseAdmin, before);
+    const contact = await resolveRequesterContact(context.supabase, before);
     await notifyRequester(
       contact,
       "Association Creation Rejected",
@@ -346,7 +242,7 @@ export const listBankVerifications = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await supabaseAdmin
       .from("association_financial_accounts")
-      .select("id, association_id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, officer_approved_at, verified_at, created_at, association:associations(name, slug, status)")
+      .select("id, association_id, bank_name, account_name, account_last4, status, is_primary, rejection_reason, officer_approved_at, verified_at, created_at, nuban_verified_at, paystack_subaccount_code, subaccount_error, association:associations(name, slug, status)")
       .order("created_at", { ascending: false })
       .limit(200);
     return (rows ?? []).map((r: any) => ({ ...r, masked: `•••• •••• ${r.account_last4}` }));
@@ -367,6 +263,8 @@ export const decideBankVerification = createServerFn({ method: "POST" })
     const { data: row } = await supabaseAdmin.from("association_financial_accounts").select("*").eq("id", data.id).maybeSingle();
     if (!row) throw new Error("Bank account not found");
     if (row.status !== "officer_approved") throw new Error("Only officer-approved accounts can be verified");
+    if (data.decision === "verified" && !row.nuban_verified_at) throw new Error("This account was not confirmed with the bank (NUBAN). Ask the association to resubmit it.");
+    let subaccount: { code: string | null; error: string | null } = { code: null, error: null };
 
     if (data.decision === "verified") {
       await supabaseAdmin.from("association_financial_accounts").update({ is_primary: false }).eq("association_id", row.association_id);
@@ -375,6 +273,7 @@ export const decideBankVerification = createServerFn({ method: "POST" })
         .update({ status: "verified", verified: true, is_primary: true, verified_by: context.userId, verified_at: new Date().toISOString(), rejection_reason: null })
         .eq("id", data.id);
       if (error) throw new Error(error.message);
+      subaccount = await ensureSubaccount(supabaseAdmin, row);
     } else {
       const { error } = await supabaseAdmin
         .from("association_financial_accounts")
@@ -390,7 +289,39 @@ export const decideBankVerification = createServerFn({ method: "POST" })
       entity: "association_financial_account",
       entity_id: data.id,
       association_id: row.association_id,
-      metadata: { bank_name: row.bank_name, last4: row.account_last4, reason: data.reason ?? null },
-    });
-    return { ok: true };
+      metadata: { bank_name: row.bank_name, last4: row.account_last4, reason: data.reason ?? null, subaccount: subaccount.code, subaccount_error: subaccount.error },
+    }, context.supabase);
+    return { ok: true, subaccount };
+  });
+
+/** Creates the Paystack split (sub)account so collections settle straight to the association. */
+async function ensureSubaccount(db: any, row: any): Promise<{ code: string | null; error: string | null }> {
+  if (row.paystack_subaccount_code) return { code: row.paystack_subaccount_code, error: null };
+  try {
+    if (!row.bank_code) throw new Error("Missing bank code");
+    const { data: assoc } = await db.from("associations").select("name, official_email").eq("id", row.association_id).maybeSingle();
+    const { createSubaccount } = await import("@/lib/paystack.server");
+    const code = await createSubaccount({ business_name: assoc?.name ?? row.account_name, bank_code: row.bank_code, account_number: row.account_number, email: assoc?.official_email });
+    await db.from("association_financial_accounts").update({ paystack_subaccount_code: code, subaccount_error: null }).eq("id", row.id);
+    return { code, error: null };
+  } catch (e) {
+    const msg = (e as Error).message.slice(0, 300);
+    await db.from("association_financial_accounts").update({ subaccount_error: msg }).eq("id", row.id);
+    return { code: null, error: msg };
+  }
+}
+
+/** Retry split-account creation for a verified account. */
+export const retrySubaccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+    if (!isSuper) throw new Error("Forbidden: platform administrators only");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin.from("association_financial_accounts").select("*").eq("id", data.id).maybeSingle();
+    if (!row || row.status !== "verified") throw new Error("Only verified accounts can be linked for split payments");
+    const r = await ensureSubaccount(supabaseAdmin, row);
+    if (r.error) throw new Error(r.error);
+    return r;
   });
